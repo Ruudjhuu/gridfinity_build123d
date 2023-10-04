@@ -14,6 +14,7 @@ class gridfinity_standard:
 
         size = 42
         radius = 7.5
+        tollerance = 0.5
 
     class bottom:
         """Bottom constants"""

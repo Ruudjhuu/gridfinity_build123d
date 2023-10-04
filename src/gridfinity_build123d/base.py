@@ -1,11 +1,48 @@
-from typing import Union, Optional
+from typing import Union
 
 from build123d import *  # pylint: disable=wildcard-import, unused-wildcard-import
 
 from .constants import gridfinity_standard
 
 
+class Grid:
+    def __init__(self, X: int, Y: int):
+        self.X = X
+        self.Y = Y
+
+
 class Base(BasePartObject):
+    def __init__(
+        self,
+        grid: Grid,
+        magnets: bool = False,
+        screwholes: bool = False,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.ADD,
+    ):
+        with BuildPart() as base:
+            with GridLocations(
+                gridfinity_standard.grid.size,
+                gridfinity_standard.grid.size,
+                grid.X,
+                grid.Y,
+            ):
+                BaseBlock(magnets, screwholes)
+
+            bbox = base.part.bounding_box()
+            with BuildSketch() as rect:
+                RectangleRounded(
+                    bbox.size.X - gridfinity_standard.grid.tollerance,
+                    bbox.size.Y - gridfinity_standard.grid.tollerance,
+                    gridfinity_standard.grid.radius,
+                )
+            extrude(to_extrude=rect.sketch, amount=bbox.size.Z, mode=Mode.INTERSECT)
+
+        super().__init__(base.part, rotation, align, mode)
+
+
+class BaseBlock(BasePartObject):
     def __init__(
         self,
         magnets: bool = False,
@@ -14,7 +51,9 @@ class Base(BasePartObject):
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
-        with BuildPart() as part:
+        with BuildPart() as baseblock:
+
+            # Create stack profile with offset
             with BuildSketch(Plane.XZ) as profile:
                 with Locations(
                     (
@@ -29,24 +68,27 @@ class Base(BasePartObject):
                         kind=Kind.INTERSECTION,
                     )
 
-            with BuildSketch() as rectangle:
+            # Create block
+            with BuildSketch() as rect:
                 RectangleRounded(
                     gridfinity_standard.grid.size,
                     gridfinity_standard.grid.size,
                     gridfinity_standard.grid.radius,
                 )
+            extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 
-            extrude_height = (
-                profile.sketch.bounding_box().max.Z
-                + gridfinity_standard.bottom.platform_height
-            )
-            extrude(to_extrude=rectangle.face(), amount=extrude_height)
-
-            path = part.wires().sort_by(Axis.Z)[-1]
+            # sweep profile
+            path = baseblock.wires().sort_by(Axis.Z)[-1]
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
 
+            # add platform on top
+            with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1])as rect2:
+                Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
+            extrude(to_extrude=rect2.sketch, amount=gridfinity_standard.bottom.platform_height)
+
+            # create magnet and screw holes
             if magnets or screwholes:
-                bot_plane = part.faces().sort_by(Axis.Z)[0]
+                bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
                 distance = (
                     bot_plane.bounding_box().size.X
                     - 2 * gridfinity_standard.bottom.hole_from_side
@@ -70,7 +112,7 @@ class Base(BasePartObject):
                         amount=gridfinity_standard.screw.depth,
                         mode=Mode.SUBTRACT,
                     )
-        super().__init__(part.part, rotation, align, mode)
+        super().__init__(baseblock.part, rotation, align, mode)
 
 
 class StackProfile(BaseSketchObject):
@@ -82,7 +124,7 @@ class StackProfile(BaseSketchObject):
         align: Union[Align, tuple[Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
-        with BuildSketch() as sketch:
+        with BuildSketch() as profile:
             with BuildLine():
                 Polyline(
                     (0, 0),
@@ -110,4 +152,4 @@ class StackProfile(BaseSketchObject):
                     close=True,
                 )
             make_face()
-        super().__init__(sketch.face(), rotation, align, mode)
+        super().__init__(profile.face(), rotation, align, mode)
