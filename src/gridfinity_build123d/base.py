@@ -1,6 +1,9 @@
-from build123d import *
-
 from typing import Union, Optional
+
+from build123d import *  # pylint: disable=wildcard-import, unused-wildcard-import
+
+from .constants import gridfinity_standard
+
 
 class Base(BasePartObject):
     _size = 42
@@ -16,25 +19,39 @@ class Base(BasePartObject):
     ):
         with BuildPart() as part:
             with BuildSketch(Plane.XZ) as profile:
-                with Locations((self._size/2-self._profile_offset,0)):
+                with Locations(
+                    (
+                        gridfinity_standard.grid.size / 2
+                        - gridfinity_standard.stacking_lip.offset,
+                        0,
+                    )
+                ):
                     StackProfile(align=(Align.MAX, Align.MIN))
-                    offset(amount=self._profile_offset, kind=Kind.INTERSECTION)
+                    offset(
+                        amount=gridfinity_standard.stacking_lip.offset,
+                        kind=Kind.INTERSECTION,
+                    )
 
             with BuildSketch() as rectangle:
-                RectangleRounded(self._size, self._size, self._radius)
+                RectangleRounded(
+                    gridfinity_standard.grid.size,
+                    gridfinity_standard.grid.size,
+                    gridfinity_standard.grid.radius,
+                )
 
-            extrude_height = profile.sketch.bounding_box().max.Z + self._platform_height
-            extrude(to_extrude=rectangle.face(),amount=extrude_height)
-            
+            extrude_height = (
+                profile.sketch.bounding_box().max.Z
+                + gridfinity_standard.bottom.platform_height
+            )
+            extrude(to_extrude=rectangle.face(), amount=extrude_height)
+
             path = part.wires().sort_by(Axis.Z)[-1]
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
         super().__init__(part.part, rotation, align, mode)
 
 
 class StackProfile(BaseSketchObject):
-    _height_1 = 0.7
-    _height_2 = 1.8
-    _height_3 = 1.9
+    """Creates a profile of the Gridfinity stack."""
 
     def __init__(
         self,
@@ -46,13 +63,27 @@ class StackProfile(BaseSketchObject):
             with BuildLine():
                 Polyline(
                     (0, 0),
-                    (self._height_1, self._height_1),
-                    (self._height_1, self._height_1 + self._height_2),
                     (
-                        self._height_1 + self._height_3,
-                        self._height_1 + self._height_2 + self._height_3,
+                        gridfinity_standard.stacking_lip.height_1,
+                        gridfinity_standard.stacking_lip.height_1,
                     ),
-                    (self._height_1 + self._height_3, 0),
+                    (
+                        gridfinity_standard.stacking_lip.height_1,
+                        gridfinity_standard.stacking_lip.height_1
+                        + gridfinity_standard.stacking_lip.height_2,
+                    ),
+                    (
+                        gridfinity_standard.stacking_lip.height_1
+                        + gridfinity_standard.stacking_lip.height_3,
+                        gridfinity_standard.stacking_lip.height_1
+                        + gridfinity_standard.stacking_lip.height_2
+                        + gridfinity_standard.stacking_lip.height_3,
+                    ),
+                    (
+                        gridfinity_standard.stacking_lip.height_1
+                        + gridfinity_standard.stacking_lip.height_3,
+                        0,
+                    ),
                     close=True,
                 )
             make_face()

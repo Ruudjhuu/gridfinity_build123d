@@ -1,4 +1,5 @@
-# __init__.py
+"""__init__.py
+"""
 
 __all__ = ["Base"]
 
