@@ -6,13 +6,10 @@ from .constants import gridfinity_standard
 
 
 class Base(BasePartObject):
-    _size = 42
-    _radius = 7.5
-    _platform_height = 1
-    _profile_offset = 0.25
-
     def __init__(
         self,
+        magnets: bool = False,
+        screwholes: bool = False,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
@@ -47,6 +44,32 @@ class Base(BasePartObject):
 
             path = part.wires().sort_by(Axis.Z)[-1]
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+
+            if magnets or screwholes:
+                bot_plane = part.faces().sort_by(Axis.Z)[0]
+                distance = (
+                    bot_plane.bounding_box().size.X
+                    - 2 * gridfinity_standard.bottom.hole_from_side
+                )
+
+                if magnets:
+                    with BuildSketch() as magnet_holes:
+                        with GridLocations(distance, distance, 2, 2):
+                            Circle(gridfinity_standard.magnet.size / 2)
+                    extrude(
+                        to_extrude=magnet_holes.faces(),
+                        amount=gridfinity_standard.magnet.thickness,
+                        mode=Mode.SUBTRACT,
+                    )
+                if screwholes:
+                    with BuildSketch() as magnet_holes:
+                        with GridLocations(distance, distance, 2, 2):
+                            Circle(gridfinity_standard.screw.size / 2)
+                    extrude(
+                        to_extrude=magnet_holes.faces(),
+                        amount=gridfinity_standard.screw.depth,
+                        mode=Mode.SUBTRACT,
+                    )
         super().__init__(part.part, rotation, align, mode)
 
 

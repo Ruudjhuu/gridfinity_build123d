@@ -21,8 +21,35 @@ class BaseTest(unittest.TestCase):
             gridfinity_build123d.base.Base()
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(42, 42, 6.003553390593281), bbox.size)
-        self.assertEqual(8901.250776327015, part.part.volume)
+        self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
+        self.assertEqual(11989.537032502983, part.part.volume)
+
+    def test_base_magnets(self) -> None:
+        """Test creation of a default base."""
+        with BuildPart() as part:
+            gridfinity_build123d.base.Base(magnets=True)
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
+        self.assertEqual(11670.979537428975, part.part.volume)
+
+    def test_base_screw_holes(self) -> None:
+        """Test creation of a default base."""
+        with BuildPart() as part:
+            gridfinity_build123d.base.Base(screwholes=True)
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
+        self.assertEqual(11819.891029209135, part.part.volume)
+
+    def test_base_magnet_and_screw_holes(self) -> None:
+        """Test creation of a default base."""
+        with BuildPart() as part:
+            gridfinity_build123d.base.Base(magnets=True, screwholes=True)
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
+        self.assertEqual(11569.191935452669, part.part.volume)
 
 
 class StackProfileTest(unittest.TestCase):
@@ -32,6 +59,5 @@ class StackProfileTest(unittest.TestCase):
             gridfinity_build123d.base.StackProfile()
 
         bbox = sketch.sketch.bounding_box()
-
         self.assertEqual(Vector(2.5999999999999996, 4.4, 0), bbox.size)
         self.assertEqual(6.8, sketch.sketch.area)
