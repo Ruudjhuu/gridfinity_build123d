@@ -5,6 +5,5 @@ pylint
 bandit
 pydocstyle
 coverage
-unittest
 flake8
  -e .
