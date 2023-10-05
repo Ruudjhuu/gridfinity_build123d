@@ -1,17 +1,57 @@
+"""Generate gridfinity bases."""
 from typing import Union
+from dataclasses import dataclass
 
-from build123d import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from build123d import (
+    RotationLike,
+    Align,
+    BuildPart,
+    BuildSketch,
+    BuildLine,
+    Locations,
+    BasePartObject,
+    BaseSketchObject,
+    Mode,
+    GridLocations,
+    RectangleRounded,
+    extrude,
+    Plane,
+    offset,
+    Kind,
+    sweep,
+    Axis,
+    Rectangle,
+    Circle,
+    Polyline,
+    make_face,
+)
 
 from .constants import gridfinity_standard
 
 
+@dataclass
 class Grid:
-    def __init__(self, X: int, Y: int):
-        self.X = X
-        self.Y = Y
+    """Represents grid units."""
+
+    X: int  # pylint: disable=invalid-name
+    Y: int  # pylint: disable=invalid-name
 
 
 class Base(BasePartObject):
+    """Base.
+
+    Create gridfinity Base object.
+
+    Args:
+        grid (Grid): Grid object containg units of length
+        magnets (bool, optional): True to create holes for magnets. Defaults to False.
+        screwholes (bool, optional): True to create holes for screws. Defaults to False.
+        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+            object. Defaults to None.
+        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+    """
+
     def __init__(
         self,
         grid: Grid,
@@ -43,6 +83,21 @@ class Base(BasePartObject):
 
 
 class BaseBlock(BasePartObject):
+    """BaseBlock.
+
+    Create a single baseblock with rectangular platform. The rectangular platform makes it
+    posible to stack the blocks in x and y direction. After creating an array it is meant to
+    cut the platform to size.
+
+    Args:
+        magnets (bool, optional): True to create holes for magnets. Defaults to False.
+        screwholes (bool, optional): True to create holes for screws. Defaults to False.
+        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+            object. Defaults to None.
+        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+    """
+
     def __init__(
         self,
         magnets: bool = False,
@@ -52,13 +107,11 @@ class BaseBlock(BasePartObject):
         mode: Mode = Mode.ADD,
     ):
         with BuildPart() as baseblock:
-
             # Create stack profile with offset
             with BuildSketch(Plane.XZ) as profile:
                 with Locations(
                     (
-                        gridfinity_standard.grid.size / 2
-                        - gridfinity_standard.stacking_lip.offset,
+                        gridfinity_standard.grid.size / 2 - gridfinity_standard.stacking_lip.offset,
                         0,
                     )
                 ):
@@ -82,16 +135,18 @@ class BaseBlock(BasePartObject):
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
 
             # add platform on top
-            with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1])as rect2:
+            with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
                 Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
-            extrude(to_extrude=rect2.sketch, amount=gridfinity_standard.bottom.platform_height)
+            extrude(
+                to_extrude=rect2.sketch,
+                amount=gridfinity_standard.bottom.platform_height,
+            )
 
             # create magnet and screw holes
             if magnets or screwholes:
                 bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
                 distance = (
-                    bot_plane.bounding_box().size.X
-                    - 2 * gridfinity_standard.bottom.hole_from_side
+                    bot_plane.bounding_box().size.X - 2 * gridfinity_standard.bottom.hole_from_side
                 )
 
                 if magnets:
@@ -116,7 +171,16 @@ class BaseBlock(BasePartObject):
 
 
 class StackProfile(BaseSketchObject):
-    """Creates a profile of the Gridfinity stack."""
+    """StackProfile.
+
+    Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
+
+    Args:
+        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+            object. Defaults to None.
+        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+    """
 
     def __init__(
         self,

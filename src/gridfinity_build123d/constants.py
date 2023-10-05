@@ -1,35 +1,48 @@
-class gridfinity_standard:
-    """Gridfinity standard constants"""
+# pylint: disable=invalid-name
 
+"""Gridfinity standard constants."""
+
+from dataclasses import dataclass
+
+
+@dataclass
+class gridfinity_standard:
+    """Gridfinity standard constants."""
+
+    @dataclass
     class stacking_lip:
-        """Stacking lip constants"""
+        """Stacking lip constants."""
 
         height_1 = 0.7
         height_2 = 1.8
         height_3 = 1.9
         offset = 0.25
 
+    @dataclass
     class grid:
-        """Grid constants"""
+        """Grid constants."""
 
         size = 42
         radius = 7.5
         tollerance = 0.5
 
+    @dataclass
     class bottom:
-        """Bottom constants"""
+        """Bottom constants."""
 
         platform_height = 2.8
         hole_from_side = 4.8
 
+    @dataclass
     class magnet:
-        """Magnet constants"""
+        """Magnet constants."""
 
         size = 6.5
         thickness = 2.4
 
+    @dataclass
     class screw:
-        """Screw constants"""
+        """Screw constants."""
 
         size = 3
         depth = 6

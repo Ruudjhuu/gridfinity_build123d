@@ -1,0 +1,10 @@
+black
+pylint
+mypy
+pylint
+coverage
+flake8
+flake8-bandit
+flake8-pydocstyle
+ocp_tessellate
+ -e .
