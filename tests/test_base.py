@@ -1,12 +1,10 @@
-"""Test module containing base related tests
-"""
 import unittest
-from build123d import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from build123d import BuildPart, Vector, BuildSketch
 import gridfinity_build123d
 
 # Not needed for testing but handy for developing
 try:
-    from ocp_vscode import set_port
+    from ocp_vscode import set_port  # type: ignore
 
     set_port(3939)
 except ImportError:
@@ -33,7 +31,7 @@ class BaseTest(unittest.TestCase):
 
     def test_base_3_1(self) -> None:
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3,1))
+            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3, 1))
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(125.5000002, 41.5000002, 7.803553490593282), bbox.size)
@@ -41,7 +39,7 @@ class BaseTest(unittest.TestCase):
 
     def test_base_3_3(self) -> None:
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3,3))
+            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3, 3))
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(125.5000002, 125.5000002, 7.803553490593282), bbox.size)
@@ -49,11 +47,14 @@ class BaseTest(unittest.TestCase):
 
     def test_base_2_2_magnet_screw(self) -> None:
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(2,2),True,True)
+            gridfinity_build123d.base.Base(
+                gridfinity_build123d.base.Grid(2, 2), True, True
+            )
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(83.5000002, 83.5000002, 7.803553490593282), bbox.size)
         self.assertEqual(46438.49766741423, part.part.volume)
+
 
 class BaseBlockTest(unittest.TestCase):
     def test_baseblock(self) -> None:
