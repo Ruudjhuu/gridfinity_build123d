@@ -40,12 +40,12 @@ jobs:
       - name: Black
         if: success() || failure()
         run: |
-          python -m black --check --diff --color
+          python -m black --check --diff --color .
       - name: Run Tests with coverage
         id: test
         if: success() || failure()
         run: |
-          python -m coverage run --branch -m unittest discover ./tests/
+          python -m coverage run --omit="*/test* --branch -m unittest discover ./tests/ -v
       - name: Measure coverage
         if: success() || failure()
         run: |

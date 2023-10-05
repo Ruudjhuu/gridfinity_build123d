@@ -15,3 +15,7 @@ where = ["src"]
 
 [tool.black]
 line-length = 100
+
+[tool.coverage.run]
+branch = true
+omit = ["test_*"]
