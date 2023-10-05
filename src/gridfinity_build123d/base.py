@@ -111,8 +111,7 @@ class BaseBlock(BasePartObject):
             with BuildSketch(Plane.XZ) as profile:
                 with Locations(
                     (
-                        gridfinity_standard.grid.size / 2
-                        - gridfinity_standard.stacking_lip.offset,
+                        gridfinity_standard.grid.size / 2 - gridfinity_standard.stacking_lip.offset,
                         0,
                     )
                 ):
@@ -147,8 +146,7 @@ class BaseBlock(BasePartObject):
             if magnets or screwholes:
                 bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
                 distance = (
-                    bot_plane.bounding_box().size.X
-                    - 2 * gridfinity_standard.bottom.hole_from_side
+                    bot_plane.bounding_box().size.X - 2 * gridfinity_standard.bottom.hole_from_side
                 )
 
                 if magnets:

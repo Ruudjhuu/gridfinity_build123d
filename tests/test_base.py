@@ -47,9 +47,7 @@ class BaseTest(unittest.TestCase):
 
     def test_base_2_2_magnet_screw(self) -> None:
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(
-                gridfinity_build123d.base.Grid(2, 2), True, True
-            )
+            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(2, 2), True, True)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(83.5000002, 83.5000002, 7.803553490593282), bbox.size)

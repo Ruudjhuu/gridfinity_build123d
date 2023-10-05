@@ -28,11 +28,11 @@ jobs:
           python -m pip install -r requirements.txt
       - name: Pylint
         run: |
-          python -m pylint $(git ls-files '*.py')
+          python -m pylint ./src/gridfinity_build123d/ ./tests/
       - name: flake8
         if: success() || failure()
         run: |
-          flake8 . --count --show-source --statistics --max-line-length=100
+          flake8 . --count --show-source --statistics
       - name: Mypy
         if: success() || failure()
         run: |
@@ -40,7 +40,7 @@ jobs:
       - name: Black
         if: success() || failure()
         run: |
-          python -m black --check --diff --color -l 100 .
+          python -m black --check --diff --color
       - name: Run Tests with coverage
         id: test
         if: success() || failure()
