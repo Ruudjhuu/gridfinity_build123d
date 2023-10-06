@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import patch, MagicMock, ANY
 from build123d import BuildPart, Vector, BuildSketch
-import gridfinity_build123d
+from gridfinity_build123d.base import Base, BaseBlock, Grid, StackProfile
+import mocks
 
 # Not needed for testing but handy for developing
 try:
@@ -12,53 +14,79 @@ except ImportError:
     pass
 
 
+@patch("gridfinity_build123d.base.BaseBlock", autospec=True)
 class BaseTest(unittest.TestCase):
-    def test_base(self) -> None:
+    def test_base(self, base_mock: MagicMock) -> None:
+        mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = mock_box.create
+
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(1, 1))
+            Base(Grid(1, 1))
+
+        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(41.5000002, 41.5000002, 7.803553490593282), bbox.size)
-        self.assertEqual(11866.900539226841, part.part.volume)
+        self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
+        self.assertEqual(1659.8229338221292, part.part.volume)
 
-    def test_base_1_3(self) -> None:
+    def test_base_1_2(self, base_mock: MagicMock) -> None:
+        mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = mock_box.create
+
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(1, 3))
+            Base(Grid(1, 2))
+
+        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(41.5000002, 125.5000002, 7.803553490593282), bbox.size)
-        self.assertEqual(35995.14186616732, part.part.volume)
+        self.assertEqual(Vector(19.5, 39.5, 5), bbox.size)
+        self.assertEqual(3609.822933822129, part.part.volume)
 
-    def test_base_3_1(self) -> None:
+    def test_base_2_1(self, base_mock: MagicMock) -> None:
+        mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = mock_box.create
+
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3, 1))
+            Base(Grid(2, 1))
+
+        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(125.5000002, 41.5000002, 7.803553490593282), bbox.size)
-        self.assertEqual(35995.1418661573, part.part.volume)
+        self.assertEqual(Vector(39.5, 19.5, 5), bbox.size)
+        self.assertEqual(3609.822933822129, part.part.volume)
 
-    def test_base_3_3(self) -> None:
+    def test_base_2_2(self, base_mock: MagicMock) -> None:
+        mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = mock_box.create
+
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(3, 3))
+            Base(Grid(2, 2))
+
+        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(125.5000002, 125.5000002, 7.803553490593282), bbox.size)
-        self.assertEqual(108622.32795093776, part.part.volume)
+        self.assertEqual(Vector(39.5, 39.5, 5), bbox.size)
+        self.assertEqual(7559.822933822127, part.part.volume)
 
-    def test_base_2_2_magnet_screw(self) -> None:
+    def test_base_magnet_screw(self, base_mock: MagicMock) -> None:
+        mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = mock_box.create
+
         with BuildPart() as part:
-            gridfinity_build123d.base.Base(gridfinity_build123d.base.Grid(2, 2), True, True)
+            Base(Grid(1, 1), True, True)
+
+        base_mock.assert_called_once_with(magnets=True, screwholes=True, mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(83.5000002, 83.5000002, 7.803553490593282), bbox.size)
-        self.assertEqual(46438.49766741423, part.part.volume)
+        self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
+        self.assertEqual(1659.8229338221292, part.part.volume)
 
 
 class BaseBlockTest(unittest.TestCase):
     def test_baseblock(self) -> None:
         """Test creation of a default baseblock."""
         with BuildPart() as part:
-            gridfinity_build123d.base.BaseBlock()
+            BaseBlock()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -67,7 +95,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_magnets(self) -> None:
         """Test creation of a basebock with magnet holes."""
         with BuildPart() as part:
-            gridfinity_build123d.base.BaseBlock(magnets=True)
+            BaseBlock(magnets=True)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -76,7 +104,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_screw_holes(self) -> None:
         """Test creation of a basebock with screw holes."""
         with BuildPart() as part:
-            gridfinity_build123d.base.BaseBlock(screwholes=True)
+            BaseBlock(screwholes=True)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -85,7 +113,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_magnet_and_screw_holes(self) -> None:
         """Test creation of a basebock with magnet and screw holes."""
         with BuildPart() as part:
-            gridfinity_build123d.base.BaseBlock(magnets=True, screwholes=True)
+            BaseBlock(magnets=True, screwholes=True)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -96,7 +124,7 @@ class StackProfileTest(unittest.TestCase):
     def test_profile(self) -> None:
         """Test creation of stacking profile"""
         with BuildSketch() as sketch:
-            gridfinity_build123d.base.StackProfile()
+            StackProfile()
 
         bbox = sketch.sketch.bounding_box()
         self.assertEqual(Vector(2.5999999999999996, 4.4, 0), bbox.size)

@@ -1,3 +1,0 @@
-[MESSAGES CONTROL]
-disable = too-many-arguments
-ignore-patterns = test_.*
