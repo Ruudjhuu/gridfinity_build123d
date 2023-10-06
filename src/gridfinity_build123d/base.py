@@ -1,7 +1,7 @@
 """Generate gridfinity bases."""
 from typing import Union
 from dataclasses import dataclass
-
+from copy import copy
 from build123d import (
     RotationLike,
     Align,
@@ -15,6 +15,7 @@ from build123d import (
     GridLocations,
     RectangleRounded,
     extrude,
+    Until,
     Plane,
     offset,
     Kind,
@@ -24,6 +25,8 @@ from build123d import (
     Circle,
     Polyline,
     make_face,
+    add,
+    Location,
 )
 
 from .constants import gridfinity_standard
@@ -61,23 +64,27 @@ class Base(BasePartObject):
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
+        # base_block = BaseBlock(magnets, screwholes, Mode.PRIVATE)
+
         with BuildPart() as base:
+            base_block = BaseBlock(magnets=magnets, screwholes=screwholes, mode=Mode.PRIVATE)
+
             with GridLocations(
-                gridfinity_standard.grid.size,
-                gridfinity_standard.grid.size,
+                base_block.bounding_box().size.X,
+                base_block.bounding_box().size.Y,
                 grid.X,
                 grid.Y,
             ):
-                BaseBlock(magnets, screwholes)
+                add(copy(base_block))
 
             bbox = base.part.bounding_box()
-            with BuildSketch() as rect:
+            with BuildSketch(Location((0, 0, bbox.min.Z))) as rect:
                 RectangleRounded(
                     bbox.size.X - gridfinity_standard.grid.tollerance,
                     bbox.size.Y - gridfinity_standard.grid.tollerance,
                     gridfinity_standard.grid.radius,
                 )
-            extrude(to_extrude=rect.sketch, amount=bbox.size.Z, mode=Mode.INTERSECT)
+            extrude(to_extrude=rect.sketch, mode=Mode.INTERSECT, until=Until.LAST)
 
         super().__init__(base.part, rotation, align, mode)
 

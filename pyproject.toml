@@ -19,3 +19,13 @@ line-length = 100
 [tool.coverage.run]
 branch = true
 omit = ["test_*"]
+
+[tool.pylint.MASTER]
+load-plugins=["pylint_per_file_ignores"]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "too-many-arguments"
+ignore-patterns = "test_.*"
+
+[tool.pylint-per-file-ignores]
+"/tests/"="missing-function-docstring,missing-module-docstring,missing-class-docstring"
