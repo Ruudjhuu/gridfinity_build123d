@@ -2,3 +2,4 @@
 extend-ignore = D107
 max-line-length = 100
 max-comlesity=10
+per-file-ignores = tests/*:D100,D101,D102
