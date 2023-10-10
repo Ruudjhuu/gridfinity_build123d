@@ -8,15 +8,17 @@ class BoxAsMock:
     length: float
     width: float
     height: float
-    rotation: RotationLike = (0, 0, 0)
-    align: Union[Align, tuple[Align, Align, Align]] = (
-        Align.CENTER,
-        Align.CENTER,
-        Align.CENTER,
-    )
-    mode: Mode = Mode.ADD
 
     def create(  # pylint: disable=unused-argument
-        self, *args: Any, **kwargs: Any
+        self,
+        *args: Any,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = (
+            Align.CENTER,
+            Align.CENTER,
+            Align.CENTER,
+        ),
+        mode: Mode = Mode.ADD,
+        **kwargs: Any
     ) -> BasePartObject:
-        return Box(self.length, self.width, self.height, self.rotation, self.align, self.mode)
+        return Box(self.length, self.width, self.height, rotation, align, mode)
