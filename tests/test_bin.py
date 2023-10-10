@@ -51,7 +51,7 @@ class BinCompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35932.38051073649, part.part.volume)
+        self.assertEqual(35783.642486130215, part.part.volume)
 
     def test_binpart_sweep(self) -> None:
         size_x = 40
@@ -63,7 +63,7 @@ class BinCompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35727.09961077075, part.part.volume)
+        self.assertEqual(35598.76299687089, part.part.volume)
 
     def test_binpart_label(self) -> None:
         size_x = 40
@@ -75,7 +75,7 @@ class BinCompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(34933.991948303345, part.part.volume)
+        self.assertEqual(34788.79103368599, part.part.volume)
 
     def test_binpart_sweep_and_label(self) -> None:
         size_x = 40
@@ -87,4 +87,4 @@ class BinCompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(34728.71104833801, part.part.volume)
+        self.assertEqual(34603.91154445353, part.part.volume)

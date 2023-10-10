@@ -46,3 +46,9 @@ class gridfinity_standard:
 
         size = 3
         depth = 6
+
+    @dataclass
+    class g_bin:
+        """Bin constants."""
+
+        inner_radius = 1.8

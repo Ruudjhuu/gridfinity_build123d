@@ -93,7 +93,6 @@ class BinCompartment(BasePartObject):
         mode: Mode = Mode.ADD,
     ):
         sweep_radius = 5
-        inner_fillet = 1
 
         with BuildPart() as part:
             Box(
@@ -117,9 +116,8 @@ class BinCompartment(BasePartObject):
             left_face = sorted_faces[0]
             right_face = sorted_faces[-1]
             face_bottom = part.faces().sort_by(Axis.Z)[0]
-            fillet_edges = []
-            fillet_edges += left_face.edges() + right_face.edges() + face_bottom.edges()
+            fillet_edges = left_face.edges() + right_face.edges() + face_bottom.edges()
 
-            fillet(fillet_edges, inner_fillet)
+            fillet(fillet_edges, gridfinity_standard.g_bin.inner_radius)
 
         super().__init__(part.part, rotation, align, mode)
