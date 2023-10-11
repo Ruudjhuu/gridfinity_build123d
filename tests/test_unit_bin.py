@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock, call
 from build123d import BuildPart, Vector, Box, Location
 
 from gridfinity_build123d.bin import BinPart, Compartment, CompartmentType, CompartmentGrid
-from gridfinity_build123d.base import Grid
+from gridfinity_build123d.common import Grid
 
 import mocks
 

@@ -24,7 +24,7 @@ from build123d import (
     chamfer,
 )
 
-from .base import Grid
+from .common import Grid
 from .constants import gridfinity_standard
 
 

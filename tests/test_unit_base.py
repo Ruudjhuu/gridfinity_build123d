@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock, ANY
 from build123d import BuildPart, Vector, BuildSketch
-from gridfinity_build123d.base import Base, BaseBlock, Grid, StackProfile
+from gridfinity_build123d.base import Base, BaseBlock, StackProfile
+from gridfinity_build123d.common import Grid
 import mocks
 
 # Not needed for testing but handy for developing
