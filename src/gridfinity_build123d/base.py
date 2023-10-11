@@ -1,7 +1,6 @@
 """Generate gridfinity bases."""
 from typing import Union
 from dataclasses import dataclass
-from copy import copy
 from build123d import (
     RotationLike,
     Align,
@@ -39,6 +38,46 @@ class Grid:
     X: int  # pylint: disable=invalid-name
     Y: int  # pylint: disable=invalid-name
 
+    @property
+    def X_mm(self) -> float:  # pylint: disable=invalid-name
+        """X size in mm.
+
+        Returns:
+            float: size in mm
+        """
+        return self.X * gridfinity_standard.grid.size
+
+    @property
+    def Y_mm(self) -> float:  # pylint: disable=invalid-name
+        """Y size in mm.
+
+        Returns:
+            float: size in mm
+        """
+        return self.Y * gridfinity_standard.grid.size
+
+    @property
+    def X_mm_real(self) -> float:  # pylint: disable=invalid-name
+        """X size in mm.
+
+        The calculation of the real size takes tolarances in account.
+
+        Returns:
+            float: size in mm
+        """
+        return self.X * gridfinity_standard.grid.size - gridfinity_standard.grid.tollerance
+
+    @property
+    def Y_mm_real(self) -> float:  # pylint: disable=invalid-name
+        """Y size in mm.
+
+        The calculation of the real size takes tolarances in account.
+
+        Returns:
+            float: size in mm
+        """
+        return self.Y * gridfinity_standard.grid.size - gridfinity_standard.grid.tollerance
+
 
 class Base(BasePartObject):
     """Base.
@@ -75,7 +114,7 @@ class Base(BasePartObject):
                 grid.X,
                 grid.Y,
             ):
-                add(copy(base_block))
+                add(base_block)
 
             bbox = base.part.bounding_box()
             with BuildSketch(Location((0, 0, bbox.min.Z))) as rect:
