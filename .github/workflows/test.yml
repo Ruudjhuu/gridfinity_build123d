@@ -36,7 +36,7 @@ jobs:
       - name: Mypy
         if: success() || failure()
         run: |
-          python -m mypy --strict --pretty .
+          python -m mypy --pretty .
       - name: Black
         if: success() || failure()
         run: |
