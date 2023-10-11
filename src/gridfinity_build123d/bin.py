@@ -3,7 +3,7 @@
 Module containg classes and cutters which can be used to create a bin
 """
 from __future__ import annotations
-from typing import Union, Iterable, List
+from typing import Union, Iterable, List, Tuple
 from enum import Enum
 
 from build123d import (
@@ -150,11 +150,11 @@ class CompartmentGrid(BasePartObject):
         super().__init__(part=part.part, rotation=rotation, align=align, mode=mode)
 
     @staticmethod
-    def _map_range(x, in_min, in_max, out_min, out_max):
-        return (x - in_min) * (out_max - out_min) // (in_max - in_min) + out_min
+    def _map_range(x: float, in_min: float, in_max: float, out_min: float, out_max: float) -> float:
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
     @staticmethod
-    def _count_same_row(r_index, row):
+    def _count_same_row(r_index: int, row: List[int]) -> int:
         number = row[r_index]
         count = 0
         for item in row[r_index:]:
@@ -166,7 +166,7 @@ class CompartmentGrid(BasePartObject):
         return count
 
     @staticmethod
-    def _count_same_column(index, grid):
+    def _count_same_column(index: Tuple[int, int], grid: List[List[int]]) -> int:
         number = grid[index[0]][index[1]]
         count = 0
         for row in grid[index[0] :]:

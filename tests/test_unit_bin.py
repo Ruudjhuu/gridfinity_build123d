@@ -95,8 +95,8 @@ class CompartmentGridTest(unittest.TestCase):
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(77, 10, 10), bbox.size)
-        self.assertEqual(2999.9999999999986, part.part.volume)
+        self.assertEqual(Vector(76.66666666666667, 10, 10), bbox.size)
+        self.assertEqual(2999.999999999998, part.part.volume)
 
     def test_compartmentgrid_multirow(self, comp_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(10, 10, 10)
@@ -129,8 +129,8 @@ class CompartmentGridTest(unittest.TestCase):
             ]
         )
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(72, 60, 10), bbox.size)
-        self.assertEqual(3999.9999999999986, part.part.volume)
+        self.assertEqual(Vector(72.5, 60, 10), bbox.size)
+        self.assertEqual(3999.999999999998, part.part.volume)
 
 
 class CompartmentTest(unittest.TestCase):
