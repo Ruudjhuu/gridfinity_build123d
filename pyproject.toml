@@ -3,7 +3,7 @@ name = "gridfinity_build123d"
 version = "0.1.0"
 description = "something"
 dependencies = [
-    "build123d @ git+https://github.com/gumyr/build123d.git@92b09be2db10ef9855fc5f560b8baf220b06812d"
+    "build123d @ git+https://github.com/gumyr/build123d.git@b19bb81"
     ]
 
 [build-system]
