@@ -25,6 +25,7 @@ from build123d import (
     make_face,
     add,
     Location,
+    fillet,
 )
 
 from .constants import gridfinity_standard
@@ -55,8 +56,6 @@ class Base(BasePartObject):
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
-        # base_block = BaseBlock(magnets, screwholes, Mode.PRIVATE)
-
         with BuildPart() as base:
             base_block = BaseBlock(magnets=magnets, screwholes=screwholes, mode=Mode.PRIVATE)
 
@@ -68,16 +67,18 @@ class Base(BasePartObject):
             ):
                 add(base_block)
 
-            bbox = base.part.bounding_box()
-            with BuildSketch(Location((0, 0, bbox.min.Z))) as rect:
-                RectangleRounded(
-                    bbox.size.X - gridfinity_standard.grid.tollerance,
-                    bbox.size.Y - gridfinity_standard.grid.tollerance,
-                    gridfinity_standard.grid.radius,
-                )
-            extrude(to_extrude=rect.sketch, mode=Mode.INTERSECT, until=Until.LAST)
+        with BuildPart() as cutter:
+            with BuildSketch(Location((0, 0, base.part.bounding_box().max.Z))) as sketch:
+                add(base.faces().sort_by(Axis.Z)[-1])
+                fillet(objects=sketch.vertices(), radius=gridfinity_standard.grid.radius)
+                offset(amount=-gridfinity_standard.grid.tollerance / 2)
+            extrude(amount=base.part.bounding_box().size.Z, dir=(0, 0, -1))
 
-        super().__init__(base.part, rotation, align, mode)
+        with BuildPart() as part:
+            add(base)
+            add(cutter, mode=Mode.INTERSECT)
+
+        super().__init__(part.part, rotation, align, mode)
 
 
 class BaseBlock(BasePartObject):

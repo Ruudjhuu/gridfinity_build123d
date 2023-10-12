@@ -23,7 +23,7 @@ class gridfinity_standard:
         """Grid constants."""
 
         size = 42
-        radius = 7.5
+        radius = 4
         tollerance = 0.5
 
     @dataclass
