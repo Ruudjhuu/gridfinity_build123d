@@ -2,4 +2,5 @@
 extend-ignore = D107,E203
 max-line-length = 100
 max-comlesity=10
+extend-select= TC,TC1
 per-file-ignores = tests/*:D100,D101,D102

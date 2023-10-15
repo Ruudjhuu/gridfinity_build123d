@@ -1,33 +1,37 @@
 import unittest
 from unittest.mock import patch, MagicMock, call
 
-from build123d import BuildPart, Vector, Box, Location
+from build123d import BuildPart, Vector, Box, Location, Rectangle
 
 from gridfinity_build123d.bin import BinPart, Compartment, CompartmentType, CompartmentGrid
-from gridfinity_build123d.common import Grid
 
 import mocks
 
-from ocp_vscode import set_port  # type: ignore
+# Not needed for testing but handy for developing
+try:
+    from ocp_vscode import set_port  # type: ignore
 
-set_port(3939)
+    set_port(3939)
+except ImportError:
+    # ignore if not installed
+    pass
 
 
 class BinPartTest(unittest.TestCase):
     def test_binpart(self) -> None:
-        grid = Grid(2, 2)
+        face = Rectangle(50, 50).face()
         cutter = Box(30, 40, 15)
         height = 30
 
         with BuildPart() as part:
-            BinPart(grid, cutter, height)
+            BinPart(face, cutter, height)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(83.5, 83.5, height), bbox.size)
-        self.assertEqual(189718.93760293277, part.part.volume)
+        self.assertEqual(Vector(50, 50, height), bbox.size)
+        self.assertEqual(56999.999999999985, part.part.volume)
 
     def test_binpart_2_boxes(self) -> None:
-        grid = Grid(2, 2)
+        face = Rectangle(100, 100).face()
         cutter = Box(30, 40, 15)
         cutter.location = Location((20, 20))
         cutter2 = Box(20, 30, 10)
@@ -36,11 +40,11 @@ class BinPartTest(unittest.TestCase):
         height = 30
 
         with BuildPart() as part:
-            BinPart(grid, cutters, height)
+            BinPart(face, cutters, height)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(83.5, 83.5, height), bbox.size)
-        self.assertEqual(183718.93760293277, part.part.volume)
+        self.assertEqual(Vector(100, 100, height), bbox.size)
+        self.assertEqual(275999.99999999994, part.part.volume)
 
 
 @patch("gridfinity_build123d.bin.Compartment", autospec=True)
@@ -57,17 +61,18 @@ class CompartmentGridTest(unittest.TestCase):
                 size_x=100,
                 size_y=100,
                 height=50,
-                wall_thickness=3,
+                inner_wall=1,
+                outer_wall=3,
                 grid=grid,
                 type_list=type_list,
             )
 
         comp_mock.assert_called_once_with(
-            size_x=97.0, size_y=97.0, height=50, comp_type=type_list[0]
+            size_x=94.0, size_y=94.0, height=50, comp_type=type_list[0]
         )
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 10), bbox.size)
-        self.assertEqual(999.9999999999998, part.part.volume)
+        self.assertAlmostEqual(1000, part.part.volume)
 
     def test_compartmentgrid_one_row(self, comp_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(10, 10, 10)
@@ -81,22 +86,23 @@ class CompartmentGridTest(unittest.TestCase):
                 size_x=100,
                 size_y=100,
                 height=50,
-                wall_thickness=3,
+                inner_wall=1,
+                outer_wall=3,
                 grid=grid,
                 type_list=type_list,
             )
 
         comp_mock.assert_has_calls(
             [
-                call(size_x=13.666666666666668, size_y=97.0, height=50, comp_type=type_list[0]),
-                call(size_x=30.333333333333336, size_y=97.0, height=50, comp_type=type_list[1]),
-                call(size_x=47.0, size_y=97.0, height=50, comp_type=type_list[2]),
+                call(size_x=14.833333333333334, size_y=94.0, height=50, comp_type=type_list[0]),
+                call(size_x=30.666666666666668, size_y=94.0, height=50, comp_type=type_list[1]),
+                call(size_x=46.5, size_y=94.0, height=50, comp_type=type_list[2]),
             ]
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(76.66666666666667, 10, 10), bbox.size)
-        self.assertEqual(2999.999999999998, part.part.volume)
+        self.assertEqual(Vector(73.33333333333334, 10, 10), bbox.size)
+        self.assertAlmostEqual(3000, part.part.volume)
 
     def test_compartmentgrid_multirow(self, comp_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(10, 10, 10)
@@ -115,26 +121,27 @@ class CompartmentGridTest(unittest.TestCase):
                 size_x=100,
                 size_y=100,
                 height=50,
-                wall_thickness=3,
+                inner_wall=1,
+                outer_wall=3,
                 grid=grid,
                 type_list=type_list,
             )
 
         comp_mock.assert_has_calls(
             [
-                call(size_x=47.0, size_y=97.0, height=50, comp_type=type_list[0]),
-                call(size_x=22.0, size_y=47.0, height=50, comp_type=type_list[1]),
-                call(size_x=22.0, size_y=97.0, height=50, comp_type=type_list[2]),
-                call(size_x=22.0, size_y=47.0, height=50, comp_type=type_list[3]),
+                call(size_x=46.5, size_y=94.0, height=50, comp_type=type_list[0]),
+                call(size_x=22.75, size_y=46.5, height=50, comp_type=type_list[1]),
+                call(size_x=22.75, size_y=94.0, height=50, comp_type=type_list[2]),
+                call(size_x=22.75, size_y=46.5, height=50, comp_type=type_list[3]),
             ]
         )
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(72.5, 60, 10), bbox.size)
-        self.assertEqual(3999.999999999998, part.part.volume)
+        self.assertEqual(Vector(69.375, 57.5, 10), bbox.size)
+        self.assertAlmostEqual(4000, part.part.volume)
 
 
 class CompartmentTest(unittest.TestCase):
-    def test_binpart(self) -> None:
+    def test_compartment(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
@@ -144,9 +151,9 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35783.642486130215, part.part.volume)
+        self.assertEqual(35823.124620015966, part.part.volume)
 
-    def test_binpart_sweep(self) -> None:
+    def test_compartment_sweep(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
@@ -156,9 +163,9 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35598.76299687089, part.part.volume)
+        self.assertEqual(35638.245130779884, part.part.volume)
 
-    def test_binpart_label(self) -> None:
+    def test_compartment_label(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
@@ -168,9 +175,9 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(34788.79103368599, part.part.volume)
+        self.assertEqual(31012.54761553973, part.part.volume)
 
-    def test_binpart_sweep_and_label(self) -> None:
+    def test_compartment_sweep_and_label(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
@@ -180,4 +187,4 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(34603.91154445353, part.part.volume)
+        self.assertEqual(30827.668126303644, part.part.volume)

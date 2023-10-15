@@ -3,7 +3,7 @@
 Module containg classes and cutters which can be used to create a bin
 """
 from __future__ import annotations
-from typing import Union, Iterable, List, Tuple
+from typing import TYPE_CHECKING, Union, Iterable, List, Tuple
 from enum import Enum
 
 from build123d import (
@@ -14,18 +14,90 @@ from build123d import (
     BuildPart,
     Box,
     Locations,
-    BuildSketch,
-    RectangleRounded,
     extrude,
     add,
     Solid,
     fillet,
     Axis,
     chamfer,
+    Face,
 )
 
-from .common import Grid
-from .constants import gridfinity_standard
+from .constants import gf_bin
+
+if TYPE_CHECKING:
+    from .base import Base
+
+
+class CompartmentType(Enum):
+    """Types of compartments."""
+
+    NORMAL = 1
+    LABEL = 2
+    SWEEP = 3
+    LABEL_SWEEP = 4
+
+
+class Bin(BasePartObject):
+    """Bin.
+
+    Create a bin object with compartments.
+
+    Args:
+        base (Base): Base grid object
+        div_x (int, optional): Devision of compartents in x direction. Defaults to 1.
+        div_y (int, optional): Devision of compartments in y direction. Defaults to 1.
+        unit_z (int, optional): Height of bin in gridfinity units. Defaults to 3.
+        comp_type (CompartmentType, optional): Type of compartments. Defaults to
+            CompartmentType.NORMAL.
+        rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
+            of object. Defaults to None.
+        mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+    """
+
+    def __init__(
+        self,
+        base: Base,
+        div_x: int = 1,
+        div_y: int = 1,
+        unit_z: int = 3,
+        comp_type: CompartmentType = CompartmentType.NORMAL,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.ADD,
+    ):
+        base_height = base.bounding_box().size.Z
+        height = unit_z * 7 - base_height
+
+        with BuildPart() as part:
+            add(base)
+
+            grid = []
+            bin_nr = 1
+            for _ in range(div_y):
+                row = []
+                for _ in range(div_x):
+                    row.append(bin_nr)
+                    bin_nr += 1
+                grid.append(row)
+
+            face = part.faces().sort_by(Axis.Z)[-1]
+
+            cutter = CompartmentGrid(
+                size_x=face.bounding_box().size.X,
+                size_y=face.bounding_box().size.Y,
+                height=height,
+                inner_wall=1,
+                outer_wall=3,
+                grid=grid,
+                type_list=[comp_type] * bin_nr,
+                mode=Mode.PRIVATE,
+            )
+
+            BinPart(face, cutter=cutter, height=height)
+
+        super().__init__(part.part, rotation, align, mode)
 
 
 class BinPart(BasePartObject):
@@ -43,9 +115,9 @@ class BinPart(BasePartObject):
 
     def __init__(
         self,
-        grid: Grid,
+        face: Face,
         cutter: Union[Solid, Iterable[Solid]],
-        height: int,
+        height: float,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
@@ -53,13 +125,7 @@ class BinPart(BasePartObject):
         cutter = cutter if isinstance(cutter, Iterable) else [cutter]
 
         with BuildPart() as part:
-            with BuildSketch():
-                RectangleRounded(
-                    grid.X_mm_real,
-                    grid.Y_mm_real,
-                    gridfinity_standard.grid.radius,
-                )
-            extrude(amount=height)
+            extrude(to_extrude=face, amount=height)
 
             for cut in cutter:
                 with Locations((0, 0, part.part.bounding_box().max.Z - cut.bounding_box().max.Z)):
@@ -95,10 +161,11 @@ class CompartmentGrid(BasePartObject):
 
 
     Args:
-        size_x (int): Size on the x axis
-        size_y (int): size on the y axis
-        height (int): Height of compartments
-        wall_thickness (int): Space between aranged compartments
+        size_x (float): Size on the x axis
+        size_y (float): size on the y axis
+        height (float): Height of compartments
+        inner_wall (float): Space between aranged compartments
+        outer_wall (float): Offset outside generrated arangement
         grid (List[List[int]]): Configuration for arangement of compartments
         type_list (List[CompartmentType]): List of types of compartments
         rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
@@ -109,18 +176,22 @@ class CompartmentGrid(BasePartObject):
 
     def __init__(
         self,
-        size_x: int,
-        size_y: int,
-        height: int,
-        wall_thickness: int,
+        size_x: float,
+        size_y: float,
+        height: float,
+        inner_wall: float,
+        outer_wall: float,
         grid: List[List[int]],
         type_list: List[CompartmentType],
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Union[Align, tuple[Align, Align, Align]] = Align.CENTER,
         mode: Mode = Mode.ADD,
     ):
-        size_unit_x = size_x / len(grid[0])
-        size_unit_y = size_y / len(grid)
+        distribute_area_x = size_x - outer_wall * 2 + inner_wall
+        distribute_area_y = size_y - outer_wall * 2 + inner_wall
+
+        size_unit_x = distribute_area_x / len(grid[0])
+        size_unit_y = distribute_area_y / len(grid)
 
         with BuildPart() as part:
             numbers_proccesed = []
@@ -129,20 +200,19 @@ class CompartmentGrid(BasePartObject):
                     if item != 0 and item not in numbers_proccesed:
                         numbers_proccesed.append(item)
 
-                        print(f"{r_index},{c_index}: {item}")
                         units_x = self._count_same_row(c_index, row)
                         units_y = self._count_same_column((r_index, c_index), grid)
 
                         middle_x = (c_index + c_index + units_x) / 2
                         middle_y = (r_index + r_index + units_y) / 2
 
-                        loc_x = self._map_range(middle_x, 0, len(grid[0]), 0, size_x)
-                        loc_y = self._map_range(middle_y, 0, len(grid), 0, size_y) * -1
+                        loc_x = self._map_range(middle_x, 0, len(grid[0]), 0, distribute_area_x)
+                        loc_y = self._map_range(middle_y, 0, len(grid), 0, distribute_area_y) * -1
 
                         with Locations((loc_x, loc_y)):
                             Compartment(
-                                size_x=size_unit_x * units_x - wall_thickness,
-                                size_y=size_unit_y * units_y - wall_thickness,
+                                size_x=size_unit_x * units_x - inner_wall,
+                                size_y=size_unit_y * units_y - inner_wall,
                                 height=height,
                                 comp_type=type_list[item - 1],
                             )
@@ -177,15 +247,6 @@ class CompartmentGrid(BasePartObject):
         return count
 
 
-class CompartmentType(Enum):
-    """Types of compartments."""
-
-    NORMAL = 1
-    LABEL = 2
-    SWEEP = 3
-    LABEL_SWEEP = 4
-
-
 class Compartment(BasePartObject):
     """Create Bincompartment usualy used as a bin cutter.
 
@@ -211,8 +272,6 @@ class Compartment(BasePartObject):
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
-        sweep_radius = 5
-
         with BuildPart() as part:
             Box(
                 size_x,
@@ -220,23 +279,29 @@ class Compartment(BasePartObject):
                 height,
             )
 
-            if comp_type in [CompartmentType.SWEEP, CompartmentType.LABEL_SWEEP]:
-                face_bottom = part.faces().sort_by(Axis.Z)[0]
-                edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
-                fillet(edge_bottom_front, radius=sweep_radius)
-
+            # NOTE: Keep the label (chamfer) the first feature, as no direction can be chosen for
+            # the chamfer there is a chance an asymentric chamfer is flipped if a different object
+            # is processed. Should be fixed in build123d pull request #345 which is not merged when
+            # this is written.
             if comp_type in [CompartmentType.LABEL, CompartmentType.LABEL_SWEEP]:
                 face_top = part.faces().sort_by(Axis.Z)[-1]
                 edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
-                chamfer(edge_top_back, length=10, length2=5)
+                chamfer(
+                    edge_top_back, length=gf_bin.label.width, angle=180 - 90 - gf_bin.label.angle
+                )
+                chamfer_face = part.faces().sort_by(Axis.Z)[-2]
+                extrude(to_extrude=chamfer_face, amount=1, dir=(0, 0, -1), mode=Mode.SUBTRACT)
 
-            # fillet side rings and bottom left over edges
-            sorted_faces = part.faces().sort_by(Axis.X)
-            left_face = sorted_faces[0]
-            right_face = sorted_faces[-1]
-            face_bottom = part.faces().sort_by(Axis.Z)[0]
-            fillet_edges = left_face.edges() + right_face.edges() + face_bottom.edges()
+            if comp_type in [CompartmentType.SWEEP, CompartmentType.LABEL_SWEEP]:
+                face_bottom = part.faces().sort_by(Axis.Z)[0]
+                edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
+                fillet(edge_bottom_front, radius=gf_bin.sweep.radius)
 
-            fillet(fillet_edges, gridfinity_standard.g_bin.inner_radius)
+            # get all edges exept edges from top face
+            fillet_edges = [
+                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
+            ]
+
+            fillet(fillet_edges, gf_bin.inner_radius)
 
         super().__init__(part.part, rotation, align, mode)

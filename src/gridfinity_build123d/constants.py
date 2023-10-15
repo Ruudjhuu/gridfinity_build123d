@@ -47,8 +47,19 @@ class gridfinity_standard:
         size = 3
         depth = 6
 
-    @dataclass
-    class g_bin:
-        """Bin constants."""
 
-        inner_radius = 1.8
+@dataclass
+class gf_bin:
+    """Bin constants."""
+
+    inner_radius = 1.8
+    inner_wall = 1.2
+
+    @dataclass
+    class label:
+        width = 12
+        angle = 35
+
+    @dataclass
+    class sweep:
+        radius = 5
