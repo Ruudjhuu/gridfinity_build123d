@@ -1,10 +1,17 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock, call, ANY
 
-from build123d import BuildPart, Vector, Box, Location, Rectangle
+from build123d import (
+    BuildPart,
+    Vector,
+    Box,
+    Location,
+    Rectangle,
+    Mode,
+    Align,
+)
 
-from gridfinity_build123d.bin import BinPart, Compartment, CompartmentType, CompartmentGrid
-
+from gridfinity_build123d.bin import Bin, BinPart, Compartment, CompartmentType, CompartmentGrid
 import mocks
 
 # Not needed for testing but handy for developing
@@ -15,6 +22,142 @@ try:
 except ImportError:
     # ignore if not installed
     pass
+
+
+@patch("gridfinity_build123d.bin.CompartmentGrid", autospec=True)
+@patch("gridfinity_build123d.bin.BinPart", autospec=True)
+class BinTest(unittest.TestCase):
+    def test_bin(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        base = Box(100, 100, 5)
+        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        binpart_mock.side_effect = box_binpart.create
+        compgrid_mock.side_effect = box_compgrid.create
+
+        with BuildPart() as part:
+            Bin(base=base)
+
+        compgrid_mock.assert_called_once_with(
+            size_x=100,
+            size_y=100,
+            height=7 * 3 - 5,
+            inner_wall=1,
+            outer_wall=3,
+            grid=[[1]],
+            type_list=[CompartmentType.NORMAL],
+            mode=Mode.PRIVATE,
+        )
+
+        binpart_mock.assert_called_once_with(
+            ANY,
+            cutter=box_compgrid.created_objects[0],
+            height=16.0,
+            align=(Align.CENTER, Align.CENTER, Align.MIN),
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 25), bbox.size)
+        self.assertAlmostEqual(250000, part.part.volume)
+
+    def test_bin_divx(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        base = Box(100, 100, 5)
+        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        binpart_mock.side_effect = box_binpart.create
+        compgrid_mock.side_effect = box_compgrid.create
+
+        with BuildPart() as part:
+            Bin(base=base, div_x=2)
+
+        compgrid_mock.assert_called_once_with(
+            size_x=100,
+            size_y=100,
+            height=7 * 3 - 5,
+            inner_wall=1,
+            outer_wall=3,
+            grid=[[1, 2]],
+            type_list=[CompartmentType.NORMAL] * 2,
+            mode=Mode.PRIVATE,
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 25), bbox.size)
+        self.assertAlmostEqual(250000, part.part.volume)
+
+    def test_bin_divy(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        base = Box(100, 100, 5)
+        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        binpart_mock.side_effect = box_binpart.create
+        compgrid_mock.side_effect = box_compgrid.create
+
+        with BuildPart() as part:
+            Bin(base=base, div_y=2)
+
+        compgrid_mock.assert_called_once_with(
+            size_x=100,
+            size_y=100,
+            height=7 * 3 - 5,
+            inner_wall=1,
+            outer_wall=3,
+            grid=[[1], [2]],
+            type_list=[CompartmentType.NORMAL] * 2,
+            mode=Mode.PRIVATE,
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 25), bbox.size)
+        self.assertAlmostEqual(250000, part.part.volume)
+
+    def test_bin_unitz(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        base = Box(100, 100, 5)
+        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        binpart_mock.side_effect = box_binpart.create
+        compgrid_mock.side_effect = box_compgrid.create
+
+        with BuildPart() as part:
+            Bin(base=base, unit_z=6)
+
+        compgrid_mock.assert_called_once_with(
+            size_x=100,
+            size_y=100,
+            height=7 * 6 - 5,
+            inner_wall=1,
+            outer_wall=3,
+            grid=[[1]],
+            type_list=[CompartmentType.NORMAL],
+            mode=Mode.PRIVATE,
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 25), bbox.size)
+        self.assertAlmostEqual(250000, part.part.volume)
+
+    def test_bin_comp_type(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        base = Box(100, 100, 5)
+        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        binpart_mock.side_effect = box_binpart.create
+        compgrid_mock.side_effect = box_compgrid.create
+
+        with BuildPart() as part:
+            Bin(base=base, comp_type=CompartmentType.LABEL)
+
+        compgrid_mock.assert_called_once_with(
+            size_x=100,
+            size_y=100,
+            height=7 * 3 - 5,
+            inner_wall=1,
+            outer_wall=3,
+            grid=[[1]],
+            type_list=[CompartmentType.LABEL],
+            mode=Mode.PRIVATE,
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 25), bbox.size)
+        self.assertAlmostEqual(250000, part.part.volume)
 
 
 class BinPartTest(unittest.TestCase):

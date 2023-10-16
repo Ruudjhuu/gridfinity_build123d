@@ -21,12 +21,10 @@ from build123d import (
     Axis,
     chamfer,
     Face,
+    Part,
 )
 
 from .constants import gf_bin
-
-if TYPE_CHECKING:
-    from .base import Base
 
 
 class CompartmentType(Enum):
@@ -41,7 +39,7 @@ class CompartmentType(Enum):
 class Bin(BasePartObject):
     """Bin.
 
-    Create a bin object with compartments.
+    Create a bin object with compartments. Sizes are calulated from the top lane of the base object
 
     Args:
         base (Base): Base grid object
@@ -58,7 +56,7 @@ class Bin(BasePartObject):
 
     def __init__(
         self,
-        base: Base,
+        base: Union[Part, Solid],
         div_x: int = 1,
         div_y: int = 1,
         unit_z: int = 3,
@@ -91,11 +89,17 @@ class Bin(BasePartObject):
                 inner_wall=1,
                 outer_wall=3,
                 grid=grid,
-                type_list=[comp_type] * bin_nr,
+                type_list=[comp_type] * (bin_nr - 1),
                 mode=Mode.PRIVATE,
             )
 
-            BinPart(face, cutter=cutter, height=height)
+            with Locations((0, 0, base.bounding_box().max.Z)):
+                BinPart(
+                    face,
+                    cutter=cutter,
+                    height=height,
+                    align=(Align.CENTER, Align.CENTER, Align.MIN),
+                )
 
         super().__init__(part.part, rotation, align, mode)
 

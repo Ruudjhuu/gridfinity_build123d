@@ -57,9 +57,13 @@ class gf_bin:
 
     @dataclass
     class label:
+        """Label constants."""
+
         width = 12
         angle = 35
 
     @dataclass
     class sweep:
+        """Sweep contants."""
+
         radius = 5
