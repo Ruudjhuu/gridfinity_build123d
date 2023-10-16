@@ -3,7 +3,7 @@
 Module containg classes and cutters which can be used to create a bin
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union, Iterable, List, Tuple
+from typing import Union, Iterable, List, Tuple
 from enum import Enum
 
 from build123d import (
