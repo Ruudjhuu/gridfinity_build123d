@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from build123d import BuildPart, Box, add, Vector
+from build123d import BuildPart, Box, add, Vector, BuildSketch
 
 from gridfinity_build123d.utils import Utils, Attach
 
@@ -75,3 +75,17 @@ class UtilsTest(TestCase):
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 25), bbox.size)
         self.assertEqual(20, bbox.max.Z)
+
+    def test_attach_no_context(self) -> None:
+        obj = Box(10, 10, 10)
+        self.assertRaises(RuntimeError, Utils.attach, obj, Attach.TOP)
+
+    def test_attach_wrong_context(self) -> None:
+        obj = Box(10, 10, 10)
+        with BuildSketch():
+            self.assertRaises(RuntimeError, Utils.attach, obj, Attach.TOP)
+
+    def test_attach_empty_context(self) -> None:
+        obj = Box(10, 10, 10)
+        with BuildPart():
+            self.assertRaises(ValueError, Utils.attach, obj, Attach.TOP)

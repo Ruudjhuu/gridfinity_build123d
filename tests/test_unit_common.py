@@ -1,6 +1,8 @@
 import unittest
 
-from gridfinity_build123d.common import Grid
+from build123d import BuildSketch, Vector
+
+from gridfinity_build123d.common import Grid, StackProfile
 
 
 class GridTest(unittest.TestCase):
@@ -36,3 +38,14 @@ class GridTest(unittest.TestCase):
         self.assertEqual(1, grid.Y)
         self.assertEqual(42, grid.Y_mm)
         self.assertEqual(41.5, grid.Y_mm_real)
+
+
+class StackProfileTest(unittest.TestCase):
+    def test_profile(self) -> None:
+        """Test creation of stacking profile"""
+        with BuildSketch() as sketch:
+            StackProfile()
+
+        bbox = sketch.sketch.bounding_box()
+        self.assertEqual(Vector(2.5999999999999996, 4.4, 0), bbox.size)
+        self.assertEqual(6.8, sketch.sketch.area)

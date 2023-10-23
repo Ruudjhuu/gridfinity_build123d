@@ -5,10 +5,8 @@ from build123d import (
     Align,
     BuildPart,
     BuildSketch,
-    BuildLine,
     Locations,
     BasePartObject,
-    BaseSketchObject,
     Mode,
     GridLocations,
     RectangleRounded,
@@ -20,15 +18,13 @@ from build123d import (
     Axis,
     Rectangle,
     Circle,
-    Polyline,
-    make_face,
     add,
     Location,
     fillet,
 )
 
 from .constants import gridfinity_standard
-from .common import Grid
+from .common import Grid, StackProfile
 
 
 class Base(BasePartObject):
@@ -166,52 +162,3 @@ class BaseBlock(BasePartObject):
                         mode=Mode.SUBTRACT,
                     )
         super().__init__(baseblock.part, rotation, align, mode)
-
-
-class StackProfile(BaseSketchObject):
-    """StackProfile.
-
-    Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
-
-    Args:
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
-    """
-
-    def __init__(
-        self,
-        rotation: float = 0,
-        align: Union[Align, tuple[Align, Align]] = None,
-        mode: Mode = Mode.ADD,
-    ):
-        with BuildSketch() as profile:
-            with BuildLine():
-                Polyline(
-                    (0, 0),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2
-                        + gridfinity_standard.stacking_lip.height_3,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
-                        0,
-                    ),
-                    close=True,
-                )
-            make_face()
-        super().__init__(profile.face(), rotation, align, mode)

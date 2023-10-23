@@ -9,30 +9,36 @@ from build123d import (
     Rectangle,
     Mode,
     Align,
+    BuildSketch,
+    RectangleRounded,
 )
 
-from gridfinity_build123d.bin import Bin, BinPart, Compartment, CompartmentType, CompartmentGrid
+from gridfinity_build123d.bin import (
+    Bin,
+    BinPart,
+    Compartment,
+    CompartmentType,
+    CompartmentGrid,
+    StackingLip,
+)
 import mocks
-
-# Not needed for testing but handy for developing
-try:
-    from ocp_vscode import set_port  # type: ignore
-
-    set_port(3939)
-except ImportError:
-    # ignore if not installed
-    pass
+import testutils
 
 
+@patch("gridfinity_build123d.bin.StackingLip", autospec=True)
 @patch("gridfinity_build123d.bin.CompartmentGrid", autospec=True)
 @patch("gridfinity_build123d.bin.BinPart", autospec=True)
 class BinTest(unittest.TestCase):
-    def test_bin(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+    def test_bin(
+        self, binpart_mock: MagicMock, compgrid_mock: MagicMock, stacklip_mock: MagicMock
+    ) -> None:
         base = Box(100, 100, 5)
-        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_binpart = mocks.BoxAsMock(60, 60, 20)
         box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        box_stacklip = mocks.BoxAsMock(40, 40, 3)
         binpart_mock.side_effect = box_binpart.create
         compgrid_mock.side_effect = box_compgrid.create
+        stacklip_mock.side_effect = box_stacklip.create
 
         with BuildPart() as part:
             Bin(base=base)
@@ -41,8 +47,8 @@ class BinTest(unittest.TestCase):
             size_x=100,
             size_y=100,
             height=7 * 3 - 5,
-            inner_wall=1,
-            outer_wall=3,
+            inner_wall=1.2,
+            outer_wall=0.95,
             grid=[[1]],
             type_list=[CompartmentType.NORMAL],
             mode=Mode.PRIVATE,
@@ -53,18 +59,25 @@ class BinTest(unittest.TestCase):
             cutter=box_compgrid.created_objects[0],
             height=16.0,
             align=(Align.CENTER, Align.CENTER, Align.MIN),
+            mode=ANY,
         )
 
-        bbox = part.part.bounding_box()
-        self.assertEqual(Vector(100, 100, 25), bbox.size)
-        self.assertAlmostEqual(250000, part.part.volume)
+        stacklip_mock.assert_called_once()
 
-    def test_bin_divx(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(100, 100, 26.35), bbox.size)
+        self.assertAlmostEqual(124160, part.part.volume)
+
+    def test_bin_divx(
+        self, binpart_mock: MagicMock, compgrid_mock: MagicMock, stacklip_mock: MagicMock
+    ) -> None:
         base = Box(100, 100, 5)
-        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_binpart = mocks.BoxAsMock(60, 60, 20)
         box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        box_stacklip = mocks.BoxAsMock(40, 40, 3)
         binpart_mock.side_effect = box_binpart.create
         compgrid_mock.side_effect = box_compgrid.create
+        stacklip_mock.side_effect = box_stacklip.create
 
         with BuildPart() as part:
             Bin(base=base, div_x=2)
@@ -73,23 +86,27 @@ class BinTest(unittest.TestCase):
             size_x=100,
             size_y=100,
             height=7 * 3 - 5,
-            inner_wall=1,
-            outer_wall=3,
+            inner_wall=1.2,
+            outer_wall=0.95,
             grid=[[1, 2]],
             type_list=[CompartmentType.NORMAL] * 2,
             mode=Mode.PRIVATE,
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(100, 100, 25), bbox.size)
-        self.assertAlmostEqual(250000, part.part.volume)
+        self.assertEqual(Vector(100, 100, 26.35), bbox.size)
+        self.assertAlmostEqual(124160, part.part.volume)
 
-    def test_bin_divy(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+    def test_bin_divy(
+        self, binpart_mock: MagicMock, compgrid_mock: MagicMock, stacklip_mock: MagicMock
+    ) -> None:
         base = Box(100, 100, 5)
-        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_binpart = mocks.BoxAsMock(60, 60, 20)
         box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        box_stacklip = mocks.BoxAsMock(40, 40, 3)
         binpart_mock.side_effect = box_binpart.create
         compgrid_mock.side_effect = box_compgrid.create
+        stacklip_mock.side_effect = box_stacklip.create
 
         with BuildPart() as part:
             Bin(base=base, div_y=2)
@@ -98,23 +115,27 @@ class BinTest(unittest.TestCase):
             size_x=100,
             size_y=100,
             height=7 * 3 - 5,
-            inner_wall=1,
-            outer_wall=3,
+            inner_wall=1.2,
+            outer_wall=0.95,
             grid=[[1], [2]],
             type_list=[CompartmentType.NORMAL] * 2,
             mode=Mode.PRIVATE,
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(100, 100, 25), bbox.size)
-        self.assertAlmostEqual(250000, part.part.volume)
+        self.assertEqual(Vector(100, 100, 26.35), bbox.size)
+        self.assertAlmostEqual(124160, part.part.volume)
 
-    def test_bin_unitz(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+    def test_bin_unitz(
+        self, binpart_mock: MagicMock, compgrid_mock: MagicMock, stacklip_mock: MagicMock
+    ) -> None:
         base = Box(100, 100, 5)
-        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_binpart = mocks.BoxAsMock(60, 60, 20)
         box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        box_stacklip = mocks.BoxAsMock(40, 40, 3)
         binpart_mock.side_effect = box_binpart.create
         compgrid_mock.side_effect = box_compgrid.create
+        stacklip_mock.side_effect = box_stacklip.create
 
         with BuildPart() as part:
             Bin(base=base, unit_z=6)
@@ -123,23 +144,27 @@ class BinTest(unittest.TestCase):
             size_x=100,
             size_y=100,
             height=7 * 6 - 5,
-            inner_wall=1,
-            outer_wall=3,
+            inner_wall=1.2,
+            outer_wall=0.95,
             grid=[[1]],
             type_list=[CompartmentType.NORMAL],
             mode=Mode.PRIVATE,
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(100, 100, 25), bbox.size)
-        self.assertAlmostEqual(250000, part.part.volume)
+        self.assertEqual(Vector(100, 100, 26.35), bbox.size)
+        self.assertAlmostEqual(124160, part.part.volume)
 
-    def test_bin_comp_type(self, binpart_mock: MagicMock, compgrid_mock: MagicMock) -> None:
+    def test_bin_comp_type(
+        self, binpart_mock: MagicMock, compgrid_mock: MagicMock, stacklip_mock: MagicMock
+    ) -> None:
         base = Box(100, 100, 5)
-        box_binpart = mocks.BoxAsMock(100, 100, 20)
+        box_binpart = mocks.BoxAsMock(60, 60, 20)
         box_compgrid = mocks.BoxAsMock(50, 50, 5)
+        box_stacklip = mocks.BoxAsMock(40, 40, 3)
         binpart_mock.side_effect = box_binpart.create
         compgrid_mock.side_effect = box_compgrid.create
+        stacklip_mock.side_effect = box_stacklip.create
 
         with BuildPart() as part:
             Bin(base=base, comp_type=CompartmentType.LABEL)
@@ -148,16 +173,29 @@ class BinTest(unittest.TestCase):
             size_x=100,
             size_y=100,
             height=7 * 3 - 5,
-            inner_wall=1,
-            outer_wall=3,
+            inner_wall=1.2,
+            outer_wall=0.95,
             grid=[[1]],
             type_list=[CompartmentType.LABEL],
             mode=Mode.PRIVATE,
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(100, 100, 25), bbox.size)
-        self.assertAlmostEqual(250000, part.part.volume)
+        self.assertEqual(Vector(100, 100, 26.35), bbox.size)
+        self.assertAlmostEqual(124160, part.part.volume)
+
+
+class StackingLipTest(testutils.UtilTestCase):
+    def test_stackinglip(self) -> None:
+        with BuildSketch() as sketch:
+            RectangleRounded(100, 100, 5)
+
+        with BuildPart() as part:
+            StackingLip(sketch.wire())
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((100, 100, 6.967157), bbox.size, 6)
+        self.assertEqual(4928.067652835152, part.part.volume)
 
 
 class BinPartTest(unittest.TestCase):

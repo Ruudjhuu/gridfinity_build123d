@@ -1,5 +1,6 @@
-from typing import Union, Any, List
+from __future__ import annotations
 from dataclasses import dataclass
+from typing import Union, Any, List
 from build123d import Box, RotationLike, Align, Mode, BasePartObject
 
 
@@ -21,7 +22,7 @@ class BoxAsMock:
             Align.CENTER,
         ),
         mode: Mode = Mode.ADD,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> BasePartObject:
         obj = Box(self.length, self.width, self.height, rotation, align, mode)
         self.created_objects.append(obj)

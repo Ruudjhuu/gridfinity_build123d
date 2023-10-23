@@ -1,18 +1,9 @@
 import unittest
 from unittest.mock import patch, MagicMock, ANY
-from build123d import BuildPart, Vector, BuildSketch
-from gridfinity_build123d.base import Base, BaseBlock, StackProfile
+from build123d import BuildPart, Vector
+from gridfinity_build123d.base import Base, BaseBlock
 from gridfinity_build123d.common import Grid
 import mocks
-
-# Not needed for testing but handy for developing
-try:
-    from ocp_vscode import set_port  # type: ignore
-
-    set_port(3939)
-except ImportError:
-    # ignore if not installed
-    pass
 
 
 @patch("gridfinity_build123d.base.BaseBlock", autospec=True)
@@ -119,14 +110,3 @@ class BaseBlockTest(unittest.TestCase):
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
         self.assertEqual(11820.476422671034, part.part.volume)
-
-
-class StackProfileTest(unittest.TestCase):
-    def test_profile(self) -> None:
-        """Test creation of stacking profile"""
-        with BuildSketch() as sketch:
-            StackProfile()
-
-        bbox = sketch.sketch.bounding_box()
-        self.assertEqual(Vector(2.5999999999999996, 4.4, 0), bbox.size)
-        self.assertEqual(6.8, sketch.sketch.area)

@@ -12,6 +12,8 @@ from build123d import (
     Align,
     Mode,
     BuildPart,
+    BuildSketch,
+    BuildLine,
     Box,
     Locations,
     extrude,
@@ -22,9 +24,17 @@ from build123d import (
     chamfer,
     Face,
     Part,
+    Plane,
+    Polyline,
+    make_face,
+    Wire,
+    sweep,
+    SortBy,
 )
 
 from .constants import gf_bin
+from .common import StackProfile
+from .utils import Utils, Attach
 
 
 class CompartmentType(Enum):
@@ -86,21 +96,82 @@ class Bin(BasePartObject):
                 size_x=face.bounding_box().size.X,
                 size_y=face.bounding_box().size.Y,
                 height=height,
-                inner_wall=1,
-                outer_wall=3,
+                inner_wall=1.2,
+                outer_wall=0.95,
                 grid=grid,
                 type_list=[comp_type] * (bin_nr - 1),
                 mode=Mode.PRIVATE,
             )
 
-            with Locations((0, 0, base.bounding_box().max.Z)):
-                BinPart(
-                    face,
-                    cutter=cutter,
-                    height=height,
-                    align=(Align.CENTER, Align.CENTER, Align.MIN),
-                )
+            binpart = BinPart(
+                face,
+                cutter=cutter,
+                height=height,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.PRIVATE,
+            )
+            Utils.attach(binpart, Attach.TOP)
 
+            path = part.faces().sort_by(Axis.Z)[-1].wires().sort_by(SortBy.AREA)[0]
+
+            stacking_lip = StackingLip(path=path, mode=Mode.PRIVATE)
+            Utils.attach(part=stacking_lip, attach=Attach.TOP, offset=-1.65)
+
+        super().__init__(part.part, rotation, align, mode)
+
+
+class StackingLip(BasePartObject):
+    """StackingLip.
+
+    Sweeps around the wire with a stacking lip profice to create the lip object
+
+    Args:
+        path (Wire): Wire to follow
+        rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
+            of object. Defaults to None.
+        mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+    """
+
+    def __init__(
+        self,
+        path: Wire,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = Align.CENTER,
+        mode: Mode = Mode.ADD,
+    ):
+        with BuildSketch() as profile:
+            StackProfile()
+            vertex = profile.vertices().sort_by(Axis.Y)[-1]
+            fillet(vertex, 0.2)
+            with BuildLine():
+                pt1_height = 1.2
+                that_one_point_x = 1.65
+                that_one_point_y = 1.65
+                width = profile.sketch.bounding_box().max.X
+
+                Polyline(
+                    (0, 0),
+                    (0, -pt1_height),
+                    (that_one_point_x, -pt1_height - that_one_point_y),
+                    (width, -pt1_height - that_one_point_y),
+                    (width, 0),
+                    close=True,
+                )
+            make_face()
+
+        with BuildPart() as part:
+            with BuildSketch(Plane.XZ) as sweep_sketch:
+                with Locations(
+                    (
+                        path.bounding_box().max.X - profile.sketch.bounding_box().max.X,
+                        path.bounding_box().max.Z + pt1_height,
+                    )
+                ):
+                    add(profile)
+            sweep(sections=sweep_sketch.sketch, path=path)
+
+        self.below_zero_height = that_one_point_y
         super().__init__(part.part, rotation, align, mode)
 
 
@@ -131,8 +202,9 @@ class BinPart(BasePartObject):
         with BuildPart() as part:
             extrude(to_extrude=face, amount=height)
 
+            part_bbox = part.part.bounding_box()
             for cut in cutter:
-                with Locations((0, 0, part.part.bounding_box().max.Z - cut.bounding_box().max.Z)):
+                with Locations((0, 0, part_bbox.max.Z - cut.bounding_box().max.Z)):
                     add(cut, mode=Mode.SUBTRACT)
 
         super().__init__(part.part, rotation, align, mode)
