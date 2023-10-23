@@ -51,45 +51,44 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         location: Tuple[float, float, float] = (0, 0, 0)
 
-        match (attach):
-            case (Attach.TOP):
-                location = (
-                    0,
-                    0,
-                    context.part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset,
-                )
-            case (Attach.BOTTOM):
-                location = (
-                    0,
-                    0,
-                    context.part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset,
-                )
-            case (Attach.LEFT):
-                location = (
-                    context.part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset,
-                    0,
-                    0,
-                )
-            case (Attach.RIGHT):
-                location = (
-                    context.part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset,
-                    0,
-                    0,
-                )
-            case (Attach.FRONT):
-                location = (
-                    0,
-                    context.part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset,
-                    0,
-                )
-            case (Attach.BACK):
-                location = (
-                    0,
-                    context.part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset,
-                    0,
-                )
-            case (_):  # pragma: nocover
-                raise ValueError("Unkown attach type")  # pragma: nocover
+        if attach == Attach.TOP:
+            location = (
+                0,
+                0,
+                context.part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset,
+            )
+        elif attach == Attach.BOTTOM:
+            location = (
+                0,
+                0,
+                context.part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset,
+            )
+        elif attach == Attach.LEFT:
+            location = (
+                context.part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset,
+                0,
+                0,
+            )
+        elif attach == Attach.RIGHT:
+            location = (
+                context.part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset,
+                0,
+                0,
+            )
+        elif attach == Attach.FRONT:
+            location = (
+                0,
+                context.part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset,
+                0,
+            )
+        elif attach == Attach.BACK:
+            location = (
+                0,
+                context.part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset,
+                0,
+            )
+        else:  # pragma: nocover
+            raise ValueError("Unkown attach type")  # pragma: nocover
 
         with Locations(location):
             add(part)
