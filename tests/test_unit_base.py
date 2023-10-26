@@ -1,8 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, ANY
 from build123d import BuildPart, Vector
-from gridfinity_build123d.base import Base, BaseBlock
-from gridfinity_build123d.common import Grid
+from gridfinity_build123d.base import Base, BaseBlock, MagnetHole, ScrewHole, Hole
 import mocks
 
 
@@ -13,9 +12,9 @@ class BaseTest(unittest.TestCase):
         base_mock.side_effect = mock_box.create
 
         with BuildPart() as part:
-            Base(Grid(1, 1))
+            Base(1, 1)
 
-        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
+        base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
@@ -26,9 +25,9 @@ class BaseTest(unittest.TestCase):
         base_mock.side_effect = mock_box.create
 
         with BuildPart() as part:
-            Base(Grid(1, 2))
+            Base(1, 2)
 
-        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
+        base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(19.5, 39.5, 5), bbox.size)
@@ -39,9 +38,9 @@ class BaseTest(unittest.TestCase):
         base_mock.side_effect = mock_box.create
 
         with BuildPart() as part:
-            Base(Grid(2, 1))
+            Base(2, 1)
 
-        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
+        base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(39.5, 19.5, 5), bbox.size)
@@ -52,9 +51,9 @@ class BaseTest(unittest.TestCase):
         base_mock.side_effect = mock_box.create
 
         with BuildPart() as part:
-            Base(Grid(2, 2))
+            Base(2, 2)
 
-        base_mock.assert_called_once_with(magnets=False, screwholes=False, mode=ANY)
+        base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(39.5, 39.5, 5), bbox.size)
@@ -63,11 +62,12 @@ class BaseTest(unittest.TestCase):
     def test_base_magnet_screw(self, base_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
         base_mock.side_effect = mock_box.create
-
+        magnet = Hole(1, 1)
+        screw = Hole(1, 1)
         with BuildPart() as part:
-            Base(Grid(1, 1), True, True)
+            Base(1, 1, features=[magnet, screw])
 
-        base_mock.assert_called_once_with(magnets=True, screwholes=True, mode=ANY)
+        base_mock.assert_called_once_with(features=[magnet, screw], mode=ANY)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
@@ -87,7 +87,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_magnets(self) -> None:
         """Test creation of a basebock with magnet holes."""
         with BuildPart() as part:
-            BaseBlock(magnets=True)
+            BaseBlock(features=[MagnetHole()])
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -96,7 +96,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_screw_holes(self) -> None:
         """Test creation of a basebock with screw holes."""
         with BuildPart() as part:
-            BaseBlock(screwholes=True)
+            BaseBlock(features=[ScrewHole()])
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -105,7 +105,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_magnet_and_screw_holes(self) -> None:
         """Test creation of a basebock with magnet and screw holes."""
         with BuildPart() as part:
-            BaseBlock(magnets=True, screwholes=True)
+            BaseBlock(features=[ScrewHole(), MagnetHole()])
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
