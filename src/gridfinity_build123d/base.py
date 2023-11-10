@@ -1,6 +1,5 @@
 """Generate gridfinity bases."""
 from __future__ import annotations
-from abc import ABC, abstractmethod
 from typing import Union, List
 from build123d import (
     RotationLike,
@@ -26,7 +25,7 @@ from build123d import (
 )
 
 from .constants import gridfinity_standard
-from .common import StackProfile
+from .utils import StackProfile, GridfinityObjectCreate
 
 
 class Base(BasePartObject):
@@ -153,29 +152,7 @@ class BaseBlock(BasePartObject):
         super().__init__(baseblock.part, rotation, align, mode)
 
 
-class _IGridfinityObject(ABC):
-    @abstractmethod
-    def create(
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        """Create the build123d 3d object.
-
-        Args:
-            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-                object. Defaults to None.
-            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
-
-        Returns:
-            BasePartObject: The build123d 3d object
-        """
-        raise NotImplementedError
-
-
-class BaseBlockFeature(_IGridfinityObject):
+class BaseBlockFeature(GridfinityObjectCreate):
     """This type is accepted for baseblock features."""
 
 

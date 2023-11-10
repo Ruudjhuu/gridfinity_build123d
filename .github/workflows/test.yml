@@ -37,10 +37,18 @@ jobs:
         if: success() || failure()
         run: |
           python -m mypy --pretty .
+      - name: Vulture
+        if: success() || failure()
+        run: |
+          python -m vulture ./src --min-confidence 61
       - name: Black
         if: success() || failure()
         run: |
           python -m black --check --diff --color .
+      - name: Darglint
+        if: success() || failure()
+        run: |
+          darglint src
       - name: Run Tests with coverage
         id: test
         if: success() || failure()

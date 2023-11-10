@@ -37,14 +37,14 @@ class gridfinity_standard:
     class magnet:
         """Magnet constants."""
 
-        size = 6.5
+        radius = 3.25
         thickness = 2.4
 
     @dataclass
     class screw:
         """Screw constants."""
 
-        size = 3
+        radius = 1.5
         depth = 6
 
 
