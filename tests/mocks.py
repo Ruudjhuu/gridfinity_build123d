@@ -1,22 +1,29 @@
-from typing import Union, Any
+from __future__ import annotations
 from dataclasses import dataclass
+from typing import Union, Any, List
 from build123d import Box, RotationLike, Align, Mode, BasePartObject
 
 
 @dataclass
 class BoxAsMock:
-    length: float
-    width: float
-    height: float
-    rotation: RotationLike = (0, 0, 0)
-    align: Union[Align, tuple[Align, Align, Align]] = (
-        Align.CENTER,
-        Align.CENTER,
-        Align.CENTER,
-    )
-    mode: Mode = Mode.ADD
+    def __init__(self, length: float, width: float, height: float) -> None:
+        self.length = length
+        self.width = width
+        self.height = height
+        self.created_objects: List[BasePartObject] = []
 
     def create(  # pylint: disable=unused-argument
-        self, *args: Any, **kwargs: Any
+        self,
+        *args: Any,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = (
+            Align.CENTER,
+            Align.CENTER,
+            Align.CENTER,
+        ),
+        mode: Mode = Mode.ADD,
+        **kwargs: Any,
     ) -> BasePartObject:
-        return Box(self.length, self.width, self.height, self.rotation, self.align, self.mode)
+        obj = Box(self.length, self.width, self.height, rotation, align, mode)
+        self.created_objects.append(obj)
+        return obj

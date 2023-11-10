@@ -1,10 +1,13 @@
 black
+darglint
 pylint
 pylint-per-file-ignores
 mypy
 coverage
+vulture
 flake8
 flake8-bandit
 flake8-pydocstyle
 ocp_tessellate
+ocp_vscode
  -e .

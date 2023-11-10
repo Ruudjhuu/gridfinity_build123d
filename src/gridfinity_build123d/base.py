@@ -1,43 +1,31 @@
 """Generate gridfinity bases."""
-from typing import Union
-from dataclasses import dataclass
-from copy import copy
+from __future__ import annotations
+from typing import Union, List
 from build123d import (
     RotationLike,
     Align,
     BuildPart,
     BuildSketch,
-    BuildLine,
     Locations,
     BasePartObject,
-    BaseSketchObject,
     Mode,
     GridLocations,
     RectangleRounded,
     extrude,
-    Until,
     Plane,
     offset,
     Kind,
     sweep,
     Axis,
     Rectangle,
-    Circle,
-    Polyline,
-    make_face,
     add,
     Location,
+    fillet,
+    Cylinder,
 )
 
 from .constants import gridfinity_standard
-
-
-@dataclass
-class Grid:
-    """Represents grid units."""
-
-    X: int  # pylint: disable=invalid-name
-    Y: int  # pylint: disable=invalid-name
+from .utils import StackProfile, GridfinityObjectCreate
 
 
 class Base(BasePartObject):
@@ -57,36 +45,39 @@ class Base(BasePartObject):
 
     def __init__(
         self,
-        grid: Grid,
-        magnets: bool = False,
-        screwholes: bool = False,
+        grid_x: int,
+        grid_y: int,
+        features: List[BaseBlockFeature] = None,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
-        # base_block = BaseBlock(magnets, screwholes, Mode.PRIVATE)
+        if not features:
+            features = []
 
         with BuildPart() as base:
-            base_block = BaseBlock(magnets=magnets, screwholes=screwholes, mode=Mode.PRIVATE)
-
+            base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
+            base_block_bbox = base_block.bounding_box()
             with GridLocations(
-                base_block.bounding_box().size.X,
-                base_block.bounding_box().size.Y,
-                grid.X,
-                grid.Y,
+                base_block_bbox.size.X,
+                base_block_bbox.size.Y,
+                grid_x,
+                grid_y,
             ):
-                add(copy(base_block))
+                add(base_block)
 
-            bbox = base.part.bounding_box()
-            with BuildSketch(Location((0, 0, bbox.min.Z))) as rect:
-                RectangleRounded(
-                    bbox.size.X - gridfinity_standard.grid.tollerance,
-                    bbox.size.Y - gridfinity_standard.grid.tollerance,
-                    gridfinity_standard.grid.radius,
-                )
-            extrude(to_extrude=rect.sketch, mode=Mode.INTERSECT, until=Until.LAST)
+        with BuildPart() as cutter:
+            with BuildSketch(Location((0, 0, base.part.bounding_box().max.Z))) as sketch:
+                add(base.faces().sort_by(Axis.Z)[-1])
+                fillet(objects=sketch.vertices(), radius=gridfinity_standard.grid.radius)
+                offset(amount=-gridfinity_standard.grid.tollerance / 2)
+            extrude(amount=base.part.bounding_box().size.Z, dir=(0, 0, -1))
 
-        super().__init__(base.part, rotation, align, mode)
+        with BuildPart() as part:
+            add(base)
+            add(cutter, mode=Mode.INTERSECT)
+
+        super().__init__(part.part, rotation, align, mode)
 
 
 class BaseBlock(BasePartObject):
@@ -107,12 +98,14 @@ class BaseBlock(BasePartObject):
 
     def __init__(
         self,
-        magnets: bool = False,
-        screwholes: bool = False,
+        features: List[BaseBlockFeature] = None,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
+        if not features:
+            features = []
+
         with BuildPart() as baseblock:
             # Create stack profile with offset
             with BuildSketch(Plane.XZ) as profile:
@@ -128,7 +121,6 @@ class BaseBlock(BasePartObject):
                         kind=Kind.INTERSECTION,
                     )
 
-            # Create block
             with BuildSketch() as rect:
                 RectangleRounded(
                     gridfinity_standard.grid.size,
@@ -137,11 +129,9 @@ class BaseBlock(BasePartObject):
                 )
             extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 
-            # sweep profile
             path = baseblock.wires().sort_by(Axis.Z)[-1]
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
 
-            # add platform on top
             with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
                 Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
             extrude(
@@ -149,78 +139,73 @@ class BaseBlock(BasePartObject):
                 amount=gridfinity_standard.bottom.platform_height,
             )
 
-            # create magnet and screw holes
-            if magnets or screwholes:
+            if features:
                 bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
                 distance = (
                     bot_plane.bounding_box().size.X - 2 * gridfinity_standard.bottom.hole_from_side
                 )
 
-                if magnets:
-                    with BuildSketch() as magnet_holes:
-                        with GridLocations(distance, distance, 2, 2):
-                            Circle(gridfinity_standard.magnet.size / 2)
-                    extrude(
-                        to_extrude=magnet_holes.faces(),
-                        amount=gridfinity_standard.magnet.thickness,
-                        mode=Mode.SUBTRACT,
-                    )
-                if screwholes:
-                    with BuildSketch() as magnet_holes:
-                        with GridLocations(distance, distance, 2, 2):
-                            Circle(gridfinity_standard.screw.size / 2)
-                    extrude(
-                        to_extrude=magnet_holes.faces(),
-                        amount=gridfinity_standard.screw.depth,
-                        mode=Mode.SUBTRACT,
-                    )
+                with GridLocations(distance, distance, 2, 2):
+                    for feature in features:
+                        feature.create(align=(Align.CENTER, Align.CENTER, Align.MIN))
+
         super().__init__(baseblock.part, rotation, align, mode)
 
 
-class StackProfile(BaseSketchObject):
-    """StackProfile.
+class BaseBlockFeature(GridfinityObjectCreate):
+    """This type is accepted for baseblock features."""
 
-    Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
+
+class Hole(BaseBlockFeature):
+    """Create a Hole baseblock feature.
 
     Args:
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        radius (float): radius
+        depth (float): depth
+    """
+
+    def __init__(self, radius: float, depth: float) -> None:
+        self.radius = radius
+        self.depth = depth
+
+    def create(
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        with BuildPart() as part:
+            Cylinder(radius=self.radius, height=self.depth)
+        return BasePartObject(part.part, rotation=rotation, align=align, mode=mode)
+
+
+class ScrewHole(Hole):
+    """Create a ScrewHole baseblock feature.
+
+    Args:
+        radius (float): radius
+        depth (float): depth
     """
 
     def __init__(
         self,
-        rotation: float = 0,
-        align: Union[Align, tuple[Align, Align]] = None,
-        mode: Mode = Mode.ADD,
-    ):
-        with BuildSketch() as profile:
-            with BuildLine():
-                Polyline(
-                    (0, 0),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2
-                        + gridfinity_standard.stacking_lip.height_3,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
-                        0,
-                    ),
-                    close=True,
-                )
-            make_face()
-        super().__init__(profile.face(), rotation, align, mode)
+        radius: float = gridfinity_standard.screw.radius,
+        depth: float = gridfinity_standard.screw.depth,
+    ) -> None:
+        super().__init__(radius, depth)
+
+
+class MagnetHole(Hole):
+    """Create a MagnetHole baseblock feature.
+
+    Args:
+        radius (float): radius
+        depth (float): depth
+    """
+
+    def __init__(
+        self,
+        radius: float = gridfinity_standard.magnet.radius,
+        depth: float = gridfinity_standard.magnet.thickness,
+    ) -> None:
+        super().__init__(radius, depth)

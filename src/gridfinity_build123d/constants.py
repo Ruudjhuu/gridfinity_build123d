@@ -23,7 +23,7 @@ class gridfinity_standard:
         """Grid constants."""
 
         size = 42
-        radius = 7.5
+        radius = 4
         tollerance = 0.5
 
     @dataclass
@@ -37,12 +37,33 @@ class gridfinity_standard:
     class magnet:
         """Magnet constants."""
 
-        size = 6.5
+        radius = 3.25
         thickness = 2.4
 
     @dataclass
     class screw:
         """Screw constants."""
 
-        size = 3
+        radius = 1.5
         depth = 6
+
+
+@dataclass
+class gf_bin:
+    """Bin constants."""
+
+    inner_radius = 1.8
+    inner_wall = 1.2
+
+    @dataclass
+    class label:
+        """Label constants."""
+
+        width = 12
+        angle = 35
+
+    @dataclass
+    class sweep:
+        """Sweep contants."""
+
+        radius = 5

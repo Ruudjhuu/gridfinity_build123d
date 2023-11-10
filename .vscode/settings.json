@@ -18,4 +18,5 @@
     "pylint.severity": {
         "refactor": "Information"
     },
+    "mypy.runUsingActiveInterpreter": true,
 }
