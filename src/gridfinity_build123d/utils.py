@@ -1,7 +1,7 @@
 """Utiity module."""
 from __future__ import annotations
 from enum import Enum, auto
-from typing import Tuple, Union
+from typing import Any, Tuple, Union, List
 from abc import ABC, abstractmethod
 
 from build123d import (
@@ -212,6 +212,24 @@ class Utils:  # pylint: disable=too-few-public-methods
             return units * 7
 
         return units * 7 - context.part.bounding_box().size.Z
+
+    @staticmethod
+    def get_subclasses(class_name: Any) -> List[Any]:
+        """Get subclasses of a base class recursively.
+
+        Args:
+            class_name (Any): class type to get subcalsses from
+
+        Returns:
+            Any: list of child class types
+        """
+        classes = []
+
+        for subclass in class_name.__subclasses__():
+            classes.append(subclass)
+            classes += Utils.get_subclasses(subclass)
+
+        return classes
 
 
 class GridfinityObjectCreate(ABC):
