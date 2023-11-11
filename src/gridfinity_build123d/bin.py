@@ -143,6 +143,62 @@ class StackingLip:
         return BasePartObject(part.part, rotation, align, mode)
 
 
+class Compartment:
+    """Create Compartment.
+
+    Args:
+        features (List[CompartmentContextFeature], optional): compartment feature list. Defaults to
+            None.
+    """
+
+    def __init__(self, features: List[CompartmentContextFeature] = None):
+        if not features:
+            features = []
+
+        self.features = features
+
+    def create(
+        self,
+        size_x: float,
+        size_y: float,
+        height: float,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.ADD,
+    ) -> BasePartObject:
+        """Create Compartment object.
+
+        Args:
+            size_x (float): Size x
+            size_y (float): Size y
+            height (float): height of compartment
+            rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
+                of object. Defaults to None.
+            mode (Mode): combination mode. Defaults to Mode.ADD.
+
+        Returns:
+            BasePartObject: 3d object
+        """
+        with BuildPart() as part:
+            Box(
+                size_x,
+                size_y,
+                height,
+            )
+
+            for feature in self.features:
+                feature.apply()
+
+            fillet_edges = [
+                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
+            ]
+
+            fillet(fillet_edges, gf_bin.inner_radius)
+
+        return BasePartObject(part.part, rotation, align, mode)
+
+
 class Compartments:
     """CompartmentGrid.
 
@@ -181,11 +237,14 @@ class Compartments:
 
     def __init__(
         self,
-        grid: List[List[int]],
-        compartment_list: Union[Compartment, List[Compartment]],
+        grid: List[List[int]] = None,
+        compartment_list: Union[Compartment, List[Compartment]] = Compartment(),
         inner_wall: float = 1.2,
         outer_wall: float = 0.95,
     ):
+        if not grid:
+            grid = [[1]]
+
         self.inner_wall = inner_wall
         self.outer_wall = outer_wall
         self.grid = grid
@@ -292,9 +351,9 @@ class CompartmentsEqual(Compartments):
 
     def __init__(
         self,
-        div_x: int,
-        div_y: int,
-        compartment_list: Union[Compartment, List[Compartment]],
+        compartment_list: Union[Compartment, List[Compartment]] = Compartment(),
+        div_x: int = 1,
+        div_y: int = 1,
         inner_wall: float = 1.2,
         outer_wall: float = 0.95,
     ) -> None:
@@ -312,62 +371,6 @@ class CompartmentsEqual(Compartments):
             inner_wall=inner_wall,
             outer_wall=outer_wall,
         )
-
-
-class Compartment:
-    """Create Compartment.
-
-    Args:
-        features (List[CompartmentContextFeature], optional): compartment feature list. Defaults to
-            None.
-    """
-
-    def __init__(self, features: List[CompartmentContextFeature] = None):
-        if not features:
-            features = []
-
-        self.features = features
-
-    def create(
-        self,
-        size_x: float,
-        size_y: float,
-        height: float,
-        rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        """Create Compartment object.
-
-        Args:
-            size_x (float): Size x
-            size_y (float): Size y
-            height (float): height of compartment
-            rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
-                of object. Defaults to None.
-            mode (Mode): combination mode. Defaults to Mode.ADD.
-
-        Returns:
-            BasePartObject: 3d object
-        """
-        with BuildPart() as part:
-            Box(
-                size_x,
-                size_y,
-                height,
-            )
-
-            for feature in self.features:
-                feature.apply()
-
-            fillet_edges = [
-                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
-            ]
-
-            fillet(fillet_edges, gf_bin.inner_radius)
-
-        return BasePartObject(part.part, rotation, align, mode)
 
 
 class ContextFeature(ABC):
