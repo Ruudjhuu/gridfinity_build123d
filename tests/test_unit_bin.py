@@ -83,6 +83,29 @@ class StackingLipTest(testutils.UtilTestCase):
 
 @patch("gridfinity_build123d.bin.Compartment", autospec=True)
 class CompartmentsTest(unittest.TestCase):
+    def test_compartments_default_GRID(self, comp_mock: MagicMock) -> None:
+        comp_mock = MagicMock(spec=Compartment)
+        comp_box = mocks.BoxAsMock(10, 10, 10)
+        comp_mock.create.side_effect = comp_box.create
+
+        comp_list: List[Compartment] = [comp_mock]
+
+        with BuildPart() as part:
+            Compartments(
+                inner_wall=1,
+                outer_wall=3,
+                compartment_list=comp_list,
+            ).create(
+                size_x=100,
+                size_y=100,
+                height=50,
+            )
+
+        comp_mock.create.assert_called_once_with(size_x=94.0, size_y=94.0, height=50)
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(10, 10, 10), bbox.size)
+        self.assertAlmostEqual(1000, part.part.volume)
+
     def test_compartments_one_compartment(self, comp_mock: MagicMock) -> None:
         comp_mock = MagicMock(spec=Compartment)
         comp_box = mocks.BoxAsMock(10, 10, 10)
