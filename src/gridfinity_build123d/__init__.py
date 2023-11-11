@@ -12,8 +12,9 @@ __all__ = [
     "Label",
     "Sweep",
     "Utils",
+    "Direction",
 ]
 
 from .base import Base, ScrewHole, MagnetHole
 from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual, Label, Sweep
-from .utils import Utils
+from .utils import Utils, Direction

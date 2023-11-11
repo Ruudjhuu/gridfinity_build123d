@@ -33,7 +33,6 @@ class BinTest(testutils.UtilTestCase):
         self.assertEqual(85901.69007299552, part.part.volume)
 
     def test_bin_unequal(self) -> None:
-        pass
         with BuildPart():
             Base(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()])
 
@@ -52,7 +51,6 @@ class BinTest(testutils.UtilTestCase):
             )
 
     def test_bin_weird_shape(self) -> None:
-        pass
         with BuildPart():
             Base(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()])
             with BuildSketch() as sketch:

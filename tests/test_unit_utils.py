@@ -163,6 +163,29 @@ class UtilsFaceByDirectionTest(TestCase):
             self.assertRaises(ValueError, Utils.get_face_by_direction, Direction.FRONT)
 
 
+class UtilsGetSubclassesTest(TestCase):
+    def test_get_subclass(self) -> None:
+        class Base:
+            pass
+
+        class Child(Base):
+            pass
+
+        self.assertEqual(Child, Utils.get_subclasses(Base)[0])
+
+    def test_get_subclass_recursive(self) -> None:
+        class Base:
+            pass
+
+        class Child(Base):
+            pass
+
+        class ChildOfChild(Child):
+            pass
+
+        self.assertEqual([Child, ChildOfChild], Utils.get_subclasses(Base))
+
+
 class UtilsRemainingGridfinityHeightTest(TestCase):
     def test_remaining_gridfinity_height(self) -> None:
         with BuildPart():
