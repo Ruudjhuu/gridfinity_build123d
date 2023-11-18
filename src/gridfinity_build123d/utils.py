@@ -21,6 +21,12 @@ from build123d import (
     Polyline,
     make_face,
     Axis,
+    Plane,
+    RectangleRounded,
+    sweep,
+    extrude,
+    offset,
+    Kind,
 )
 
 from .constants import gridfinity_standard
@@ -94,7 +100,7 @@ class Utils:  # pylint: disable=too-few-public-methods
     """
 
     @staticmethod
-    def attach(part: Part, attach: Attach, offset: float = 0) -> None:
+    def attach(part: Part, attach: Attach, offset_value: float = 0) -> None:
         """attach.
 
         Attaches other object acording to "attach".
@@ -102,7 +108,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         Args:
             part (Part): the part to be attached
             attach (Attach): Direction to attach
-            offset (float): offset.
+            offset_value (float): offset.
 
         Raises:
             RuntimeError: Attach must have an active builder context
@@ -123,36 +129,36 @@ class Utils:  # pylint: disable=too-few-public-methods
             location = (
                 0,
                 0,
-                context.part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset,
+                context.part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset_value,
             )
         elif attach == Attach.BOTTOM:
             location = (
                 0,
                 0,
-                context.part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset,
+                context.part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset_value,
             )
         elif attach == Attach.LEFT:
             location = (
-                context.part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset,
+                context.part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset_value,
                 0,
                 0,
             )
         elif attach == Attach.RIGHT:
             location = (
-                context.part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset,
+                context.part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset_value,
                 0,
                 0,
             )
         elif attach == Attach.FRONT:
             location = (
                 0,
-                context.part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset,
+                context.part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset_value,
                 0,
             )
         elif attach == Attach.BACK:
             location = (
                 0,
-                context.part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset,
+                context.part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset_value,
                 0,
             )
         else:  # pragma: nocover
@@ -231,6 +237,87 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         return classes
 
+    @staticmethod
+    def place_by_grid(
+        obj: BasePartObject,
+        grid: List[List[bool]],
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = Align.CENTER,
+        mode: Mode = Mode.ADD,
+    ) -> BasePartObject:
+        """Place multiple instances of object according to grid.
+
+        Args:
+            obj (BasePartObject): object to be copied
+            grid (List[List[bool]]): grid
+            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to Align.CENTER.
+            mode (Mode): Combination mode. Defaults to Mode.ADD.
+
+        Returns:
+            BasePartObject: gridlike object
+        """
+        bbox = obj.bounding_box()
+        width = bbox.size.X
+        length = bbox.size.Y
+        with BuildPart() as part:
+            for row_nr, row_value in enumerate(grid):
+                for column_nr, column_value in enumerate(row_value):
+                    if column_value:
+                        with Locations((width * (column_nr + 1), length * -(row_nr + 1))):
+                            add(obj)
+
+        return BasePartObject(part.part, rotation, align, mode)
+
+    @staticmethod
+    def create_profile_block(
+        profile_type: StackProfile.ProfileType,
+        offset_value: float = 0,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.ADD,
+    ) -> BasePartObject:
+        """Create block with stacing profile.
+
+        Args:
+            profile_type (StackProfile.ProfileType): Profile type
+            offset_value (float): Offset of profile sweep. Defaults to 0.
+            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode): Combination mode. Defaults to Mode.ADD.
+
+        Returns:
+            BasePartObject: _description_
+        """
+        with BuildPart() as part:
+            with BuildSketch(Plane.XZ) as profile:
+                with Locations(
+                    (
+                        gridfinity_standard.grid.size / 2 - offset_value,
+                        0,
+                    )
+                ):
+                    StackProfile(profile_type, align=(Align.MAX, Align.MIN))
+                    if offset_value:
+                        offset(
+                            amount=offset_value,
+                            kind=Kind.INTERSECTION,
+                        )
+
+            with BuildSketch() as rect:
+                RectangleRounded(
+                    gridfinity_standard.grid.size,
+                    gridfinity_standard.grid.size,
+                    gridfinity_standard.grid.radius,
+                )
+            extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
+
+            path = part.wires().sort_by(Axis.Z)[-1]
+            sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+        return BasePartObject(part.part, rotation, align, mode)
+
 
 class GridfinityObjectCreate(ABC):
     """Build123d object created after function create called."""
@@ -268,12 +355,26 @@ class StackProfile(BaseSketchObject):
         mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
     """
 
+    class ProfileType(Enum):
+        """Profile Type."""
+
+        BIN = auto()
+        PLATE = auto()
+
     def __init__(
         self,
+        stack_type: ProfileType,
         rotation: float = 0,
         align: Union[Align, tuple[Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
+        if stack_type == StackProfile.ProfileType.BIN:
+            height_3 = gridfinity_standard.stacking_lip.height_3_bin
+        elif stack_type == StackProfile.ProfileType.PLATE:
+            height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
+        else:
+            raise ValueError("Unkown stack_type")  # pragma: no cover
+
         with BuildSketch() as profile:
             with BuildLine():
                 Polyline(
@@ -288,15 +389,13 @@ class StackProfile(BaseSketchObject):
                         + gridfinity_standard.stacking_lip.height_2,
                     ),
                     (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
+                        gridfinity_standard.stacking_lip.height_1 + height_3,
                         gridfinity_standard.stacking_lip.height_1
                         + gridfinity_standard.stacking_lip.height_2
-                        + gridfinity_standard.stacking_lip.height_3,
+                        + height_3,
                     ),
                     (
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_3,
+                        gridfinity_standard.stacking_lip.height_1 + height_3,
                         0,
                     ),
                     close=True,

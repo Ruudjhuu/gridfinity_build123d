@@ -15,7 +15,8 @@ class gridfinity_standard:
 
         height_1 = 0.7
         height_2 = 1.8
-        height_3 = 1.9
+        height_3_bin = 1.9
+        height_3_base_plate = 2.15
         offset = 0.25
 
     @dataclass

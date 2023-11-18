@@ -6,16 +6,11 @@ from build123d import (
     Align,
     BuildPart,
     BuildSketch,
-    Locations,
     BasePartObject,
     Mode,
     GridLocations,
-    RectangleRounded,
     extrude,
-    Plane,
     offset,
-    Kind,
-    sweep,
     Axis,
     Rectangle,
     add,
@@ -25,7 +20,7 @@ from build123d import (
 )
 
 from .constants import gridfinity_standard
-from .utils import StackProfile, GridfinityObjectCreate
+from .utils import StackProfile, GridfinityObjectCreate, Utils
 
 
 class Base(BasePartObject):
@@ -107,30 +102,9 @@ class BaseBlock(BasePartObject):
             features = []
 
         with BuildPart() as baseblock:
-            # Create stack profile with offset
-            with BuildSketch(Plane.XZ) as profile:
-                with Locations(
-                    (
-                        gridfinity_standard.grid.size / 2 - gridfinity_standard.stacking_lip.offset,
-                        0,
-                    )
-                ):
-                    StackProfile(align=(Align.MAX, Align.MIN))
-                    offset(
-                        amount=gridfinity_standard.stacking_lip.offset,
-                        kind=Kind.INTERSECTION,
-                    )
-
-            with BuildSketch() as rect:
-                RectangleRounded(
-                    gridfinity_standard.grid.size,
-                    gridfinity_standard.grid.size,
-                    gridfinity_standard.grid.radius,
-                )
-            extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
-
-            path = baseblock.wires().sort_by(Axis.Z)[-1]
-            sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+            Utils.create_profile_block(
+                StackProfile.ProfileType.BIN, gridfinity_standard.stacking_lip.offset
+            )
 
             with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
                 Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)

@@ -111,7 +111,7 @@ class StackingLip:
             BasePartObject: 3d object
         """
         with BuildSketch() as profile:
-            StackProfile()
+            StackProfile(StackProfile.ProfileType.BIN)
             vertex = profile.vertices().sort_by(Axis.Y)[-1]
             fillet(vertex, 0.2)
             with BuildLine():
