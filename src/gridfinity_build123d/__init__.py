@@ -18,3 +18,4 @@ __all__ = [
 from .base import Base, ScrewHole, MagnetHole
 from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual, Label, Sweep
 from .utils import Utils, Direction
+from .baseplate import BasePlate, BasePlateEqual
