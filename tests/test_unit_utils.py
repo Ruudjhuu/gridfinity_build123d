@@ -4,16 +4,27 @@ from build123d import BuildPart, Box, add, Vector, BuildSketch, Axis
 
 from gridfinity_build123d.utils import Utils, Attach, StackProfile, Direction
 
+import testutils
 
-class StackProfileTest(TestCase):
-    def test_profile(self) -> None:
+
+class StackProfileTest(testutils.UtilTestCase):
+    def test_profile_bin(self) -> None:
         """Test creation of stacking profile"""
         with BuildSketch() as sketch:
-            StackProfile()
+            StackProfile(StackProfile.ProfileType.BIN)
 
         bbox = sketch.sketch.bounding_box()
-        self.assertEqual(Vector(2.5999999999999996, 4.4, 0), bbox.size)
+        self.assertVectorAlmostEqual((2.6, 4.4, 0), bbox.size)
         self.assertEqual(6.8, sketch.sketch.area)
+
+    def test_profile_plate(self) -> None:
+        """Test creation of stacking profile"""
+        with BuildSketch() as sketch:
+            StackProfile(StackProfile.ProfileType.PLATE)
+
+        bbox = sketch.sketch.bounding_box()
+        self.assertVectorAlmostEqual((2.85, 4.65, 0), bbox.size)
+        self.assertEqual(7.9312499999999995, sketch.sketch.area)
 
 
 class UtilsAttachTest(TestCase):
@@ -202,3 +213,45 @@ class UtilsRemainingGridfinityHeightTest(TestCase):
     def test_remaining_gridfinity_wrong_builder(self) -> None:
         with BuildSketch():
             self.assertRaises(RuntimeError, Utils.remaining_gridfinity_height, 4)
+
+
+class UtilsPlaceByGridTest(TestCase):
+    def test_place_by_grid_one(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True]]
+        part = Utils.place_by_grid(box, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(10, 15, 20), bbox.size)
+
+    def test_place_by_grid_one_row(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True, True]]
+        part = Utils.place_by_grid(box, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 15, 20), bbox.size)
+
+    def test_place_by_grid_one_column(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True], [True], [True]]
+        part = Utils.place_by_grid(box, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(10, 45, 20), bbox.size)
+
+    def test_place_by_grid_rows_and_columns(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True, True], [True, True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 45, 20), bbox.size)
+
+    def test_place_by_grid_rows_and_columns_with_holes(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, False, True], [True, True, True], [True, True, False]]
+        part = Utils.place_by_grid(box, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 45, 20), bbox.size)
