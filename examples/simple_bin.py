@@ -13,7 +13,7 @@ with BuildPart() as part:
     Bin(
         face=Utils.get_face_by_direction(Direction.TOP),
         height=Utils.remaining_gridfinity_height(units=3),
-        compartments=CompartmentsEqual(compartment_list=[Compartment()]),
+        compartments=CompartmentsEqual(compartment_list=Compartment()),
     )
 
 part.part.export_stl("bin_2x1x3.stl")

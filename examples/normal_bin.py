@@ -19,7 +19,7 @@ with BuildPart() as part:
         face=Utils.get_face_by_direction(Direction.TOP),
         height=Utils.remaining_gridfinity_height(units=6),
         compartments=CompartmentsEqual(
-            div_x=5, div_y=1, compartment_list=[Compartment(features=[Label(), Sweep()])] * 5
+            div_x=5, div_y=1, compartment_list=Compartment(features=[Label(), Sweep()])
         ),
         lip=StackingLip(),
     )

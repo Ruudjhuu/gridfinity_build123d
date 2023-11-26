@@ -34,6 +34,19 @@ from .constants import gf_bin
 from .utils import Utils, StackProfile, Direction
 
 
+class ContextFeature(ABC):
+    """Interface for feature using a builder context."""
+
+    @abstractmethod
+    def apply(self) -> None:
+        """Apply the feature to the object in context."""
+        raise NotImplementedError  # pragma: no cover
+
+
+class CompartmentContextFeature(ContextFeature):
+    """Context feature for a Comopartment."""
+
+
 class Bin(BasePartObject):
     """Create a bin.
 
@@ -73,7 +86,7 @@ class Bin(BasePartObject):
                 )
 
             if lip:
-                lip.create(Utils.get_face_by_direction(Direction.TOP).wire())
+                lip.create(Utils.get_face_by_direction(Direction.TOP).outer_wire())
 
         super().__init__(part.part, rotation, align, mode)
 
@@ -148,11 +161,13 @@ class Compartment:
             None.
     """
 
-    def __init__(self, features: List[CompartmentContextFeature] = None):
+    def __init__(
+        self, features: Union[CompartmentContextFeature, List[CompartmentContextFeature]] = None
+    ):
         if not features:
             features = []
 
-        self.features = features
+        self.features = features if isinstance(features, Iterable) else [features]
 
     def create(
         self,
@@ -245,9 +260,7 @@ class Compartments:
         self.inner_wall = inner_wall
         self.outer_wall = outer_wall
         self.grid = grid
-        self.compartment_list = (
-            compartment_list if isinstance(compartment_list, Iterable) else [compartment_list]
-        )
+        self.compartment_list = compartment_list
 
     def create(
         self,
@@ -299,11 +312,18 @@ class Compartments:
                         )
 
                         with Locations((loc_x, loc_y)):
-                            self.compartment_list[item - 1].create(
-                                size_x=size_unit_x * units_x - self.inner_wall,
-                                size_y=size_unit_y * units_y - self.inner_wall,
-                                height=height,
-                            )
+                            if isinstance(self.compartment_list, Iterable):
+                                self.compartment_list[item - 1].create(
+                                    size_x=size_unit_x * units_x - self.inner_wall,
+                                    size_y=size_unit_y * units_y - self.inner_wall,
+                                    height=height,
+                                )
+                            else:
+                                self.compartment_list.create(
+                                    size_x=size_unit_x * units_x - self.inner_wall,
+                                    size_y=size_unit_y * units_y - self.inner_wall,
+                                    height=height,
+                                )
 
         return BasePartObject(part=part.part, rotation=rotation, align=align, mode=mode)
 
@@ -368,19 +388,6 @@ class CompartmentsEqual(Compartments):
             inner_wall=inner_wall,
             outer_wall=outer_wall,
         )
-
-
-class ContextFeature(ABC):
-    """Interface for feature using a builder context."""
-
-    @abstractmethod
-    def apply(self) -> None:
-        """Apply the feature to the object in context."""
-        raise NotImplementedError  # pragma: no cover
-
-
-class CompartmentContextFeature(ContextFeature):
-    """Context feature for a Comopartment."""
 
 
 class Label(CompartmentContextFeature):
