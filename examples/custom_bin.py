@@ -1,7 +1,7 @@
 from build123d import BuildPart
 
 from gridfinity_build123d import (
-    Base,
+    BaseEqual,
     MagnetHole,
     ScrewHole,
     Compartment,
@@ -14,7 +14,7 @@ from gridfinity_build123d import (
 )
 
 with BuildPart() as part:
-    Base(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()])
+    BaseEqual(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()])
 
     cmp_type = [Compartment(features=[Label()])] * 7
     cmp_placement = [

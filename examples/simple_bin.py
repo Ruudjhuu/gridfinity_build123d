@@ -1,6 +1,6 @@
 from build123d import BuildPart
 from gridfinity_build123d import (
-    Base,
+    BaseEqual,
     Bin,
     Utils,
     CompartmentsEqual,
@@ -9,7 +9,7 @@ from gridfinity_build123d import (
 )
 
 with BuildPart() as part:
-    Base(grid_x=2, grid_y=1)
+    BaseEqual(grid_x=2, grid_y=1)
     Bin(
         face=Utils.get_face_by_direction(Direction.TOP),
         height=Utils.remaining_gridfinity_height(units=3),
