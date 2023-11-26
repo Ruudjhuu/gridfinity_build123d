@@ -1,6 +1,6 @@
 """Generate gridfinity bases."""
 from __future__ import annotations
-from typing import Union, List
+from typing import Union, List, Iterable
 from build123d import (
     RotationLike,
     Align,
@@ -23,6 +23,10 @@ from .constants import gridfinity_standard
 from .utils import StackProfile, GridfinityObjectCreate, Utils
 
 
+class BaseBlockFeature(GridfinityObjectCreate):
+    """This type is accepted for baseblock features."""
+
+
 class Base(BasePartObject):
     """Base.
 
@@ -40,13 +44,15 @@ class Base(BasePartObject):
     def __init__(
         self,
         grid: List[List[bool]],
-        features: List[BaseBlockFeature] = None,
+        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
         if not features:
             features = []
+
+        features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as base:
             base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
@@ -96,7 +102,7 @@ class BaseEqual(Base):
         self,
         grid_x: int,
         grid_y: int,
-        features: List[BaseBlockFeature] = None,
+        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
@@ -125,13 +131,15 @@ class BaseBlock(BasePartObject):
 
     def __init__(
         self,
-        features: List[BaseBlockFeature] = None,
+        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
         rotation: RotationLike = (0, 0, 0),
         align: Union[Align, tuple[Align, Align, Align]] = None,
         mode: Mode = Mode.ADD,
     ):
         if not features:
             features = []
+
+        features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as baseblock:
             Utils.create_profile_block(
@@ -156,10 +164,6 @@ class BaseBlock(BasePartObject):
                         feature.create(align=(Align.CENTER, Align.CENTER, Align.MIN))
 
         super().__init__(baseblock.part, rotation, align, mode)
-
-
-class BaseBlockFeature(GridfinityObjectCreate):
-    """This type is accepted for baseblock features."""
 
 
 class Hole(BaseBlockFeature):

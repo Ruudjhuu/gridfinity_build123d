@@ -15,7 +15,7 @@ class BaseTest(testutils.UtilTestCase):
         self.assertAlmostEqual(73106.17327094806, part.volume)
 
     def test_base_magnets(self) -> None:
-        part = BaseEqual(grid_x=2, grid_y=3, features=[MagnetHole()])
+        part = BaseEqual(grid_x=2, grid_y=3, features=MagnetHole())
 
         self.assertTrue(part.is_valid)
         self.assertTrue(part.is_manifold)

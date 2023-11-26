@@ -99,7 +99,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_magnets(self) -> None:
         """Test creation of a basebock with magnet holes."""
         with BuildPart() as part:
-            BaseBlock(features=[MagnetHole()])
+            BaseBlock(features=MagnetHole())
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
@@ -108,7 +108,7 @@ class BaseBlockTest(unittest.TestCase):
     def test_baseblock_screw_holes(self) -> None:
         """Test creation of a basebock with screw holes."""
         with BuildPart() as part:
-            BaseBlock(features=[ScrewHole()])
+            BaseBlock(features=ScrewHole())
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)

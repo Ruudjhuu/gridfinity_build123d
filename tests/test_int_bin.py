@@ -18,7 +18,7 @@ class BinTest(testutils.UtilTestCase):
         with BuildPart() as part:
             BaseEqual(grid_x=2, grid_y=2, features=[MagnetHole(), ScrewHole()])
 
-            cmp_type = [Compartment(features=[Label()])] * 8
+            cmp_type = Compartment(features=Label())
             compartments = CompartmentsEqual(div_x=3, div_y=2, compartment_list=cmp_type)
             Bin(
                 face=Utils.get_face_by_direction(Direction.TOP),
@@ -35,7 +35,7 @@ class BinTest(testutils.UtilTestCase):
     def test_bin_different_compartments(self) -> None:
         with BuildPart() as part:
             BaseEqual(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()])
-            cmp_type = [Compartment(features=[Label()])] * 7
+            cmp_type = Compartment(features=Label())
             cmp_placement = [
                 [1, 1, 2, 6, 3],
                 [1, 1, 5, 6, 5],
@@ -64,7 +64,7 @@ class BinTest(testutils.UtilTestCase):
                 [True, True, True],
             ]
             Base(grid=base_grid, features=[MagnetHole(), ScrewHole()])
-            cmp_type = [Compartment(features=[Label()])] * 7
+            cmp_type = Compartment(features=[Label()])
             cmp_placement = [
                 [1, 1, 2],
                 [3, 0, 0],
