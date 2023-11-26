@@ -1,6 +1,6 @@
 from build123d import BuildPart
 from gridfinity_build123d import (
-    Base,
+    BaseEqual,
     MagnetHole,
     ScrewHole,
     Bin,
@@ -14,7 +14,7 @@ from gridfinity_build123d import (
 )
 
 with BuildPart() as part:
-    Base(grid_x=3, grid_y=1, features=[MagnetHole(), ScrewHole()])
+    BaseEqual(grid_x=3, grid_y=1, features=[MagnetHole(), ScrewHole()])
     Bin(
         face=Utils.get_face_by_direction(Direction.TOP),
         height=Utils.remaining_gridfinity_height(units=6),
