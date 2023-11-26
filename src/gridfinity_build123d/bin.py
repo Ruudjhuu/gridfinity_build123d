@@ -131,13 +131,10 @@ class StackingLip:
             make_face()
         with BuildPart() as part:
             with BuildSketch(Plane.XZ) as sweep_sketch:
-                with Locations(
-                    (
-                        path.bounding_box().max.X - profile.sketch.bounding_box().max.X,
-                        path.bounding_box().max.Z,
-                    )
-                ):
-                    add(profile)
+                right_edge_center = path.edges().sort_by(Axis.X)[-1].center()
+                with Locations((right_edge_center.X, right_edge_center.Z)):
+                    with Locations((-profile.sketch.bounding_box().max.X, 0)):
+                        add(profile)
             sweep(sections=sweep_sketch.sketch, path=path)
 
         return BasePartObject(part.part, rotation, align, mode)

@@ -2,6 +2,7 @@
 
 __all__ = [
     "Base",
+    "BaseEqual",
     "Bin",
     "ScrewHole",
     "MagnetHole",
@@ -13,9 +14,11 @@ __all__ = [
     "Sweep",
     "Utils",
     "Direction",
+    "BasePlate",
+    "BasePlateEqual",
 ]
 
-from .base import Base, ScrewHole, MagnetHole
+from .base import Base, BaseEqual, ScrewHole, MagnetHole
 from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual, Label, Sweep
 from .utils import Utils, Direction
 from .baseplate import BasePlate, BasePlateEqual
