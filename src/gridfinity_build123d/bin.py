@@ -86,7 +86,7 @@ class Bin(BasePartObject):
                 )
 
             if lip:
-                lip.create(Utils.get_face_by_direction(Direction.TOP).wire())
+                lip.create(Utils.get_face_by_direction(Direction.TOP).outer_wire())
 
         super().__init__(part.part, rotation, align, mode)
 
