@@ -18,7 +18,8 @@ __all__ = [
     "BasePlateEqual",
 ]
 
-from .base import Base, BaseEqual, ScrewHole, MagnetHole
+from .base import Base, BaseEqual
+from .features import ScrewHole, MagnetHole
 from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual, Label, Sweep
 from .utils import Utils, Direction
 from .baseplate import BasePlate, BasePlateEqual

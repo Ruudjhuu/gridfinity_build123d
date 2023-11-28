@@ -10,4 +10,5 @@ flake8-bandit
 flake8-pydocstyle
 ocp_tessellate
 ocp_vscode
+parameterized
  -e .
