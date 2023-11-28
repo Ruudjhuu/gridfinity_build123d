@@ -61,7 +61,7 @@ class gf_bin:
         """Label constants."""
 
         width = 12
-        angle = 35
+        angle = 36
 
     @dataclass
     class sweep:
