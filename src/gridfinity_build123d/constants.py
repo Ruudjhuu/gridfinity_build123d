@@ -32,7 +32,7 @@ class gridfinity_standard:
         """Bottom constants."""
 
         platform_height = 2.8
-        hole_from_side = 4.8
+        hole_from_side = 8
 
     @dataclass
     class magnet:

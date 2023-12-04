@@ -1,9 +1,11 @@
 import unittest
 from unittest.mock import patch, MagicMock, ANY
-from build123d import BuildPart, Vector, Mode
+from build123d import BuildPart, Vector
+
 from gridfinity_build123d.base import Base, BaseEqual, BaseBlock
 from gridfinity_build123d.features import BaseBlockFeature
 import mocks
+import testutils
 
 
 @patch("gridfinity_build123d.base.BaseBlock", autospec=True)
@@ -88,7 +90,7 @@ class BaseEqualTest(unittest.TestCase):
         )
 
 
-class BaseBlockTest(unittest.TestCase):
+class BaseBlockTest(testutils.UtilTestCase):
     def test_baseblock(self) -> None:
         with BuildPart() as part:
             BaseBlock()
@@ -99,29 +101,26 @@ class BaseBlockTest(unittest.TestCase):
 
     def test_baseblock_one_feature(self) -> None:
         feature = MagicMock(spec=BaseBlockFeature)
-        feature.create.side_effect = mocks.BoxAsMock(2, 2, 2, mode=Mode.SUBTRACT).create
 
         with BuildPart() as part:
             BaseBlock(features=feature)
 
-        feature.create.assert_called_once()
+        feature.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
-        self.assertEqual(12208.82151972135, part.part.volume)
+        self.assertEqual(12240.821519721352, part.part.volume)
 
     def test_baseblock_multiple_features(self) -> None:
         feature_1 = MagicMock(spec=BaseBlockFeature)
         feature_2 = MagicMock(spec=BaseBlockFeature)
-        feature_1.create.side_effect = mocks.BoxAsMock(2, 2, 2, mode=Mode.SUBTRACT).create
-        feature_2.create.side_effect = mocks.BoxAsMock(1, 1, 3, mode=Mode.SUBTRACT).create
 
         with BuildPart() as part:
             BaseBlock(features=[feature_1, feature_2])
 
-        feature_1.create.assert_called_once()
-        feature_2.create.assert_called_once()
+        feature_1.apply.assert_called_once()
+        feature_2.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
-        self.assertEqual(12204.82151972136, part.part.volume)
+        self.assertAlmostEqual(12240.821519721352, part.part.volume)

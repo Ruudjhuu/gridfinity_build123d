@@ -1,8 +1,8 @@
 """Utiity module."""
 from __future__ import annotations
+from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Any, Tuple, Union, List
-from abc import ABC, abstractmethod
 
 from build123d import (
     Builder,
@@ -30,6 +30,33 @@ from build123d import (
 )
 
 from .constants import gridfinity_standard
+
+
+class ObjectCreate(ABC):
+    """Interface for object forcing to implement create_obj."""
+
+    @abstractmethod
+    def create_obj(
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Union[Align, tuple[Align, Align, Align]] = None,
+        mode: Mode = Mode.ADD,
+    ) -> BasePartObject:
+        """Create the build123d 3d object.
+
+        Args:
+            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode): Combination mode. Defaults to Mode.ADD.
+
+        Raises:
+            NotImplementedError: Child class does not have an implementation
+
+        Returns:
+            BasePartObject: The build123d 3d object
+        """
+        raise NotImplementedError()  # pragma: no cover
 
 
 class Direction(Enum):
@@ -317,30 +344,6 @@ class Utils:  # pylint: disable=too-few-public-methods
             path = part.wires().sort_by(Axis.Z)[-1]
             sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
         return BasePartObject(part.part, rotation, align, mode)
-
-
-class GridfinityObjectCreate(ABC):
-    """Build123d object created after function create called."""
-
-    @abstractmethod
-    def create(
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        """Create the build123d 3d object.
-
-        Args:
-            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-                object. Defaults to None.
-            mode (Mode): Combination mode. Defaults to Mode.ADD.
-
-        Returns:
-            BasePartObject: The build123d 3d object
-        """
-        raise NotImplementedError  # pragma: no cover
 
 
 class StackProfile(BaseSketchObject):

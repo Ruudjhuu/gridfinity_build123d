@@ -5,7 +5,10 @@ __all__ = [
     "BaseEqual",
     "Bin",
     "ScrewHole",
+    "ScrewHoleCountersink",
+    "ScrewHoleCounterbore",
     "MagnetHole",
+    "Weighted",
     "StackingLip",
     "Compartment",
     "Compartments",
@@ -16,10 +19,20 @@ __all__ = [
     "Direction",
     "BasePlate",
     "BasePlateEqual",
+    "BasePlateBlockFrame",
+    "BasePlateBlockFull",
 ]
 
 from .base import Base, BaseEqual
-from .features import ScrewHole, MagnetHole, Label, Sweep
+from .features import (
+    ScrewHole,
+    ScrewHoleCountersink,
+    ScrewHoleCounterbore,
+    MagnetHole,
+    Weighted,
+    Label,
+    Sweep,
+)
 from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual
 from .utils import Utils, Direction
-from .baseplate import BasePlate, BasePlateEqual
+from .baseplate import BasePlate, BasePlateEqual, BasePlateBlockFrame, BasePlateBlockFull

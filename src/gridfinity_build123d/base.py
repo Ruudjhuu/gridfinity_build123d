@@ -8,7 +8,6 @@ from build123d import (
     BuildSketch,
     BasePartObject,
     Mode,
-    GridLocations,
     extrude,
     offset,
     Axis,
@@ -149,14 +148,7 @@ class BaseBlock(BasePartObject):
                 amount=gridfinity_standard.bottom.platform_height,
             )
 
-            if features:
-                bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
-                distance = (
-                    bot_plane.bounding_box().size.X - 2 * gridfinity_standard.bottom.hole_from_side
-                )
-
-                with GridLocations(distance, distance, 2, 2):
-                    for feature in features:
-                        feature.create(align=(Align.CENTER, Align.CENTER, Align.MIN))
+            for feature in features:
+                feature.apply()
 
         super().__init__(baseblock.part, rotation, align, mode)
