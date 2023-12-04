@@ -1,14 +1,39 @@
 from build123d import BuildPart
-from gridfinity_build123d import BasePlateEqual
+from gridfinity_build123d import (
+    BasePlateEqual,
+    MagnetHole,
+    ScrewHoleCountersink,
+    BasePlateBlockFrame,
+    BasePlateBlockFull,
+    Weighted,
+)
 
 import testutils
 
 
 class BasePlateTest(testutils.UtilTestCase):
-    def test_base_plate_skeleton(self) -> None:
+    def test_base_plate_frame(self) -> None:
         with BuildPart() as part:
-            BasePlateEqual(size_x=2, size_y=3)
+            BasePlateEqual(size_x=2, size_y=3, baseplate_block=BasePlateBlockFrame())
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((84, 126, 4.65), bbox.size)
         self.assertEqual(9935.172368218784, part.part.area)
         self.assertEqual(7684.943883967003, part.part.volume)
+
+    def test_base_plate_weighted(self) -> None:
+        with BuildPart() as part:
+            BasePlateEqual(
+                size_x=3,
+                size_y=2,
+                baseplate_block=BasePlateBlockFull(
+                    features=[
+                        MagnetHole(),
+                        ScrewHoleCountersink(),
+                        Weighted(),
+                    ],
+                ),
+            )
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((126.0, 84.0, 11.05), bbox.size)
+        self.assertEqual(32629.38237429975, part.part.area)
+        self.assertEqual(57020.96113525161, part.part.volume)

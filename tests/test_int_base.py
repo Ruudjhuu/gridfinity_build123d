@@ -19,6 +19,7 @@ class BaseTest(testutils.UtilTestCase):
 
         self.assertTrue(part.is_valid)
         self.assertTrue(part.is_manifold)
+
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 125.5, 7.803553390593281), bbox.size)
         self.assertAlmostEqual(26097.84956304029, part.area)

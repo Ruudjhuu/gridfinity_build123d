@@ -3,7 +3,6 @@
 Module containg classes and cutters which can be used to create a bin
 """
 from __future__ import annotations
-from abc import abstractmethod, ABC
 from typing import Union, Iterable, List, Tuple
 
 from build123d import (
@@ -20,7 +19,6 @@ from build123d import (
     add,
     fillet,
     Axis,
-    chamfer,
     Face,
     Plane,
     Polyline,
@@ -29,22 +27,9 @@ from build123d import (
     sweep,
 )
 
-
+from .features import CompartmentFeature
 from .constants import gf_bin
 from .utils import Utils, StackProfile, Direction
-
-
-class ContextFeature(ABC):
-    """Interface for feature using a builder context."""
-
-    @abstractmethod
-    def apply(self) -> None:
-        """Apply the feature to the object in context."""
-        raise NotImplementedError  # pragma: no cover
-
-
-class CompartmentContextFeature(ContextFeature):
-    """Context feature for a Comopartment."""
 
 
 class Bin(BasePartObject):
@@ -161,9 +146,7 @@ class Compartment:
             None.
     """
 
-    def __init__(
-        self, features: Union[CompartmentContextFeature, List[CompartmentContextFeature]] = None
-    ):
+    def __init__(self, features: Union[CompartmentFeature, List[CompartmentFeature]] = None):
         if not features:
             features = []
 
@@ -200,7 +183,7 @@ class Compartment:
             )
 
             for feature in self.features:
-                feature.apply()
+                feature.create()
 
             fillet_edges = [
                 i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
@@ -388,44 +371,3 @@ class CompartmentsEqual(Compartments):
             inner_wall=inner_wall,
             outer_wall=outer_wall,
         )
-
-
-class Label(CompartmentContextFeature):
-    """Compartment Label feature.
-
-    Args:
-        angle (float, optional): angle of the label. Defaults to gf_bin.label.angle.
-    """
-
-    def __init__(self, angle: float = gf_bin.label.angle) -> None:
-        self.angle = angle
-
-    def apply(self) -> None:
-        context: BuildPart = BuildPart._get_context(  # pylint: disable=protected-access
-            "Label.create"
-        )
-
-        face_top = context.faces().sort_by(Axis.Z)[-1]
-        edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
-        chamfer(edge_top_back, length=gf_bin.label.width, angle=180 - 90 - self.angle)
-        chamfer_face = context.faces().sort_by(Axis.Z)[-2]
-        extrude(to_extrude=chamfer_face, amount=1, dir=(0, 0, -1), mode=Mode.SUBTRACT)
-
-
-class Sweep(CompartmentContextFeature):
-    """Compartment Sweep feature.
-
-    Args:
-        radius (float, optional): Radius of the sweep. Defaults to gf_bin.sweep.radius.
-    """
-
-    def __init__(self, radius: float = gf_bin.sweep.radius) -> None:
-        self.radius = radius
-
-    def apply(self) -> None:
-        context: BuildPart = BuildPart._get_context(  # pylint: disable=protected-access
-            "Label.create"
-        )
-        face_bottom = context.faces().sort_by(Axis.Z)[0]
-        edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
-        fillet(edge_bottom_front, radius=self.radius)

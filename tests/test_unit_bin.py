@@ -18,9 +18,9 @@ from gridfinity_build123d.bin import (
     Compartments,
     CompartmentsEqual,
     StackingLip,
-    Label,
-    Sweep,
 )
+
+from gridfinity_build123d.features import CompartmentFeature
 import mocks
 import testutils
 
@@ -298,37 +298,36 @@ class CompartmentTest(unittest.TestCase):
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
         self.assertEqual(35823.124620015966, part.part.volume)
 
-    def test_compartment_sweep(self) -> None:
+    def test_compartment_feature(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
 
+        feature = MagicMock(spec=CompartmentFeature)
+
         with BuildPart() as part:
-            Compartment(features=Sweep()).create(size_x, size_y, height)
+            Compartment(features=feature).create(size_x, size_y, height)
+
+        feature.create.assert_called_once()
+
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35638.245130779884, part.part.volume)
+        self.assertAlmostEqual(35823.124620015966, part.part.volume)
 
-    def test_compartment_label(self) -> None:
+    def test_compartment_multiple_features(self) -> None:
         size_x = 40
         size_y = 30
         height = 30
 
+        feature_1 = MagicMock(spec=CompartmentFeature)
+        feature_2 = MagicMock(spec=CompartmentFeature)
+
         with BuildPart() as part:
-            Compartment(features=Label()).create(size_x, size_y, height)
+            Compartment(features=[feature_1, feature_2]).create(size_x, size_y, height)
+
+        feature_1.create.assert_called_once()
+        feature_2.create.assert_called_once()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(31012.54761553973, part.part.volume)
-
-    def test_compartment_sweep_and_label(self) -> None:
-        size_x = 40
-        size_y = 30
-        height = 30
-
-        with BuildPart() as part:
-            Compartment(features=[Label(), Sweep()]).create(size_x, size_y, height)
-
-        bbox = part.part.bounding_box()
-        self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(30827.668126303644, part.part.volume)
+        self.assertAlmostEqual(35823.124620015966, part.part.volume)

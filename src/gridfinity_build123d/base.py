@@ -8,7 +8,6 @@ from build123d import (
     BuildSketch,
     BasePartObject,
     Mode,
-    GridLocations,
     extrude,
     offset,
     Axis,
@@ -16,15 +15,11 @@ from build123d import (
     add,
     Location,
     fillet,
-    Cylinder,
 )
 
 from .constants import gridfinity_standard
-from .utils import StackProfile, GridfinityObjectCreate, Utils
-
-
-class BaseBlockFeature(GridfinityObjectCreate):
-    """This type is accepted for baseblock features."""
+from .features import BaseBlockFeature
+from .utils import StackProfile, Utils
 
 
 class Base(BasePartObject):
@@ -153,69 +148,7 @@ class BaseBlock(BasePartObject):
                 amount=gridfinity_standard.bottom.platform_height,
             )
 
-            if features:
-                bot_plane = baseblock.faces().sort_by(Axis.Z)[0]
-                distance = (
-                    bot_plane.bounding_box().size.X - 2 * gridfinity_standard.bottom.hole_from_side
-                )
-
-                with GridLocations(distance, distance, 2, 2):
-                    for feature in features:
-                        feature.create(align=(Align.CENTER, Align.CENTER, Align.MIN))
+            for feature in features:
+                feature.apply()
 
         super().__init__(baseblock.part, rotation, align, mode)
-
-
-class Hole(BaseBlockFeature):
-    """Create a Hole baseblock feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-    """
-
-    def __init__(self, radius: float, depth: float) -> None:
-        self.radius = radius
-        self.depth = depth
-
-    def create(
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
-        mode: Mode = Mode.SUBTRACT,
-    ) -> BasePartObject:
-        with BuildPart() as part:
-            Cylinder(radius=self.radius, height=self.depth)
-        return BasePartObject(part.part, rotation=rotation, align=align, mode=mode)
-
-
-class ScrewHole(Hole):
-    """Create a ScrewHole baseblock feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-    """
-
-    def __init__(
-        self,
-        radius: float = gridfinity_standard.screw.radius,
-        depth: float = gridfinity_standard.screw.depth,
-    ) -> None:
-        super().__init__(radius, depth)
-
-
-class MagnetHole(Hole):
-    """Create a MagnetHole baseblock feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-    """
-
-    def __init__(
-        self,
-        radius: float = gridfinity_standard.magnet.radius,
-        depth: float = gridfinity_standard.magnet.thickness,
-    ) -> None:
-        super().__init__(radius, depth)

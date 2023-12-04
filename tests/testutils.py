@@ -11,6 +11,9 @@ class UtilTestCase(TestCase):
         vector: Vector,
         places: int = None,
     ) -> None:
-        self.assertAlmostEqual(compare[0], vector.X, places)
-        self.assertAlmostEqual(compare[1], vector.Y, places)
-        self.assertAlmostEqual(compare[2], vector.Z, places)
+        try:
+            self.assertAlmostEqual(compare[0], vector.X, places)
+            self.assertAlmostEqual(compare[1], vector.Y, places)
+            self.assertAlmostEqual(compare[2], vector.Z, places)
+        except AssertionError as e:  # pragma: no cover
+            raise AssertionError(f"{Vector(compare)} != {vector}") from e  # pragma: no cover
