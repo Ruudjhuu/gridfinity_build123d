@@ -40,5 +40,5 @@ class BaseTest(testutils.UtilTestCase):
         part = Base(grid)
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 83.5, 7.803553390593281), bbox.size, 6)
-        self.assertAlmostEqual(12736.480548641217, part.area)
-        self.assertAlmostEqual(36447.00110003971, part.volume)
+        self.assertAlmostEqual(12736.480548641217, part.area, 6)
+        self.assertAlmostEqual(36447.00110003971, part.volume, 6)

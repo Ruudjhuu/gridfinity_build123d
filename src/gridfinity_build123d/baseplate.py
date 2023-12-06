@@ -142,10 +142,12 @@ class BasePlate(BasePartObject):
         with BuildPart() as part:
             Utils.place_by_grid(baseplate_block.create_obj(mode=Mode.PRIVATE), grid)
 
+            z_height = part.part.bounding_box().size.Z
+
             wires = (
                 part.edges()
                 .filter_by(Axis.Z)
-                .filter_by(lambda edge: isclose(edge.length, part.part.bounding_box().size.Z))
+                .filter_by(lambda edge: isclose(edge.length, z_height))
             )
             fillet(wires, 4)
 

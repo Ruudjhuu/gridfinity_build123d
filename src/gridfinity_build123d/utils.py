@@ -27,6 +27,7 @@ from build123d import (
     extrude,
     offset,
     Kind,
+    Location,
 )
 
 from .constants import gridfinity_standard
@@ -282,18 +283,28 @@ class Utils:  # pylint: disable=too-few-public-methods
                 object. Defaults to Align.CENTER.
             mode (Mode): Combination mode. Defaults to Mode.ADD.
 
+        Raises:
+            ValueError: grid does not reasemble locations
+
         Returns:
             BasePartObject: gridlike object
         """
         bbox = obj.bounding_box()
         width = bbox.size.X
         length = bbox.size.Y
+
+        locations: List[Location] = []
+        for row_nr, row_value in enumerate(grid):
+            for column_nr, column_value in enumerate(row_value):
+                if column_value:
+                    locations.append(Location((width * (column_nr + 1), length * -(row_nr + 1))))
+
+        if not locations:
+            raise ValueError(f"grid {grid} does not reasemble locations")
+
         with BuildPart() as part:
-            for row_nr, row_value in enumerate(grid):
-                for column_nr, column_value in enumerate(row_value):
-                    if column_value:
-                        with Locations((width * (column_nr + 1), length * -(row_nr + 1))):
-                            add(obj)
+            with Locations(locations):
+                add(obj)
 
         return BasePartObject(part.part, rotation, align, mode)
 

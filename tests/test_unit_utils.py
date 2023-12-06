@@ -255,3 +255,8 @@ class UtilsPlaceByGridTest(TestCase):
 
         bbox = part.bounding_box()
         self.assertEqual(Vector(30, 45, 20), bbox.size)
+
+    def test_place_by_grid_nothing(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[False]]
+        self.assertRaises(ValueError, Utils.place_by_grid, box, grid)
