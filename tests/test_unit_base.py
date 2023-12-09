@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import patch, MagicMock, ANY
-from build123d import BuildPart, Vector
+from unittest.mock import ANY, MagicMock, patch
 
-from gridfinity_build123d.base import Base, BaseEqual, BaseBlock
-from gridfinity_build123d.features import BaseBlockFeature
 import mocks
 import testutils
+from build123d import BuildPart, Vector
+from gridfinity_build123d.base import Base, BaseBlock, BaseEqual
+from gridfinity_build123d.features import BaseBlockFeature
 
 
 @patch("gridfinity_build123d.base.BaseBlock", autospec=True)
@@ -86,7 +86,11 @@ class BaseEqualTest(unittest.TestCase):
         BaseEqual(2, 3, features=features)
 
         base_mock.assert_called_once_with(
-            [[True, True], [True, True], [True, True]], features, ANY, ANY, ANY
+            [[True, True], [True, True], [True, True]],
+            features,
+            ANY,
+            ANY,
+            ANY,
         )
 
 

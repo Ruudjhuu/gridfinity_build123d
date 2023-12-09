@@ -1,15 +1,28 @@
+from enum import Enum, auto
 from unittest import TestCase
 
-from build123d import BuildPart, Box, add, Vector, BuildSketch, Axis
-
-from gridfinity_build123d.utils import Utils, Attach, StackProfile, Direction
-
 import testutils
+from build123d import Axis, Box, BuildPart, BuildSketch, Vector, add
+from gridfinity_build123d.utils import (
+    Attach,
+    Direction,
+    StackProfile,
+    UnsuportedEnumValueError,
+    Utils,
+)
+
+
+class UnsuportedEnumValueErrorTest(testutils.UtilTestCase):
+    def test_enum_value_error(self) -> None:
+        class TestEnum(Enum):
+            TEST_A = auto()
+
+        # Check if no exceptions are raised
+        UnsuportedEnumValueError(TestEnum.TEST_A)
 
 
 class StackProfileTest(testutils.UtilTestCase):
     def test_profile_bin(self) -> None:
-        """Test creation of stacking profile"""
         with BuildSketch() as sketch:
             StackProfile(StackProfile.ProfileType.BIN)
 
@@ -18,7 +31,6 @@ class StackProfileTest(testutils.UtilTestCase):
         self.assertEqual(6.8, sketch.sketch.area)
 
     def test_profile_plate(self) -> None:
-        """Test creation of stacking profile"""
         with BuildSketch() as sketch:
             StackProfile(StackProfile.ProfileType.PLATE)
 
@@ -32,7 +44,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.TOP)
+            Utils.attach(part, box, Attach.TOP)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 20), bbox.size)
@@ -42,7 +54,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.BOTTOM)
+            Utils.attach(part, box, Attach.BOTTOM)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 20), bbox.size)
@@ -52,7 +64,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.LEFT)
+            Utils.attach(part, box, Attach.LEFT)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(20, 10, 10), bbox.size)
@@ -62,7 +74,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.RIGHT)
+            Utils.attach(part, box, Attach.RIGHT)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(20, 10, 10), bbox.size)
@@ -72,7 +84,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.FRONT)
+            Utils.attach(part, box, Attach.FRONT)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 20, 10), bbox.size)
@@ -82,7 +94,7 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.BACK)
+            Utils.attach(part, box, Attach.BACK)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 20, 10), bbox.size)
@@ -92,86 +104,61 @@ class UtilsAttachTest(TestCase):
         box = Box(10, 10, 10)
         with BuildPart() as part:
             add(box)
-            Utils.attach(box, Attach.TOP, 5)
+            Utils.attach(part, box, Attach.TOP, 5)
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 25), bbox.size)
         self.assertEqual(20, bbox.max.Z)
 
-    def test_attach_no_context(self) -> None:
-        obj = Box(10, 10, 10)
-        self.assertRaises(RuntimeError, Utils.attach, obj, Attach.TOP)
-
-    def test_attach_wrong_context(self) -> None:
-        obj = Box(10, 10, 10)
-        with BuildSketch():
-            self.assertRaises(RuntimeError, Utils.attach, obj, Attach.TOP)
-
-    def test_attach_empty_context(self) -> None:
-        obj = Box(10, 10, 10)
-        with BuildPart():
-            self.assertRaises(ValueError, Utils.attach, obj, Attach.TOP)
-
 
 class UtilsFaceByDirectionTest(TestCase):
     def test_utils_face_by_direction_top(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.Z)[-1].center_location,
-                Utils.get_face_by_direction(Direction.TOP).center_location,
+                Utils.get_face_by_direction(part, Direction.TOP).center_location,
             )
 
     def test_utils_face_by_direction_bot(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.Z)[0].center_location,
-                Utils.get_face_by_direction(Direction.BOT).center_location,
+                Utils.get_face_by_direction(part, Direction.BOT).center_location,
             )
 
     def test_utils_face_by_direction_right(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.X)[-1].center_location,
-                Utils.get_face_by_direction(Direction.RIGHT).center_location,
+                Utils.get_face_by_direction(part, Direction.RIGHT).center_location,
             )
 
     def test_utils_face_by_direction_left(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.X)[0].center_location,
-                Utils.get_face_by_direction(Direction.LEFT).center_location,
+                Utils.get_face_by_direction(part, Direction.LEFT).center_location,
             )
 
     def test_utils_face_by_direction_back(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.Y)[-1].center_location,
-                Utils.get_face_by_direction(Direction.BACK).center_location,
+                Utils.get_face_by_direction(part, Direction.BACK).center_location,
             )
 
     def test_utils_face_by_direction_front(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             box = Box(10, 10, 10)
             self.assertEqual(
                 box.faces().sort_by(Axis.Y)[0].center_location,
-                Utils.get_face_by_direction(Direction.FRONT).center_location,
+                Utils.get_face_by_direction(part, Direction.FRONT).center_location,
             )
-
-    def test_utils_face_by_direction_no_context(self) -> None:
-        self.assertRaises(RuntimeError, Utils.get_face_by_direction, Direction.FRONT)
-
-    def test_utils_face_by_direction_wrong_builder(self) -> None:
-        with BuildSketch():
-            self.assertRaises(RuntimeError, Utils.get_face_by_direction, Direction.FRONT)
-
-    def test_utils_face_by_direction_empty_builder(self) -> None:
-        with BuildPart():
-            self.assertRaises(ValueError, Utils.get_face_by_direction, Direction.FRONT)
 
 
 class UtilsGetSubclassesTest(TestCase):
@@ -199,20 +186,15 @@ class UtilsGetSubclassesTest(TestCase):
 
 class UtilsRemainingGridfinityHeightTest(TestCase):
     def test_remaining_gridfinity_height(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             Box(10, 10, 10)
-            self.assertEqual(4 * 7 - 10, Utils.remaining_gridfinity_height(4))
+            self.assertEqual(
+                4 * 7 - 10,
+                Utils.remaining_gridfinity_height(part.part, 4),
+            )
 
     def test_remaining_gridfinity_height_no_object(self) -> None:
-        with BuildPart():
-            self.assertEqual(4 * 7, Utils.remaining_gridfinity_height(4))
-
-    def test_remaining_gridfinity_no_builder(self) -> None:
-        self.assertRaises(RuntimeError, Utils.remaining_gridfinity_height, 4)
-
-    def test_remaining_gridfinity_wrong_builder(self) -> None:
-        with BuildSketch():
-            self.assertRaises(RuntimeError, Utils.remaining_gridfinity_height, 4)
+        self.assertEqual(4 * 7, Utils.remaining_gridfinity_height(None, 4))
 
 
 class UtilsPlaceByGridTest(TestCase):

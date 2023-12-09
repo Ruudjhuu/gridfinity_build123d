@@ -1,16 +1,19 @@
-from build123d import BuildPart
+"""Example for generating a custom bin.
 
+This bin is recangular and has different sized compartments
+"""
+from build123d import BuildPart
 from gridfinity_build123d import (
     BaseEqual,
+    Bin,
+    Compartment,
+    Compartments,
+    Direction,
+    Label,
     MagnetHole,
     ScrewHole,
-    Compartment,
-    Label,
-    Compartments,
-    Bin,
-    Utils,
     StackingLip,
-    Direction,
+    Utils,
 )
 
 with BuildPart() as part:
@@ -24,8 +27,8 @@ with BuildPart() as part:
     ]
     compartments = Compartments(grid=cmp_placement, compartment_list=cmp_type)
     Bin(
-        face=Utils.get_face_by_direction(Direction.TOP),
-        height=Utils.remaining_gridfinity_height(5),
+        face=Utils.get_face_by_direction(part, Direction.TOP),
+        height=Utils.remaining_gridfinity_height(part, units=5),
         compartments=compartments,
         lip=StackingLip(),
     )

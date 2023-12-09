@@ -3,49 +3,40 @@
 Module containg classes and cutters which can be used to create a bin
 """
 from __future__ import annotations
-from typing import Union, Iterable, List, Tuple
+
+from typing import TYPE_CHECKING, Iterable
 
 from build123d import (
-    BasePartObject,
-    RotationLike,
     Align,
-    Mode,
+    Axis,
+    BasePartObject,
+    Box,
+    BuildLine,
     BuildPart,
     BuildSketch,
-    BuildLine,
-    Box,
-    Locations,
-    extrude,
-    add,
-    fillet,
-    Axis,
     Face,
+    Locations,
+    Mode,
     Plane,
     Polyline,
-    make_face,
+    RotationLike,
     Wire,
+    add,
+    extrude,
+    fillet,
+    make_face,
     sweep,
 )
 
-from .features import CompartmentFeature
 from .constants import gf_bin
-from .utils import Utils, StackProfile, Direction
+from .utils import Direction, StackProfile, Utils
+
+if TYPE_CHECKING:
+    from .features import CompartmentFeature
 
 
 class Bin(BasePartObject):
-    """Create a bin.
-
-    Args:
-        face (Face): Faceon which the bin is located (usualy top face of a base)
-        height (float): Height of the bin
-        compartments (Compartments): Compartments of the bin
-        lip (StackingLip, optional): A lip object which should be added. Size added due to the lib
-            is not included in "height. Defaults to None.
-        rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
-        of object. Defaults to None.
-        mode (Mode, optional): combination mode. Defaults to Mode.ADD.
-    """
+    """GRidfinity Bin object."""
 
     def __init__(
         self,
@@ -54,9 +45,22 @@ class Bin(BasePartObject):
         compartments: Compartments,
         lip: StackingLip = None,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """Construct a bin object.
+
+        Args:
+            face (Face): Faceon which the bin is located (usualy top face of a base)
+            height (float): Height of the bin
+            compartments (Compartments): Compartments of the bin
+            lip (StackingLip, optional): A lip object which should be added. Size added due to the
+                lib is not included in "height. Defaults to None.
+            rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
+            of object. Defaults to None.
+            mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+        """
         with BuildPart() as part:
             extrude(to_extrude=face, amount=height)
 
@@ -71,7 +75,9 @@ class Bin(BasePartObject):
                 )
 
             if lip:
-                lip.create(Utils.get_face_by_direction(Direction.TOP).outer_wire())
+                lip.create(
+                    Utils.get_face_by_direction(part, Direction.TOP).outer_wire(),
+                )
 
         super().__init__(part.part, rotation, align, mode)
 
@@ -93,7 +99,7 @@ class StackingLip:
         self,
         path: Wire,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Create StackingLip 3d object.
@@ -130,23 +136,28 @@ class StackingLip:
         with BuildPart() as part:
             with BuildSketch(Plane.XZ) as sweep_sketch:
                 right_edge_center = path.edges().sort_by(Axis.X)[-1].center()
-                with Locations((right_edge_center.X, right_edge_center.Z)):
-                    with Locations((-profile.sketch.bounding_box().max.X, 0)):
-                        add(profile)
+                with Locations((right_edge_center.X, right_edge_center.Z)), Locations(
+                    (-profile.sketch.bounding_box().max.X, 0),
+                ):
+                    add(profile)
             sweep(sections=sweep_sketch.sketch, path=path)
 
         return BasePartObject(part.part, rotation, align, mode)
 
 
 class Compartment:
-    """Create Compartment.
+    """Compartment object used as cutter for bins."""
 
-    Args:
-        features (List[CompartmentContextFeature], optional): compartment feature list. Defaults to
-            None.
-    """
+    def __init__(
+        self,
+        features: CompartmentFeature | list[CompartmentFeature] | None = None,
+    ):
+        """Create Compartment.
 
-    def __init__(self, features: Union[CompartmentFeature, List[CompartmentFeature]] = None):
+        Args:
+            features (List[CompartmentContextFeature], optional): compartment feature list. Defaults
+                to None.
+        """
         if not features:
             features = []
 
@@ -158,7 +169,7 @@ class Compartment:
         size_y: float,
         height: float,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Create Compartment object.
@@ -183,10 +194,12 @@ class Compartment:
             )
 
             for feature in self.features:
-                feature.create()
+                feature.create(part)
 
             fillet_edges = [
-                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
+                i
+                for i in part.edges()
+                if i not in part.faces().sort_by(Axis.Z)[-1].edges()
             ]
 
             fillet(fillet_edges, gf_bin.inner_radius)
@@ -195,9 +208,10 @@ class Compartment:
 
 
 class Compartments:
-    """CompartmentGrid.
+    """Compartments collection.
 
     Creates compartments according to type_list and aranges them according to the grid.
+
     Example:
         grid = [
             [1,1,2,3,3],
@@ -218,27 +232,27 @@ class Compartments:
 
         The size of the compartments and exact location is calculated on basis of the total size
         of the grid arangement
-
-
-        outer_wall: float,
-
-        height (float): Height of compartments
-        inner_wall (float): Space between aranged compartments
-        outer_wall (float): Offset outside generrated arangement
-        grid (List[List[int]]): Configuration for arangement of compartments
-        type_list (List[CompartmentType]): List of types of compartments
-
     """
 
     def __init__(
         self,
-        grid: List[List[int]] = None,
-        compartment_list: Union[Compartment, List[Compartment]] = Compartment(),
+        grid: list[list[int]] | None = None,
+        compartment_list: Compartment | list[Compartment] | None = None,
         inner_wall: float = 1.2,
         outer_wall: float = 0.95,
     ):
-        if not grid:
+        """Construct grid collection.
+
+        Args:
+            grid (List[List[int]]): Configuration for arangement of compartments
+            compartment_list (List[CompartmentType]): List of types of compartments
+            inner_wall (float): Space between aranged compartments
+            outer_wall (float): Offset outside generrated arangement
+        """
+        if grid is None:
             grid = [[1]]
+        if compartment_list is None:
+            compartment_list = Compartment()
 
         self.inner_wall = inner_wall
         self.outer_wall = outer_wall
@@ -251,7 +265,7 @@ class Compartments:
         size_y: float,
         height: float,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = Align.CENTER,
+        align: Align | tuple[Align, Align, Align] = Align.CENTER,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Create compartments object.
@@ -288,10 +302,21 @@ class Compartments:
                         middle_y = (r_index + r_index + units_y) / 2
 
                         loc_x = self._map_range(
-                            middle_x, 0, len(self.grid[0]), 0, distribute_area_x
+                            middle_x,
+                            0,
+                            len(self.grid[0]),
+                            0,
+                            distribute_area_x,
                         )
                         loc_y = (
-                            self._map_range(middle_y, 0, len(self.grid), 0, distribute_area_y) * -1
+                            self._map_range(
+                                middle_y,
+                                0,
+                                len(self.grid),
+                                0,
+                                distribute_area_y,
+                            )
+                            * -1
                         )
 
                         with Locations((loc_x, loc_y)):
@@ -311,11 +336,17 @@ class Compartments:
         return BasePartObject(part=part.part, rotation=rotation, align=align, mode=mode)
 
     @staticmethod
-    def _map_range(x: float, in_min: float, in_max: float, out_min: float, out_max: float) -> float:
+    def _map_range(
+        x: float,
+        in_min: float,
+        in_max: float,
+        out_min: float,
+        out_max: float,
+    ) -> float:
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
     @staticmethod
-    def _count_same_row(r_index: int, row: List[int]) -> int:
+    def _count_same_row(r_index: int, row: list[int]) -> int:
         number = row[r_index]
         count = 0
         for item in row[r_index:]:
@@ -327,7 +358,7 @@ class Compartments:
         return count
 
     @staticmethod
-    def _count_same_column(index: Tuple[int, int], grid: List[List[int]]) -> int:
+    def _count_same_column(index: tuple[int, int], grid: list[list[int]]) -> int:
         number = grid[index[0]][index[1]]
         count = 0
         for row in grid[index[0] :]:
@@ -339,24 +370,27 @@ class Compartments:
 
 
 class CompartmentsEqual(Compartments):
-    """Generate equal spaced compartments.
-
-    Args:
-        div_x (int): number of compartments in x direction
-        div_y (int): number of compartments in y dirction
-        compartment_list (Union[Compartment, List[Compartment]]): List of compartments
-        inner_wall (float, optional): wall thickness between compartments. Defaults to 1.2.
-        outer_wall (float, optional): wall thickness around compartments. Defaults to 0.95.
-    """
+    """Equal spaced compartment collection."""
 
     def __init__(
         self,
-        compartment_list: Union[Compartment, List[Compartment]] = Compartment(),
+        compartment_list: Compartment | list[Compartment] | None = None,
         div_x: int = 1,
         div_y: int = 1,
         inner_wall: float = 1.2,
         outer_wall: float = 0.95,
     ) -> None:
+        """Generate equal spaced compartment collection.
+
+        Args:
+            div_x (int): number of compartments in x direction
+            div_y (int): number of compartments in y dirction
+            compartment_list (Union[Compartment, List[Compartment]]): List of compartments
+            inner_wall (float, optional): wall thickness between compartments. Defaults to 1.2.
+            outer_wall (float, optional): wall thickness around compartments. Defaults to 0.95.
+        """
+        if compartment_list is None:
+            compartment_list = Compartment()
         grid = []
         bin_nr = 1
         for _ in range(div_y):

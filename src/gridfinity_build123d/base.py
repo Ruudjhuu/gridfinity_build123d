@@ -1,49 +1,55 @@
 """Generate gridfinity bases."""
 from __future__ import annotations
-from typing import Union, List, Iterable
+
+from typing import TYPE_CHECKING, Iterable
+
 from build123d import (
-    RotationLike,
     Align,
+    Axis,
+    BasePartObject,
     BuildPart,
     BuildSketch,
-    BasePartObject,
-    Mode,
-    extrude,
-    offset,
-    Axis,
-    Rectangle,
-    add,
     Location,
+    Mode,
+    Rectangle,
+    RotationLike,
+    add,
+    extrude,
     fillet,
+    offset,
 )
 
 from .constants import gridfinity_standard
-from .features import BaseBlockFeature
 from .utils import StackProfile, Utils
+
+if TYPE_CHECKING:
+    from .features import BaseBlockFeature
 
 
 class Base(BasePartObject):
-    """Base.
+    """Gridfinity Base objec.
 
-    Create gridfinity Base object.
-
-    Args:
-        grid (Grid): Grid pattern.
-        features (BaseBlockFeature): compatible features list.
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+    Basis for bins and other gridfinity modules. This is the part that fits in the Baseplates.
     """
 
     def __init__(
         self,
-        grid: List[List[bool]],
-        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
+        grid: list[list[bool]],
+        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """Construct a gridfinity base.
+
+        Args:
+            grid (Grid): Grid pattern.
+            features (BaseBlockFeature): compatible features list.
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        """
         if not features:
             features = []
 
@@ -59,8 +65,10 @@ class Base(BasePartObject):
                 .filter_by(Axis.Z)
                 .filter_by(
                     lambda edge: any(
-                        True for vertex in edge.vertices() if vertex in top_face.vertices()
-                    )
+                        True
+                        for vertex in edge.vertices()
+                        if vertex in top_face.vertices()
+                    ),
                 )
             )
             fillet(objects=edges, radius=gridfinity_standard.grid.radius)
@@ -79,31 +87,30 @@ class Base(BasePartObject):
 
 
 class BaseEqual(Base):
-    """Base.
-
-    Create gridfinity Base object.
-
-    Args:
-        grid (Grid): Grid object containg units of length
-        magnets (bool, optional): True to create holes for magnets. Defaults to False.
-        screwholes (bool, optional): True to create holes for screws. Defaults to False.
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
-    """
+    """Gridfinity rectangular base object."""
 
     def __init__(
         self,
         grid_x: int,
         grid_y: int,
-        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
+        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """Construct a rectangular Base object.
+
+        Args:
+            grid_x (int): Number of grid units on x axis
+            grid_y (int): Number of grid units on y axis
+            features (BaseBlockFeature): List of BaseBlockFeatures
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        """
         grid = []
-        for _ in range(0, grid_y):
+        for _ in range(grid_y):
             grid += [[True] * grid_x]
         super().__init__(grid, features, rotation, align, mode)
 
@@ -114,23 +121,24 @@ class BaseBlock(BasePartObject):
     Create a single baseblock with rectangular platform. The rectangular platform makes it
     posible to stack the blocks in x and y direction. After creating an array it is meant to
     cut the platform to size.
-
-    Args:
-        magnets (bool, optional): True to create holes for magnets. Defaults to False.
-        screwholes (bool, optional): True to create holes for screws. Defaults to False.
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
     """
 
     def __init__(
         self,
-        features: Union[BaseBlockFeature, List[BaseBlockFeature]] = None,
+        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """Construct BaseBlock.
+
+        Args:
+            features (BaseBlockFeature): List of BaseBlockFeatures
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        """
         if not features:
             features = []
 
@@ -138,7 +146,8 @@ class BaseBlock(BasePartObject):
 
         with BuildPart() as baseblock:
             Utils.create_profile_block(
-                StackProfile.ProfileType.BIN, gridfinity_standard.stacking_lip.offset
+                StackProfile.ProfileType.BIN,
+                gridfinity_standard.stacking_lip.offset,
             )
 
             with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
@@ -149,6 +158,6 @@ class BaseBlock(BasePartObject):
             )
 
             for feature in features:
-                feature.apply()
+                feature.apply(baseblock)
 
         super().__init__(baseblock.part, rotation, align, mode)

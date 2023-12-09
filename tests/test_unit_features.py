@@ -1,44 +1,52 @@
-from parameterized import parameterized  # type: ignore
+from __future__ import annotations
+
 from math import pi
-from typing import Union
 from unittest.mock import ANY, MagicMock, patch
-from build123d import (
-    BuildPart,
-    Box,
-    Axis,
-    Align,
-    Mode,
-    CenterOf,
-    RotationLike,
-    BasePartObject,
-)
 
-import testutils
 import mocks
-
-from gridfinity_build123d.features import (
-    HoleFeature,
-    ScrewHole,
-    ScrewHoleCountersink,
-    ScrewHoleCounterbore,
-    MagnetHole,
-    Weighted,
-    Label,
-    Sweep,
-    FeatureLocation,
-    Feature,
+import testutils
+from build123d import (
+    Align,
+    Axis,
+    BasePartObject,
+    Box,
+    BuildPart,
+    CenterOf,
+    Mode,
+    RotationLike,
 )
+from gridfinity_build123d.features import (
+    Feature,
+    FeatureLocation,
+    HoleFeature,
+    Label,
+    MagnetHole,
+    ScrewHole,
+    ScrewHoleCounterbore,
+    ScrewHoleCountersink,
+    Sweep,
+    Weighted,
+)
+from parameterized import parameterized  # type: ignore[import-untyped]
 
 
 class FeatureLocationTest(testutils.UtilTestCase):
     def test_feature_location_apply_BOTTOM_CONRNERS(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.BOTTOM_CORNERS)
+            FeatureLocation.apply(
+                part,
+                feature_box.create,
+                FeatureLocation.BOTTOM_CORNERS,
+            )
 
         bot_face = part.faces().sort_by(Axis.Z)[0]
         self.assertEqual(4, len(bot_face.inner_wires()))
@@ -54,12 +62,20 @@ class FeatureLocationTest(testutils.UtilTestCase):
 
     def test_feature_location_apply_BOTTOM_MIDDLE(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.BOTTOM_MIDDLE)
+            FeatureLocation.apply(
+                part,
+                feature_box.create,
+                FeatureLocation.BOTTOM_MIDDLE,
+            )
 
         bot_face = part.faces().sort_by(Axis.Z)[0]
         self.assertEqual(1, len(bot_face.inner_wires()))
@@ -75,12 +91,16 @@ class FeatureLocationTest(testutils.UtilTestCase):
 
     def test_feature_location_apply_TOP_CONRNERS(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.TOP_CORNERS)
+            FeatureLocation.apply(part, feature_box.create, FeatureLocation.TOP_CORNERS)
 
         top_face = part.faces().sort_by(Axis.Z)[-1]
         self.assertEqual(4, len(top_face.inner_wires()))
@@ -96,12 +116,16 @@ class FeatureLocationTest(testutils.UtilTestCase):
 
     def test_feature_location_apply_TOP_MIDDLE(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.TOP_MIDDLE)
+            FeatureLocation.apply(part, feature_box.create, FeatureLocation.TOP_MIDDLE)
 
         top_face = part.faces().sort_by(Axis.Z)[-1]
         self.assertEqual(1, len(top_face.inner_wires()))
@@ -117,12 +141,16 @@ class FeatureLocationTest(testutils.UtilTestCase):
 
     def test_feature_location_apply_CORNERS(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.CORNERS)
+            FeatureLocation.apply(part, feature_box.create, FeatureLocation.CORNERS)
 
         bbox = part.part.bounding_box()
 
@@ -131,12 +159,16 @@ class FeatureLocationTest(testutils.UtilTestCase):
 
     def test_feature_location_apply_UNDEFINED(self) -> None:
         feature_box = mocks.BoxAsMock(
-            1, 1, 1, align=(Align.CENTER, Align.CENTER, Align.MAX), mode=Mode.SUBTRACT
+            1,
+            1,
+            1,
+            align=(Align.CENTER, Align.CENTER, Align.MAX),
+            mode=Mode.SUBTRACT,
         )
 
         with BuildPart() as part:
             Box(10, 10, 10)
-            FeatureLocation.apply(feature_box.create, FeatureLocation.UNDEFINED)
+            FeatureLocation.apply(part, feature_box.create, FeatureLocation.UNDEFINED)
 
         bbox = part.part.bounding_box()
 
@@ -150,20 +182,22 @@ class FeatureTest(testutils.UtilTestCase):
         class TestFeature(Feature):
             def create_obj(
                 self,
-                rotation: RotationLike = None,
-                align: Union[Align, tuple[Align, Align, Align]] = None,
-                mode: Mode = None,
+                rotation: RotationLike = None,  # noqa:ARG002
+                align: Align | tuple[Align, Align, Align] | None = None,  # noqa:ARG002
+                mode: Mode = None,  # noqa:ARG002
             ) -> BasePartObject:
-                return Box(1, 1, 1)
+                # Dummy Code
+                return Box(1, 1, 1)  # pragma: no cover
 
+        context = MagicMock(spec=BuildPart)
         f_location = MagicMock(spec=FeatureLocation)
         feature = TestFeature(f_location)
-        feature.apply()
-        apply_mock.assert_called_once_with(feature.create_obj, f_location)
+        feature.apply(context)
+        apply_mock.assert_called_once_with(context, feature.create_obj, f_location)
 
 
 class HoleFeatureTest(testutils.UtilTestCase):
-    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type:ignore
+    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[misc]
     def test_hole_feature(self, radius: float, depth: float) -> None:
         part = HoleFeature(radius, depth).create_obj()
 
@@ -273,7 +307,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label().create()
+            Label().create(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -285,7 +319,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label_angle(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label(10).create()
+            Label(10).create(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -297,7 +331,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label_angle_zero(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label(0).create()
+            Label(0).create(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -307,16 +341,9 @@ class LabelTest(testutils.UtilTestCase):
         self.assertEqual(124399.99999371683, part.part.volume)
 
     def test_label_too_small_box(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             Box(10, 10, 10)
-            self.assertRaises(ValueError, Label().create)
-
-    def test_label_empty_context(self) -> None:
-        with BuildPart():
-            self.assertRaises(ValueError, Label().create)
-
-    def test_label_no_context(self) -> None:
-        self.assertRaises(RuntimeError, Label().create)
+            self.assertRaises(ValueError, Label().create, part)
 
     def test_label_unvalid_angle(self) -> None:
         self.assertRaises(ValueError, Label, -1)
@@ -327,7 +354,7 @@ class SweepTest(testutils.UtilTestCase):
     def test_sweep(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep().create()
+            Sweep().create(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 5, bot_face.width)
@@ -342,7 +369,7 @@ class SweepTest(testutils.UtilTestCase):
     def test_sweep_radius(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep(20).create()
+            Sweep(20).create(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 20, bot_face.width)
@@ -355,6 +382,6 @@ class SweepTest(testutils.UtilTestCase):
         self.assertEqual(120707.96326794896, part.part.volume)
 
     def test_sweep_small_box(self) -> None:
-        with BuildPart():
+        with BuildPart() as part:
             Box(4, 4, 4)
-            self.assertRaises(ValueError, Sweep().create)
+            self.assertRaises(ValueError, Sweep().create, part)

@@ -24,15 +24,20 @@ __all__ = [
 ]
 
 from .base import Base, BaseEqual
-from .features import (
-    ScrewHole,
-    ScrewHoleCountersink,
-    ScrewHoleCounterbore,
-    MagnetHole,
-    Weighted,
-    Label,
-    Sweep,
+from .baseplate import (
+    BasePlate,
+    BasePlateBlockFrame,
+    BasePlateBlockFull,
+    BasePlateEqual,
 )
-from .bin import Bin, StackingLip, Compartment, Compartments, CompartmentsEqual
-from .utils import Utils, Direction
-from .baseplate import BasePlate, BasePlateEqual, BasePlateBlockFrame, BasePlateBlockFull
+from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
+from .features import (
+    Label,
+    MagnetHole,
+    ScrewHole,
+    ScrewHoleCounterbore,
+    ScrewHoleCountersink,
+    Sweep,
+    Weighted,
+)
+from .utils import Direction, Utils

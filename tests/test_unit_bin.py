@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 import unittest
-from unittest.mock import patch, MagicMock, call
-from typing import List
+from unittest.mock import MagicMock, call, patch
 
+import mocks
+import testutils
 from build123d import (
-    BuildPart,
-    Vector,
-    Rectangle,
-    Mode,
     Align,
+    BuildPart,
     BuildSketch,
+    Mode,
+    Rectangle,
     RectangleRounded,
+    Vector,
 )
-
 from gridfinity_build123d.bin import (
     Bin,
     Compartment,
@@ -19,10 +21,7 @@ from gridfinity_build123d.bin import (
     CompartmentsEqual,
     StackingLip,
 )
-
 from gridfinity_build123d.features import CompartmentFeature
-import mocks
-import testutils
 
 
 class BinTest(unittest.TestCase):
@@ -82,7 +81,7 @@ class StackingLipTest(testutils.UtilTestCase):
 
 
 class CompartmentsTest(unittest.TestCase):
-    def test_compartments_default_GRID(self) -> None:
+    def test_compartments_default_grid(self) -> None:
         comp_mock = MagicMock(spec=Compartment)
         comp_box = mocks.BoxAsMock(10, 10, 10)
         comp_mock.create.side_effect = comp_box.create
@@ -101,6 +100,31 @@ class CompartmentsTest(unittest.TestCase):
             )
 
         comp_mock.create.assert_called_once_with(size_x=94.0, size_y=94.0, height=50)
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(10, 10, 10), bbox.size)
+        self.assertAlmostEqual(1000, part.part.volume)
+
+    @patch("gridfinity_build123d.bin.Compartment", autospec=True)
+    def test_compartments_default_compartment(self, comp_mock: MagicMock) -> None:
+        comp_box = mocks.BoxAsMock(10, 10, 10)
+        comp_mock.return_value.create.side_effect = comp_box.create
+
+        with BuildPart() as part:
+            Compartments(
+                inner_wall=1,
+                outer_wall=3,
+            ).create(
+                size_x=100,
+                size_y=100,
+                height=50,
+            )
+
+        comp_mock.assert_called_once()
+        comp_mock.return_value.create.assert_called_once_with(
+            size_x=94.0,
+            size_y=94.0,
+            height=50,
+        )
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 10), bbox.size)
         self.assertAlmostEqual(1000, part.part.volume)
@@ -155,7 +179,7 @@ class CompartmentsTest(unittest.TestCase):
                 call(size_x=14.833333333333334, size_y=94.0, height=50),
                 call(size_x=30.666666666666668, size_y=94.0, height=50),
                 call(size_x=46.5, size_y=94.0, height=50),
-            ]
+            ],
         )
 
         bbox = part.part.bounding_box()
@@ -188,7 +212,7 @@ class CompartmentsTest(unittest.TestCase):
                 call(size_x=22.75, size_y=46.5, height=50),
                 call(size_x=22.75, size_y=94.0, height=50),
                 call(size_x=22.75, size_y=46.5, height=50),
-            ]
+            ],
         )
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(69.375, 57.5, 10), bbox.size)
@@ -203,7 +227,7 @@ class CompartmentsTest(unittest.TestCase):
         comp_mock_2.create.side_effect = comp_box.create
 
         grid = [[1, 2]]
-        comp_list: List[Compartment] = [comp_mock_1, comp_mock_2]
+        comp_list: list[Compartment] = [comp_mock_1, comp_mock_2]
 
         with BuildPart() as part:
             Compartments(
@@ -227,7 +251,25 @@ class CompartmentsTest(unittest.TestCase):
 
 @patch("gridfinity_build123d.bin.Compartments.__init__", spec=Compartments)
 class CompartmentsEqualTest(unittest.TestCase):
-    def test_compartments_equal_one(self, comp_mock: MagicMock) -> None:
+    @patch("gridfinity_build123d.bin.Compartment", autospec=True)
+    def test_compartments_equal_default_compartment(
+        self,
+        comp_mock: MagicMock,
+        comps_mock: MagicMock,
+    ) -> None:
+        CompartmentsEqual(
+            div_x=1,
+            div_y=1,
+        )
+
+        comps_mock.assert_called_once_with(
+            grid=[[1]],
+            compartment_list=comp_mock.return_value,
+            inner_wall=1.2,
+            outer_wall=0.95,
+        )
+
+    def test_compartments_equal_one(self, comps_mock: MagicMock) -> None:
         cmp_mock1 = MagicMock(spec=Compartment)
         cmp_mock2 = MagicMock(spec=Compartment)
 
@@ -237,14 +279,14 @@ class CompartmentsEqualTest(unittest.TestCase):
             compartment_list=[cmp_mock1, cmp_mock2],
         )
 
-        comp_mock.assert_called_once_with(
+        comps_mock.assert_called_once_with(
             grid=[[1]],
             compartment_list=[cmp_mock1, cmp_mock2],
             inner_wall=1.2,
             outer_wall=0.95,
         )
 
-    def test_compartments_equal_one_row(self, comp_mock: MagicMock) -> None:
+    def test_compartments_equal_one_row(self, comps_mock: MagicMock) -> None:
         cmp_mock1 = MagicMock(spec=Compartment)
         cmp_mock2 = MagicMock(spec=Compartment)
 
@@ -254,14 +296,14 @@ class CompartmentsEqualTest(unittest.TestCase):
             compartment_list=[cmp_mock1, cmp_mock2],
         )
 
-        comp_mock.assert_called_once_with(
+        comps_mock.assert_called_once_with(
             grid=[[1, 2, 3, 4, 5]],
             compartment_list=[cmp_mock1, cmp_mock2],
             inner_wall=1.2,
             outer_wall=0.95,
         )
 
-    def test_compartments_equal_multi(self, comp_mock: MagicMock) -> None:
+    def test_compartments_equal_multi(self, comps_mock: MagicMock) -> None:
         cmp_mock1 = MagicMock(spec=Compartment)
         cmp_mock2 = MagicMock(spec=Compartment)
 
@@ -271,7 +313,7 @@ class CompartmentsEqualTest(unittest.TestCase):
             compartment_list=[cmp_mock1, cmp_mock2],
         )
 
-        comp_mock.assert_called_once_with(
+        comps_mock.assert_called_once_with(
             grid=[
                 [1, 2, 3, 4, 5],
                 [6, 7, 8, 9, 10],

@@ -1,10 +1,8 @@
 {
     "recommendations": [
-        "ms-python.black-formatter",
-        "ms-python.flake8",
         "matangover.mypy",
-        "ms-python.pylint",
         "ms-python.python",
+        "charliermarsh.ruff",
         "bernhard-42.ocp-cad-viewer"
     ]
 }
