@@ -223,13 +223,11 @@ class Compartments:
             Compartment(features=[Label()]),
             Compartment(),
         ]
-
         Will generate 4 compartments.
         One compartment is a square and takes 4 slots. The second
         compartment is a rectangle with a Sweep using two slots in the y axis direction.The third
         compartment is a rectangle with a Label using 2 slots in the x axis direction. The fourth
         compartment is a rectangle in the x axis direction.
-
         The size of the compartments and exact location is calculated on basis of the total size
         of the grid arangement
     """
