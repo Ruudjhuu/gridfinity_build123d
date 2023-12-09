@@ -1,35 +1,36 @@
 """Generate gridfinity bases."""
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import Union, Protocol
+from typing import Protocol
+
 from build123d import (
-    RotationLike,
     Align,
+    Axis,
+    BasePartObject,
+    Box,
+    BuildLine,
     BuildPart,
     BuildSketch,
-    BuildLine,
-    BasePartObject,
+    CounterBoreHole,
+    CounterSinkHole,
+    GridLocations,
+    Hole,
+    Locations,
     Mode,
+    PolarLocations,
+    Polyline,
+    RotationLike,
+    SagittaArc,
+    add,
+    chamfer,
     extrude,
     fillet,
-    Axis,
-    chamfer,
-    Hole,
-    CounterSinkHole,
-    CounterBoreHole,
-    Box,
-    Polyline,
-    SagittaArc,
     make_face,
-    PolarLocations,
-    add,
-    Builder,
-    GridLocations,
-    Locations,
 )
 
-from .constants import gridfinity_standard, gf_bin
+from .constants import gf_bin, gridfinity_standard
 from .utils import ObjectCreate
 
 
@@ -39,9 +40,17 @@ class CallableCreateObj(Protocol):
     def __call__(
         self,
         rotation: RotationLike = ...,
-        align: Union[Align, tuple[Align, Align, Align]] = ...,
+        align: Align | tuple[Align, Align, Align] = ...,
         mode: Mode = ...,
     ) -> BasePartObject:
+        """Create the build123d 3d object.
+
+        Args:
+            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode): Combination mode. Defaults to Mode.ADD.
+        """
         ...  # pragma: no cover
 
 
@@ -57,6 +66,7 @@ class FeatureLocation(Enum):
 
     @staticmethod
     def apply(
+        context: BuildPart,
         create_obj: CallableCreateObj,
         location: FeatureLocation,
     ) -> None:
@@ -65,26 +75,34 @@ class FeatureLocation(Enum):
         This function depends on a builder context being active.
 
         Args:
+            context (BuildPart): Context to apply feature to.
             create_obj (CallableCreateObj): Callable which creates a BasePartObject
             location (FeatureLocation): Feature Location
 
         Raises:
             ValueError: Unsuported feature location
         """
-        context: Builder = Builder._get_context(None)  # pylint: disable=protected-access
-        bbox = context._obj.bounding_box()  # pylint: disable=protected-access
+        bbox = context.part.bounding_box()
         corner_distance = bbox.size.X - 2 * gridfinity_standard.bottom.hole_from_side
         if location == FeatureLocation.BOTTOM_CORNERS:
-            with Locations((0, 0, bbox.min.Z)):
-                with GridLocations(corner_distance, corner_distance, 2, 2):
-                    create_obj(rotation=(180, 0, 0))
+            with Locations((0, 0, bbox.min.Z)), GridLocations(
+                corner_distance,
+                corner_distance,
+                2,
+                2,
+            ):
+                create_obj(rotation=(180, 0, 0))
         elif location == FeatureLocation.BOTTOM_MIDDLE:
             with Locations((0, 0, bbox.min.Z)):
                 create_obj(rotation=(180, 0, 0))
         elif location == FeatureLocation.TOP_CORNERS:
-            with Locations((0, 0, bbox.max.Z)):
-                with GridLocations(corner_distance, corner_distance, 2, 2):
-                    create_obj()
+            with Locations((0, 0, bbox.max.Z)), GridLocations(
+                corner_distance,
+                corner_distance,
+                2,
+                2,
+            ):
+                create_obj()
         elif location == FeatureLocation.TOP_MIDDLE:
             with Locations((0, 0, bbox.max.Z)):
                 create_obj()
@@ -93,28 +111,34 @@ class FeatureLocation(Enum):
                 create_obj()
         elif location == FeatureLocation.UNDEFINED:
             create_obj()
-        else:
-            raise ValueError("Unsuported feature location: {location}")  # pragma:no cover
+        else:  # pragma: no cover
+            msg = f"Unsuported feature location: {location}"
+            raise ValueError(msg)
 
 
 class Feature(ObjectCreate):
     """Feature interface."""
 
     def __init__(self, feature_location: FeatureLocation) -> None:
+        """Construct feature.
+
+        Args:
+            feature_location (FeatureLocation): Location of the feature when applied.
+        """
         self._feature_location = feature_location
 
-    def apply(self) -> None:
+    def apply(self, context: BuildPart) -> None:
         """Apply a feature."""
-        FeatureLocation.apply(self.create_obj, self._feature_location)
+        FeatureLocation.apply(context, self.create_obj, self._feature_location)
 
 
 class BaseBlockFeature(Feature):
     """This type is accepted for baseblock features."""
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         raise NotImplementedError  # pragma: no cover
@@ -123,23 +147,17 @@ class BaseBlockFeature(Feature):
 class BasePlateFeature(Feature):
     """This type is accepted for baseplate features."""
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         raise NotImplementedError  # pragma: no cover
 
 
 class HoleFeature(BaseBlockFeature, BasePlateFeature):
-    """Create a Hole baseblock feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-        feature_location (FeatureLocation): Location of feature
-    """
+    """Hole Feature."""
 
     def __init__(
         self,
@@ -147,14 +165,21 @@ class HoleFeature(BaseBlockFeature, BasePlateFeature):
         depth: float,
         feature_location: FeatureLocation = FeatureLocation.UNDEFINED,
     ) -> None:
+        """Create a Hole baseblock feature.
+
+        Args:
+            radius (float): radius
+            depth (float): depth
+            feature_location (FeatureLocation): Location of feature
+        """
         super().__init__(feature_location)
         self.radius = radius
         self.depth = depth
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
@@ -163,12 +188,7 @@ class HoleFeature(BaseBlockFeature, BasePlateFeature):
 
 
 class ScrewHole(HoleFeature):
-    """Create a ScrewHole baseblock feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-    """
+    """Screw hole feature."""
 
     def __init__(
         self,
@@ -176,16 +196,18 @@ class ScrewHole(HoleFeature):
         depth: float = gridfinity_standard.screw.depth,
         feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
     ) -> None:
+        """Create a ScrewHole baseblock feature.
+
+        Args:
+            radius (float): radius
+            depth (float): depth
+            feature_location: Location of the feature when applied.
+        """
         super().__init__(radius, depth, feature_location)
 
 
 class MagnetHole(HoleFeature):
-    """Create a MagnetHole feature.
-
-    Args:
-        radius (float): radius
-        depth (float): depth
-    """
+    """Magnet hole feature."""
 
     def __init__(
         self,
@@ -193,18 +215,18 @@ class MagnetHole(HoleFeature):
         depth: float = gridfinity_standard.magnet.thickness,
         feature_location: FeatureLocation = FeatureLocation.CORNERS,
     ) -> None:
+        """Create a MagnetHole feature.
+
+        Args:
+            radius (float): radius
+            depth (float): depth
+            feature_location: Location of the feature when applied.
+        """
         super().__init__(radius, depth, feature_location)
 
 
 class ScrewHoleCountersink(ScrewHole):
-    """Create a Countersink ScrewHole feature.
-
-    Args:
-        radius (float): radius
-        counter_sink_radius (float): radius of countersink
-        depth (float): depth
-        counter_sink_angle(float): angle of contoursink in degrees
-    """
+    """Screw hole countersink feature."""
 
     def __init__(
         self,
@@ -214,14 +236,23 @@ class ScrewHoleCountersink(ScrewHole):
         counter_sink_angle: float = 82,
         feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
     ) -> None:
+        """Create a Countersink ScrewHole feature.
+
+        Args:
+            radius (float): radius
+            counter_sink_radius (float): radius of countersink
+            depth (float): depth
+            counter_sink_angle(float): angle of contoursink in degrees
+            feature_location: Location of the feature when applied.
+        """
         super().__init__(radius, depth, feature_location)
         self.counter_sink_radius = counter_sink_radius
         self.counter_sink_angle = counter_sink_angle
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
@@ -236,14 +267,7 @@ class ScrewHoleCountersink(ScrewHole):
 
 
 class ScrewHoleCounterbore(ScrewHole):
-    """Create a CounterBore ScrewHole feature.
-
-    Args:
-        radius (float): radius
-        counter_bore_radius (float): counter bore radius
-        counter_bore_depth (float): counter bore depth
-        depth (float): depth
-    """
+    """Screw hole counterbore feature."""
 
     def __init__(
         self,
@@ -253,14 +277,23 @@ class ScrewHoleCounterbore(ScrewHole):
         depth: float = gridfinity_standard.screw.depth,
         feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
     ) -> None:
+        """Create a CounterBore ScrewHole feature.
+
+        Args:
+            radius (float): radius
+            counter_bore_radius (float): counter bore radius
+            counter_bore_depth (float): counter bore depth
+            depth (float): depth
+            feature_location: Location of the feature when applied.
+        """
         super().__init__(radius, depth, feature_location)
         self.counter_bore_radius = counter_bore_radius
         self.counter_bore_depth = counter_bore_depth
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
@@ -277,13 +310,22 @@ class ScrewHoleCounterbore(ScrewHole):
 class Weighted(BasePlateFeature):
     """Weigthed cutout feature for baseplates."""
 
-    def __init__(self, feature_location: FeatureLocation = FeatureLocation.BOTTOM_MIDDLE) -> None:
+    def __init__(
+        self,
+        feature_location: FeatureLocation = FeatureLocation.BOTTOM_MIDDLE,
+    ) -> None:
+        """Construct Weighted feature.
+
+        Args:
+            feature_location (FeatureLocation, optional): Location of the feature when applied..
+                Defaults to FeatureLocation.BOTTOM_MIDDLE.
+        """
         super().__init__(feature_location)
 
-    def create_obj(
+    def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         appendix_width = 8.5
@@ -314,8 +356,12 @@ class ContextFeature(ABC):
     """Interface for feature using a builder context."""
 
     @abstractmethod
-    def create(self) -> None:
-        """Apply the feature to the object in context."""
+    def create(self, context: BuildPart) -> None:
+        """Apply the feature to the object in context.
+
+        Args:
+            context (BuildPart): Context to apply the feature to
+        """
         raise NotImplementedError  # pragma: no cover
 
 
@@ -324,26 +370,23 @@ class CompartmentFeature(ContextFeature):
 
 
 class Label(CompartmentFeature):
-    """Compartment Label feature.
+    """Label feature for compartments."""
 
-    Args:
-        angle (float, optional): angle of the label. Defaults to gf_bin.label.angle.
-    """
+    _max_angle = 90
 
     def __init__(self, angle: float = gf_bin.label.angle) -> None:
-        if not 0 <= angle <= 90:
-            raise ValueError("Label angle needs to be between 0 and 90")
+        """Construct label feature.
+
+        Args:
+            angle (float, optional): angle of the label. Defaults to gf_bin.label.angle.
+        """
+        if not 0 <= angle <= self._max_angle:
+            msg = "Label angle needs to be between 0 and 90"
+            raise ValueError(msg)
+
         self.angle = angle if angle else 0.0000001
 
-    def create(self) -> None:
-        context: BuildPart = BuildPart._get_context(  # pylint: disable=protected-access
-            "Label.create"
-        )
-        if context is None:
-            raise RuntimeError("Label must have an active builder context")
-        if not context._obj:  # pylint: disable=protected-access
-            raise ValueError("Context has no object")
-
+    def create(self, context: BuildPart) -> None:  # noqa: D102
         face_top = context.faces().sort_by(Axis.Z)[-1]
         edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
         try:
@@ -354,28 +397,33 @@ class Label(CompartmentFeature):
                 reference=face_top,
             )
             chamfer_face = context.faces().sort_by(Axis.Z)[-2]
-            extrude(to_extrude=chamfer_face, amount=1, dir=(0, 0, -1), mode=Mode.SUBTRACT)
+            extrude(
+                to_extrude=chamfer_face,
+                amount=1,
+                dir=(0, 0, -1),
+                mode=Mode.SUBTRACT,
+            )
         except ValueError as exp:
-            raise ValueError("Label could not be created, Parent object too small") from exp
+            msg = "Label could not be created, Parent object too small"
+            raise ValueError(msg) from exp
 
 
 class Sweep(CompartmentFeature):
-    """Compartment Sweep feature.
-
-    Args:
-        radius (float, optional): Radius of the sweep. Defaults to gf_bin.sweep.radius.
-    """
+    """Compartment Sweep feature."""
 
     def __init__(self, radius: float = gf_bin.sweep.radius) -> None:
+        """Construct Compartment Sweep feature.
+
+        Args:
+            radius (float, optional): Radius of the sweep. Defaults to gf_bin.sweep.radius.
+        """
         self.radius = radius
 
-    def create(self) -> None:
-        context: BuildPart = BuildPart._get_context(  # pylint: disable=protected-access
-            "Label.create"
-        )
+    def create(self, context: BuildPart) -> None:  # noqa: D102
         face_bottom = context.faces().sort_by(Axis.Z)[0]
         edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
         try:
             fillet(edge_bottom_front, radius=self.radius)
         except ValueError as exp:
-            raise ValueError("Sweep could not be created, Parent object too small") from exp
+            msg = "Sweep could not be created, Parent object too small"
+            raise ValueError(msg) from exp

@@ -1,10 +1,9 @@
 [project]
 name = "gridfinity_build123d"
 version = "0.1.0"
-description = "something"
-dependencies = [
-    "build123d @ git+https://github.com/gumyr/build123d.git"
-    ]
+description = "Build123d library for gridfinity objects"
+dependencies = ["build123d @ git+https://github.com/gumyr/build123d.git"]
+requires-python = ">=3.8"
 
 [build-system]
 requires = ["setuptools >= 61.0.0"]
@@ -20,12 +19,29 @@ line-length = 100
 branch = true
 omit = ["test_*"]
 
-[tool.pylint.MASTER]
-load-plugins=["pylint_per_file_ignores"]
+[too.ruff]
+line-length = 100
 
-[tool.pylint.'MESSAGES CONTROL']
-disable = "too-many-arguments,too-many-locals, too-few-public-methods"
-ignore-patterns = "test_.*"
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["ANN101", "PLR0913", "ANN204"]
 
-[tool.pylint-per-file-ignores]
-"/tests/"="missing-function-docstring,missing-module-docstring,missing-class-docstring"
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = [
+    "D100",
+    "D101",
+    "D102",
+    "D107",
+    "N802",
+    "INP001",
+    "PT009",
+    "PT027",
+]
+"**/examples/*" = ["INP001"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-decorators = ['inherit_docstring']
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 101

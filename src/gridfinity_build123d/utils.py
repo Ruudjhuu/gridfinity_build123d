@@ -1,36 +1,48 @@
 """Utiity module."""
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import Any, Tuple, Union, List
+from typing import Any
 
 from build123d import (
-    Builder,
-    BuildPart,
-    add,
-    Locations,
-    Part,
-    Mode,
     Align,
-    RotationLike,
-    Face,
+    Axis,
     BasePartObject,
     BaseSketchObject,
-    BuildSketch,
     BuildLine,
-    Polyline,
-    make_face,
-    Axis,
-    Plane,
-    RectangleRounded,
-    sweep,
-    extrude,
-    offset,
+    BuildPart,
+    BuildSketch,
+    Face,
     Kind,
     Location,
+    Locations,
+    Mode,
+    Part,
+    Plane,
+    Polyline,
+    RectangleRounded,
+    RotationLike,
+    add,
+    extrude,
+    make_face,
+    offset,
+    sweep,
 )
 
 from .constants import gridfinity_standard
+
+
+class UnsuportedEnumValueError(Exception):
+    """Raised when a unsuported enum value is handled."""
+
+    def __init__(self, enum_var: Enum) -> None:
+        """Construct Enum exception.
+
+        Args:
+            enum_var (Enum): Enum value
+        """
+        super().__init__(f"Unsuported enum value: {enum_var}")
 
 
 class ObjectCreate(ABC):
@@ -40,7 +52,7 @@ class ObjectCreate(ABC):
     def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Create the build123d 3d object.
@@ -57,7 +69,7 @@ class ObjectCreate(ABC):
         Returns:
             BasePartObject: The build123d 3d object
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError  # pragma: no cover
 
 
 class Direction(Enum):
@@ -74,7 +86,7 @@ class Direction(Enum):
     FRONT = auto()
 
     @staticmethod
-    def to_tuple(direction: Direction) -> Tuple[int, int, int]:
+    def to_tuple(direction: Direction) -> tuple[int, int, int]:
         """Convert Direction to tuple.
 
         Args:
@@ -104,7 +116,7 @@ class Direction(Enum):
         if direction == Direction.FRONT:
             return (0, -1, 0)
 
-        raise ValueError(f"Unkown direction {direction}")  # pragma: no cover
+        raise UnsuportedEnumValueError(direction)  # pragma: no cover
 
 
 class Attach(Enum):
@@ -128,106 +140,105 @@ class Utils:  # pylint: disable=too-few-public-methods
     """
 
     @staticmethod
-    def attach(part: Part, attach: Attach, offset_value: float = 0) -> None:
+    def attach(
+        context: BuildPart,
+        part: Part,
+        attach: Attach,
+        offset_value: float = 0,
+    ) -> None:
         """attach.
 
         Attaches other object acording to "attach".
 
         Args:
+            context (PartBuilder): context were attach should be executed.
             part (Part): the part to be attached
             attach (Attach): Direction to attach
             offset_value (float): offset.
 
         Raises:
-            RuntimeError: Attach must have an active builder context
-            RuntimeError: Attach only works for BuildPart (yet)
-            ValueError: Nothing to attach to
+            UnsuportedEnumValueError: Unsuported Enum value
         """
-        context: Builder = Builder._get_context(None)  # pylint: disable=protected-access
-        if context is None:
-            raise RuntimeError("Attach must have an active builder context")
-        if not isinstance(context, BuildPart):
-            raise RuntimeError("Attach only works for BuildPart (yet)")
-        if not context._obj:  # pylint: disable=protected-access
-            raise ValueError("Nothing to attach to")
-
-        location: Tuple[float, float, float] = (0, 0, 0)
+        location: tuple[float, float, float] = (0, 0, 0)
 
         if attach == Attach.TOP:
             location = (
                 0,
                 0,
-                context.part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset_value,
+                context.part.bounding_box().max.Z
+                + -1 * part.bounding_box().min.Z
+                + offset_value,
             )
         elif attach == Attach.BOTTOM:
             location = (
                 0,
                 0,
-                context.part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset_value,
+                context.part.bounding_box().min.Z
+                + -1 * part.bounding_box().max.Z
+                - offset_value,
             )
         elif attach == Attach.LEFT:
             location = (
-                context.part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset_value,
+                context.part.bounding_box().min.X
+                + -1 * part.bounding_box().max.X
+                - offset_value,
                 0,
                 0,
             )
         elif attach == Attach.RIGHT:
             location = (
-                context.part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset_value,
+                context.part.bounding_box().max.X
+                + -1 * part.bounding_box().min.X
+                + offset_value,
                 0,
                 0,
             )
         elif attach == Attach.FRONT:
             location = (
                 0,
-                context.part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset_value,
+                context.part.bounding_box().min.Y
+                + -1 * part.bounding_box().max.Y
+                - offset_value,
                 0,
             )
         elif attach == Attach.BACK:
             location = (
                 0,
-                context.part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset_value,
+                context.part.bounding_box().max.Y
+                + -1 * part.bounding_box().min.Y
+                + offset_value,
                 0,
             )
-        else:  # pragma: nocover
-            raise ValueError("Unkown attach type")  # pragma: nocover
+        else:  # pragma: no cover
+            raise UnsuportedEnumValueError(attach)
 
         with Locations(location):
             add(part)
 
     @staticmethod
-    def get_face_by_direction(direction: Direction) -> Face:
+    def get_face_by_direction(context: BuildPart, direction: Direction) -> Face:
         """Get face by direction.
 
         Args:
+            context (PartBuilder): context were attach should be executed.
             direction (Direction): Direction of face
-
-        Raises:
-            RuntimeError: get_face_by_direction must have an active builder context
-            RuntimeError: get_face_by_direction only works for BuildPart
-            ValueError: Nothing to get face from
 
         Returns:
             Face: face
         """
-        context: Builder = Builder._get_context(None)  # pylint: disable=protected-access
-        if context is None:
-            raise RuntimeError("get_face_by_direction must have an active builder context")
-        if not isinstance(context, BuildPart):
-            raise RuntimeError("get_face_by_direction only works for BuildPart")
-        if not context._obj:  # pylint: disable=protected-access
-            raise ValueError("Nothing to get face from")
-
-        return context.faces().sort_by(Axis((0, 0, 0), Direction.to_tuple(direction)))[-1]
+        return context.faces().sort_by(Axis((0, 0, 0), Direction.to_tuple(direction)))[
+            -1
+        ]
 
     @staticmethod
-    def remaining_gridfinity_height(units: int) -> float:
+    def remaining_gridfinity_height(part: Part | None, units: int) -> float:
         """Calculate reamining height.
 
         Calculates the height still needed to create a gridfinity object of "units" heigh. Uses
         current builder context to calculate the remaining height.
 
         Args:
+            part (Part): Part to get current height from
             units (int): Gridfinity standard z units (7mm)
 
         Raises:
@@ -237,18 +248,13 @@ class Utils:  # pylint: disable=too-few-public-methods
         Returns:
             float: remaining height
         """
-        context: Builder = Builder._get_context(None)  # pylint: disable=protected-access
-        if context is None:
-            raise RuntimeError("remaining_gridfinity_height must have an active builder context")
-        if not isinstance(context, BuildPart):
-            raise RuntimeError("remaining_gridfinity_height only works for BuildPart")
-        if not context._obj:  # pylint: disable=protected-access
+        if part is None:
             return units * 7
 
-        return units * 7 - context.part.bounding_box().size.Z
+        return units * 7 - part.bounding_box().size.Z
 
     @staticmethod
-    def get_subclasses(class_name: Any) -> List[Any]:
+    def get_subclasses(class_name: type) -> list[Any]:
         """Get subclasses of a base class recursively.
 
         Args:
@@ -268,9 +274,9 @@ class Utils:  # pylint: disable=too-few-public-methods
     @staticmethod
     def place_by_grid(
         obj: BasePartObject,
-        grid: List[List[bool]],
+        grid: list[list[bool]],
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = Align.CENTER,
+        align: Align | tuple[Align, Align, Align] = Align.CENTER,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Place multiple instances of object according to grid.
@@ -293,18 +299,20 @@ class Utils:  # pylint: disable=too-few-public-methods
         width = bbox.size.X
         length = bbox.size.Y
 
-        locations: List[Location] = []
+        locations: list[Location] = []
         for row_nr, row_value in enumerate(grid):
             for column_nr, column_value in enumerate(row_value):
                 if column_value:
-                    locations.append(Location((width * (column_nr + 1), length * -(row_nr + 1))))
+                    locations.append(
+                        Location((width * (column_nr + 1), length * -(row_nr + 1))),
+                    )
 
         if not locations:
-            raise ValueError(f"grid {grid} does not reasemble locations")
+            msg = f"grid {grid} does not reasemble locations"
+            raise ValueError(msg)
 
-        with BuildPart() as part:
-            with Locations(locations):
-                add(obj)
+        with BuildPart() as part, Locations(locations):
+            add(obj)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -313,7 +321,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         profile_type: StackProfile.ProfileType,
         offset_value: float = 0,
         rotation: RotationLike = (0, 0, 0),
-        align: Union[Align, tuple[Align, Align, Align]] = None,
+        align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Create block with stacing profile.
@@ -330,19 +338,18 @@ class Utils:  # pylint: disable=too-few-public-methods
             BasePartObject: _description_
         """
         with BuildPart() as part:
-            with BuildSketch(Plane.XZ) as profile:
-                with Locations(
-                    (
-                        gridfinity_standard.grid.size / 2 - offset_value,
-                        0,
+            with BuildSketch(Plane.XZ) as profile, Locations(
+                (
+                    gridfinity_standard.grid.size / 2 - offset_value,
+                    0,
+                ),
+            ):
+                StackProfile(profile_type, align=(Align.MAX, Align.MIN))
+                if offset_value:
+                    offset(
+                        amount=offset_value,
+                        kind=Kind.INTERSECTION,
                     )
-                ):
-                    StackProfile(profile_type, align=(Align.MAX, Align.MIN))
-                    if offset_value:
-                        offset(
-                            amount=offset_value,
-                            kind=Kind.INTERSECTION,
-                        )
 
             with BuildSketch() as rect:
                 RectangleRounded(
@@ -358,16 +365,7 @@ class Utils:  # pylint: disable=too-few-public-methods
 
 
 class StackProfile(BaseSketchObject):
-    """StackProfile.
-
-    Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
-
-    Args:
-        rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
-        align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-            object. Defaults to None.
-        mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
-    """
+    """Gridfinity stacking profile."""
 
     class ProfileType(Enum):
         """Profile Type."""
@@ -379,15 +377,27 @@ class StackProfile(BaseSketchObject):
         self,
         stack_type: ProfileType,
         rotation: float = 0,
-        align: Union[Align, tuple[Align, Align]] = None,
+        align: Align | tuple[Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """StackProfile.
+
+        Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
+
+        Args:
+            stack_type (ProfileType): Type of stacking lip (Bin vs Plate).
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        """
         if stack_type == StackProfile.ProfileType.BIN:
             height_3 = gridfinity_standard.stacking_lip.height_3_bin
         elif stack_type == StackProfile.ProfileType.PLATE:
             height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
-        else:
-            raise ValueError("Unkown stack_type")  # pragma: no cover
+        else:  # pragma: no cover
+            msg = "Unkown stack_type"
+            raise ValueError(msg)
 
         with BuildSketch() as profile:
             with BuildLine():

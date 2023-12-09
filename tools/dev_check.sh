@@ -1,16 +1,12 @@
 #!/bin/bash
 
-python -m pylint ./src/gridfinity_build123d/ ./tests/
-
-python -m flake8 --count --show-source --statistics ./src ./tests
+python -m ruff check
 
 python -m mypy --pretty ./src ./tests
 
+python -m ruff format --diff
+
 python -m vulture ./src
-
-python -m black --check --diff --color ./src ./tests
-
-darglint src/
 
 python -m unittest discover ./tests -v -p "test_int*"
 

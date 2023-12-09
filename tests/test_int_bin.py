@@ -1,15 +1,13 @@
+import testutils
 from build123d import BuildPart
-from gridfinity_build123d import Bin, Base, MagnetHole, ScrewHole, BaseEqual, Label
-
-from gridfinity_build123d.utils import Utils, Direction
+from gridfinity_build123d import Base, BaseEqual, Bin, Label, MagnetHole, ScrewHole
 from gridfinity_build123d.bin import (
     Compartment,
-    CompartmentsEqual,
     Compartments,
+    CompartmentsEqual,
     StackingLip,
 )
-
-import testutils
+from gridfinity_build123d.utils import Direction, Utils
 
 
 class BinTest(testutils.UtilTestCase):
@@ -18,10 +16,14 @@ class BinTest(testutils.UtilTestCase):
             BaseEqual(grid_x=2, grid_y=2, features=[MagnetHole(), ScrewHole()])
 
             cmp_type = Compartment(features=Label())
-            compartments = CompartmentsEqual(div_x=3, div_y=2, compartment_list=cmp_type)
+            compartments = CompartmentsEqual(
+                div_x=3,
+                div_y=2,
+                compartment_list=cmp_type,
+            )
             Bin(
-                face=Utils.get_face_by_direction(Direction.TOP),
-                height=Utils.remaining_gridfinity_height(5),
+                face=Utils.get_face_by_direction(part, Direction.TOP),
+                height=Utils.remaining_gridfinity_height(part.part, 5),
                 compartments=compartments,
                 lip=StackingLip(),
             )
@@ -42,8 +44,8 @@ class BinTest(testutils.UtilTestCase):
             ]
             compartments = Compartments(grid=cmp_placement, compartment_list=cmp_type)
             Bin(
-                face=Utils.get_face_by_direction(Direction.TOP),
-                height=Utils.remaining_gridfinity_height(5),
+                face=Utils.get_face_by_direction(part, Direction.TOP),
+                height=Utils.remaining_gridfinity_height(part.part, 5),
                 compartments=compartments,
                 lip=StackingLip(),
             )
@@ -72,11 +74,14 @@ class BinTest(testutils.UtilTestCase):
                 [5, 5, 6],
             ]
             compartments = Compartments(
-                grid=cmp_placement, compartment_list=cmp_type, outer_wall=1.2, inner_wall=2.4
+                grid=cmp_placement,
+                compartment_list=cmp_type,
+                outer_wall=1.2,
+                inner_wall=2.4,
             )
             Bin(
-                face=Utils.get_face_by_direction(Direction.TOP),
-                height=Utils.remaining_gridfinity_height(5),
+                face=Utils.get_face_by_direction(part, Direction.TOP),
+                height=Utils.remaining_gridfinity_height(part.part, 5),
                 compartments=compartments,
                 lip=StackingLip(),
             )

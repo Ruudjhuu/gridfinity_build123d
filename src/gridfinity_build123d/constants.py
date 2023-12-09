@@ -1,6 +1,6 @@
-# pylint: disable=invalid-name
-
+# ruff: noqa
 """Gridfinity standard constants."""
+
 
 from dataclasses import dataclass
 

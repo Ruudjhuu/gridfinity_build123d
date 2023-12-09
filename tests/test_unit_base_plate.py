@@ -1,18 +1,16 @@
-from unittest.mock import MagicMock, patch, ANY
+from unittest.mock import ANY, MagicMock, patch
 
+import mocks
+import testutils
 from build123d import BuildPart
-
 from gridfinity_build123d.baseplate import (
     BasePlate,
-    BasePlateEqual,
     BasePlateBlock,
     BasePlateBlockFrame,
     BasePlateBlockFull,
+    BasePlateEqual,
 )
 from gridfinity_build123d.features import BasePlateFeature
-
-import testutils
-import mocks
 
 
 class BasePlateBlockFrameTest(testutils.UtilTestCase):
@@ -103,9 +101,34 @@ class BasePlateTest(testutils.UtilTestCase):
 
 @patch("gridfinity_build123d.baseplate.BasePlate.__init__")
 class BasePlateEqualTest(testutils.UtilTestCase):
-    def test_base_plate_equal(self, bplate_mock: MagicMock) -> None:
-        baseplate_block = MagicMock(spec=BasePlateBlock)
-        BasePlateEqual(size_x=2, size_y=3, baseplate_block=baseplate_block)
+    @patch("gridfinity_build123d.baseplate.BasePlateBlockFrame", autospec=True)
+    def test_base_plate_equal(
+        self,
+        bplateblock_mock: MagicMock,
+        bplate_mock: MagicMock,
+    ) -> None:
+        BasePlateEqual(size_x=2, size_y=3)
+
         bplate_mock.assert_called_once_with(
-            [[True, True], [True, True], [True, True]], baseplate_block, ANY, ANY, ANY
+            [[True, True], [True, True], [True, True]],
+            bplateblock_mock.return_value,
+            ANY,
+            ANY,
+            ANY,
+        )
+
+    def test_base_plate_equal_block(
+        self,
+        bplate_mock: MagicMock,
+    ) -> None:
+        block_mock = MagicMock(spec=BasePlateBlock)
+
+        BasePlateEqual(size_x=2, size_y=3, baseplate_block=block_mock)
+
+        bplate_mock.assert_called_once_with(
+            [[True, True], [True, True], [True, True]],
+            block_mock,
+            ANY,
+            ANY,
+            ANY,
         )
