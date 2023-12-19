@@ -1,7 +1,4 @@
-"""bin.
-
-Module containg classes and cutters which can be used to create a bin
-"""
+"""Module containg classes and cutters which can be used to create a bin."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable
@@ -36,13 +33,13 @@ if TYPE_CHECKING:
 
 
 class Bin(BasePartObject):
-    """GRidfinity Bin object."""
+    """Gridfinity Bin object."""
 
     def __init__(
         self,
         face: Face,
         height: float,
-        compartments: Compartments,
+        compartments: Compartments = None,
         lip: StackingLip = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -51,9 +48,10 @@ class Bin(BasePartObject):
         """Construct a bin object.
 
         Args:
-            face (Face): Faceon which the bin is located (usualy top face of a base)
+            face (Face): Face on which the bin is constructed. Usualy top face of a base. This face
+                is used to construct the size and shape of the bin.
             height (float): Height of the bin
-            compartments (Compartments): Compartments of the bin
+            compartments (Compartments): Compartments of the bin, Defaults to None.
             lip (StackingLip, optional): A lip object which should be added. Size added due to the
                 lib is not included in "height. Defaults to None.
             rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
@@ -63,16 +61,16 @@ class Bin(BasePartObject):
         """
         with BuildPart() as part:
             extrude(to_extrude=face, amount=height)
-
-            part_bbox = part.part.bounding_box()
-            with Locations((0, 0, part_bbox.max.Z)):
-                compartments.create(
-                    size_x=face.length,
-                    size_y=face.width,
-                    height=height,
-                    mode=Mode.SUBTRACT,
-                    align=(Align.CENTER, Align.CENTER, Align.MAX),
-                )
+            if compartments:
+                part_bbox = part.part.bounding_box()
+                with Locations((0, 0, part_bbox.max.Z)):
+                    compartments.create(
+                        size_x=face.length,
+                        size_y=face.width,
+                        height=height,
+                        mode=Mode.SUBTRACT,
+                        align=(Align.CENTER, Align.CENTER, Align.MAX),
+                    )
 
             if lip:
                 lip.create(
