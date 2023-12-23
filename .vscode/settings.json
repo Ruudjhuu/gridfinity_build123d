@@ -11,12 +11,7 @@
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
-    "flake8.importStrategy": "fromEnvironment",
     "editor.formatOnSave": true,
-    "black-formatter.importStrategy": "fromEnvironment",
-    "pylint.importStrategy": "fromEnvironment",
-    "pylint.severity": {
-        "refactor": "Information"
-    },
     "mypy.runUsingActiveInterpreter": true,
+    "restructuredtext.preview.name": "docutils",
 }
