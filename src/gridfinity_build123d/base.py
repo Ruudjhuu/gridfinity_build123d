@@ -34,7 +34,7 @@ class Base(BasePartObject):
 
     def __init__(
         self,
-        grid: list[list[bool]],
+        grid: list[list[bool]] | None = None,
         features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -50,6 +50,8 @@ class Base(BasePartObject):
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
         """
+        if not grid:
+            grid = [[True]]
         if not features:
             features = []
 
@@ -91,8 +93,8 @@ class BaseEqual(Base):
 
     def __init__(
         self,
-        grid_x: int,
-        grid_y: int,
+        grid_x: int = 1,
+        grid_y: int = 1,
         features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,

@@ -11,9 +11,9 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
-    Face,
     Locations,
     Mode,
+    Part,
     Plane,
     Polyline,
     RotationLike,
@@ -37,8 +37,9 @@ class Bin(BasePartObject):
 
     def __init__(
         self,
-        face: Face,
-        height: float,
+        base: Part,
+        height: float = 0,
+        height_in_units: int = 0,
         compartments: Compartments = None,
         lip: StackingLip = None,
         rotation: RotationLike = (0, 0, 0),
@@ -48,9 +49,10 @@ class Bin(BasePartObject):
         """Construct a bin object.
 
         Args:
-            face (Face): Face on which the bin is constructed. Usualy top face of a base. This face
-                is used to construct the size and shape of the bin.
-            height (float): Height of the bin
+            base (Part): Base object on which the bin is constructed.
+            height (float): Height of the bin in mm. Can't be used when height_in_units is defined.
+            heihgt_in_units (int): Heigth defined by gridfinity units. Can't be used when height is
+                defined.
             compartments (Compartments): Compartments of the bin, Defaults to None.
             lip (StackingLip, optional): A lip object which should be added. Size added due to the
                 lib is not included in "height. Defaults to None.
@@ -59,15 +61,26 @@ class Bin(BasePartObject):
             of object. Defaults to None.
             mode (Mode, optional): combination mode. Defaults to Mode.ADD.
         """
+        if height and height_in_units:
+            msg = "height or height_in_units can be defined, not both"
+            raise ValueError(msg)
+
         with BuildPart() as part:
-            extrude(to_extrude=face, amount=height)
+            add(base)
+            if height_in_units:
+                bin_height = height_in_units * 7 - part.part.bounding_box().size.Z
+            else:
+                bin_height = height
+
+            face = part.faces().sort_by(Axis.Z)[-1]
+            extrude(to_extrude=face, amount=bin_height)
             if compartments:
                 part_bbox = part.part.bounding_box()
                 with Locations((0, 0, part_bbox.max.Z)):
                     compartments.create(
                         size_x=face.length,
                         size_y=face.width,
-                        height=height,
+                        height=bin_height,
                         mode=Mode.SUBTRACT,
                         align=(Align.CENTER, Align.CENTER, Align.MAX),
                     )

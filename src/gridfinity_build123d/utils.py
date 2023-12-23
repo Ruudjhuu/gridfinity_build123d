@@ -231,29 +231,6 @@ class Utils:  # pylint: disable=too-few-public-methods
         ]
 
     @staticmethod
-    def remaining_gridfinity_height(part: Part | None, units: int) -> float:
-        """Calculate reamining height.
-
-        Calculates the height still needed to create a gridfinity object of "units" heigh. Uses
-        current builder context to calculate the remaining height.
-
-        Args:
-            part (Part): Part to get current height from
-            units (int): Gridfinity standard z units (7mm)
-
-        Raises:
-            RuntimeError: remaining_gridfinity_height must have an active builder context
-            RuntimeError: remaining_gridfinity_height only works for BuildPart
-
-        Returns:
-            float: remaining height
-        """
-        if part is None:
-            return units * 7
-
-        return units * 7 - part.bounding_box().size.Z
-
-    @staticmethod
     def get_subclasses(class_name: type) -> list[Any]:
         """Get subclasses of a base class recursively.
 

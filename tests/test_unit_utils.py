@@ -184,19 +184,6 @@ class UtilsGetSubclassesTest(TestCase):
         self.assertEqual([Child, ChildOfChild], Utils.get_subclasses(Base))
 
 
-class UtilsRemainingGridfinityHeightTest(TestCase):
-    def test_remaining_gridfinity_height(self) -> None:
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            self.assertEqual(
-                4 * 7 - 10,
-                Utils.remaining_gridfinity_height(part.part, 4),
-            )
-
-    def test_remaining_gridfinity_height_no_object(self) -> None:
-        self.assertEqual(4 * 7, Utils.remaining_gridfinity_height(None, 4))
-
-
 class UtilsPlaceByGridTest(TestCase):
     def test_place_by_grid_one(self) -> None:
         box = Box(10, 15, 20)
