@@ -7,10 +7,10 @@ import mocks
 import testutils
 from build123d import (
     Align,
+    Box,
     BuildPart,
     BuildSketch,
     Mode,
-    Rectangle,
     RectangleRounded,
     Vector,
 )
@@ -26,11 +26,11 @@ from gridfinity_build123d.features import CompartmentFeature
 
 class BinTest(unittest.TestCase):
     def test_bin(self) -> None:
-        face = Rectangle(10, 10).face()
+        base = Box(10, 10, 1)
         cmp_mock = MagicMock(spec=Compartments)
 
         with BuildPart() as part:
-            Bin(face=face, height=20, compartments=cmp_mock)
+            Bin(base=base, height=20, compartments=cmp_mock)
 
         cmp_mock.create.assert_called_once_with(
             size_x=10.0,
@@ -41,16 +41,16 @@ class BinTest(unittest.TestCase):
         )
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(10, 10, 20), bbox.size)
-        self.assertAlmostEqual(2000, part.part.volume)
+        self.assertEqual(Vector(10, 10, 21), bbox.size)
+        self.assertAlmostEqual(2100, part.part.volume)
 
     def test_bin_lip(self) -> None:
-        face = Rectangle(10, 10).face()
+        base = Box(10, 10, 1)
         cmp_mock = MagicMock(spec=Compartments)
         lip_mock = MagicMock(spec=StackingLip)
 
         with BuildPart() as part:
-            Bin(face=face, height=20, compartments=cmp_mock, lip=lip_mock)
+            Bin(base=base, height=20, compartments=cmp_mock, lip=lip_mock)
 
         cmp_mock.create.assert_called_once_with(
             size_x=10.0,
@@ -63,8 +63,8 @@ class BinTest(unittest.TestCase):
         lip_mock.create.assert_called_once()
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(10, 10, 20), bbox.size)
-        self.assertAlmostEqual(2000, part.part.volume)
+        self.assertEqual(Vector(10, 10, 21), bbox.size)
+        self.assertAlmostEqual(2100, part.part.volume)
 
 
 class StackingLipTest(testutils.UtilTestCase):
