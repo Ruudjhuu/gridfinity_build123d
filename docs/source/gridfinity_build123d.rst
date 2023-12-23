@@ -1,14 +1,6 @@
 gridfinity\_build123d package
 =============================
 
-.. automodule:: gridfinity_build123d
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Submodules
-----------
-
 gridfinity\_build123d.base module
 ---------------------------------
 

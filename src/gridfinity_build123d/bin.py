@@ -51,7 +51,7 @@ class Bin(BasePartObject):
         Args:
             base (Part): Base object on which the bin is constructed.
             height (float): Height of the bin in mm. Can't be used when height_in_units is defined.
-            heihgt_in_units (int): Heigth defined by gridfinity units. Can't be used when height is
+            height_in_units (int): Heigth defined by gridfinity units. Can't be used when height is
                 defined.
             compartments (Compartments): Compartments of the bin, Defaults to None.
             lip (StackingLip, optional): A lip object which should be added. Size added due to the
