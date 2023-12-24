@@ -1,5 +1,7 @@
 # gridfinity_build123d
-Gridfinity (design by Zack Freedman) is a grid based storage solution. This repository contains python modules to create gridfinity capable objects in [build123d](https://github.com/gumyr/build123d) .
+Gridfinity (design by Zack Freedman) is a grid based storage solution. This repository contains python modules to create gridfinity capable objects in [build123d](https://github.com/gumyr/build123d). 
+
+See the [documentation](http://gridfinity-build123d.readthedocs.io/) for more information and examples.
 
 <img src="docs/assets/baseplate.gif" width="320"/> <img src="docs/assets/bin.gif" width="320"/> 
 
