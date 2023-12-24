@@ -1,3 +1,4 @@
 Sphinx==7.2.6
 sphinx-rtd-theme==2.0.0
 sphinx_design==0.5.0
+-e git+https://github.com/Ruudjhuu/gridfinity_build123d#egg=gridfinity_build123d
