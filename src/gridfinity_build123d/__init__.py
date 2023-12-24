@@ -14,7 +14,6 @@ __all__ = [
     "Compartments",
     "CompartmentsEqual",
     "Label",
-    "HoleFeature",
     "Sweep",
     "Utils",
     "Direction",
@@ -22,7 +21,6 @@ __all__ = [
     "BasePlateEqual",
     "BasePlateBlockFrame",
     "BasePlateBlockFull",
-    "FeatureLocation",
 ]
 
 from .base import Base, BaseEqual
@@ -34,8 +32,6 @@ from .baseplate import (
 )
 from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
 from .features import (
-    FeatureLocation,
-    HoleFeature,
     Label,
     MagnetHole,
     ScrewHole,
