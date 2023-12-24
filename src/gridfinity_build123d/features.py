@@ -47,9 +47,9 @@ class CallableCreateObj(Protocol):
 
         Args:
             rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
-                object. Defaults to None.
-            mode (Mode): Combination mode. Defaults to Mode.ADD.
+            align (Union[Align, tuple[Align, Align, Align]]): Align min center of max of
+                object.
+            mode (Mode): Combination mode.
         """
         ...  # pragma: no cover
 
@@ -170,7 +170,8 @@ class HoleFeature(BaseBlockFeature, BasePlateFeature):
         Args:
             radius (float): radius
             depth (float): depth
-            feature_location (FeatureLocation): Location of feature
+            feature_location (FeatureLocation, optional): Location of feature.
+                Defaults to FeatureLocation.UNDEFINED.
         """
         super().__init__(feature_location)
         self.radius = radius
@@ -201,7 +202,8 @@ class ScrewHole(HoleFeature):
         Args:
             radius (float): radius
             depth (float): depth
-            feature_location: Location of the feature when applied.
+            feature_location (FeatureLocation, optional): Location of feature.
+                Defaults to FeatureLocation.BOTTOM_CORNERS.
         """
         super().__init__(radius, depth, feature_location)
 
@@ -220,7 +222,8 @@ class MagnetHole(HoleFeature):
         Args:
             radius (float): radius
             depth (float): depth
-            feature_location: Location of the feature when applied.
+            feature_location (FeatureLocation, optional): Location of feature.
+                Defaults to FeatureLocation.CORNERS.
         """
         super().__init__(radius, depth, feature_location)
 
@@ -239,11 +242,12 @@ class ScrewHoleCountersink(ScrewHole):
         """Create a Countersink ScrewHole feature.
 
         Args:
-            radius (float): radius
-            counter_sink_radius (float): radius of countersink
-            depth (float): depth
-            counter_sink_angle(float): angle of contoursink in degrees
-            feature_location: Location of the feature when applied.
+            radius (float, optional): radius. Defaults to 1.75.
+            counter_sink_radius (float, optional): radius of countersink. Default to 4.25.
+            depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
+            counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
+            feature_location (FeatureLocation, optional): Location of feature.
+                Defaults to FeatureLocation.BOTTOM_CORNERS.
         """
         super().__init__(radius, depth, feature_location)
         self.counter_sink_radius = counter_sink_radius
@@ -280,11 +284,13 @@ class ScrewHoleCounterbore(ScrewHole):
         """Create a CounterBore ScrewHole feature.
 
         Args:
-            radius (float): radius
-            counter_bore_radius (float): counter bore radius
-            counter_bore_depth (float): counter bore depth
-            depth (float): depth
-            feature_location: Location of the feature when applied.
+            radius (float, optional): radius. Defaults to gridfinity_standard.screw.radius.
+            counter_bore_radius (float, optional): counter bore radius. Defaults to
+                gridfinity_standard.screw.radius * 1.5.
+            counter_bore_depth (float, optional): counter bore depth. Defaults to 2.
+            depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
+            feature_location (FeatureLocation, optional): Location of feature.
+                Defaults to FeatureLocation.BOTTOM_CORNERS.
         """
         super().__init__(radius, depth, feature_location)
         self.counter_bore_radius = counter_bore_radius
@@ -317,7 +323,7 @@ class Weighted(BasePlateFeature):
         """Construct Weighted feature.
 
         Args:
-            feature_location (FeatureLocation, optional): Location of the feature when applied..
+            feature_location (FeatureLocation, optional): Location of feature.
                 Defaults to FeatureLocation.BOTTOM_MIDDLE.
         """
         super().__init__(feature_location)
@@ -360,7 +366,7 @@ class ContextFeature(ABC):
         """Apply the feature to the object in context.
 
         Args:
-            context (BuildPart): Context to apply the feature to
+            context (BuildPart): Context to apply the feature to.
         """
         raise NotImplementedError  # pragma: no cover
 

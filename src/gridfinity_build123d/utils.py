@@ -58,10 +58,10 @@ class ObjectCreate(ABC):
         """Create the build123d 3d object.
 
         Args:
-            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
-            mode (Mode): Combination mode. Defaults to Mode.ADD.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
 
         Raises:
             NotImplementedError: Child class does not have an implementation
@@ -90,13 +90,13 @@ class Direction(Enum):
         """Convert Direction to tuple.
 
         Args:
-            direction (Direction): Direction to convert
+            direction (Direction): Direction to convert.
 
         Raises:
-            ValueError: Unkonw Direction
+            ValueError: Unkonw Direction.
 
         Returns:
-            Tuple[int, int, int]: Output tupple
+            Tuple[int, int, int]: Output tupple.
         """
         if direction == Direction.TOP:
             return (0, 0, 1)
@@ -151,10 +151,10 @@ class Utils:  # pylint: disable=too-few-public-methods
         Attaches other object acording to "attach".
 
         Args:
-            context (PartBuilder): context were attach should be executed.
+            context (BuildPart): context were attach should be executed.
             part (Part): the part to be attached
             attach (Attach): Direction to attach
-            offset_value (float): offset.
+            offset_value (float, optional): offset. Defaults to 0.
 
         Raises:
             UnsuportedEnumValueError: Unsuported Enum value
@@ -220,7 +220,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         """Get face by direction.
 
         Args:
-            context (PartBuilder): context were attach should be executed.
+            context (BuildPart): context were attach should be executed.
             direction (Direction): Direction of face
 
         Returns:
@@ -260,11 +260,11 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         Args:
             obj (BasePartObject): object to be copied
-            grid (List[List[bool]]): grid
-            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            grid (list[list[bool]]): grid
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to Align.CENTER.
-            mode (Mode): Combination mode. Defaults to Mode.ADD.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
 
         Raises:
             ValueError: grid does not reasemble locations
@@ -305,11 +305,11 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         Args:
             profile_type (StackProfile.ProfileType): Profile type
-            offset_value (float): Offset of profile sweep. Defaults to 0.
-            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
+            offset_value (float, optional): Offset of profile sweep. Defaults to 0.
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
-            mode (Mode): Combination mode. Defaults to Mode.ADD.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
 
         Returns:
             BasePartObject: _description_
@@ -363,7 +363,7 @@ class StackProfile(BaseSketchObject):
 
         Args:
             stack_type (ProfileType): Type of stacking lip (Bin vs Plate).
-            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            rotation (float, optional): angles to rotate objects. Defaults to 0.
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
