@@ -15,7 +15,7 @@ class BaseTest(unittest.TestCase):
         base_mock.side_effect = mock_box.create
 
         with BuildPart() as part:
-            Base([[True]])
+            Base()
 
         base_mock.assert_called_once_with(features=[], mode=ANY)
 
