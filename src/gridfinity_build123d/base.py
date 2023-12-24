@@ -43,8 +43,9 @@ class Base(BasePartObject):
         """Construct a gridfinity base.
 
         Args:
-            grid (Grid): Grid pattern.
-            features (BaseBlockFeature): compatible features list.
+            grid (list[list[bool]],optional): Grid pattern. Defaults to [[True]].
+            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): Feature or Feature
+                list. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
@@ -103,9 +104,10 @@ class BaseEqual(Base):
         """Construct a rectangular Base object.
 
         Args:
-            grid_x (int): Number of grid units on x axis
-            grid_y (int): Number of grid units on y axis
-            features (BaseBlockFeature): List of BaseBlockFeatures
+            grid_x (int, optional): Number of grid units on x axis. Defaults to 1.
+            grid_y (int, optional): Number of grid units on y axis. Defaults to 1.
+            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): BaseBlockFeature
+                or list of BaseBlockFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
@@ -135,7 +137,8 @@ class BaseBlock(BasePartObject):
         """Construct BaseBlock.
 
         Args:
-            features (BaseBlockFeature): List of BaseBlockFeatures
+            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): BaseBlockFeature
+                or list of BaseBlockFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
