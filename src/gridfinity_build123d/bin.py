@@ -50,11 +50,10 @@ class Bin(BasePartObject):
 
         Args:
             base (Part): Base object on which the bin is constructed.
-            height (float, optional): Height of the bin in mm. Can't be used when height_in_units is
-                defined.Defaults to 0.
-            height_in_units (int, optional): Heigth defined by gridfinity units. Can't be used when
-                height is defined. Defaults to 0.
-            compartments (Compartments | None, optional): Compartments of the bin, Defaults to None.
+            height (float): Height of the bin in mm. Can't be used when height_in_units is defined.
+            height_in_units (int): Heigth defined by gridfinity units. Can't be used when height is
+                defined.
+            compartments (Compartments): Compartments of the bin, Defaults to None.
             lip (StackingLip, optional): A lip object which should be added. Size added due to the
                 lib is not included in "height. Defaults to None.
             rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
@@ -95,7 +94,17 @@ class Bin(BasePartObject):
 
 
 class StackingLip:
-    """StackingLip."""
+    """StackingLip.
+
+    Sweeps around the wire with a stacking lip profice to create the lip object
+
+    Args:
+        path (Wire): Wire to follow
+        rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+        align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
+            of object. Defaults to None.
+        mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+    """
 
     def create(
         self,
@@ -107,11 +116,11 @@ class StackingLip:
         """Create StackingLip 3d object.
 
         Args:
-            path (Wire): Path to sweep over.
-            rotation (RotationLike | optional): angles to rotate about axes. Defaults to (0, 0, 0).
+            path (Wire): Path to sweep over
+            rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to None.
-            mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+            mode (Mode): combination mode. Defaults to Mode.ADD.
 
         Returns:
             BasePartObject: 3d object
@@ -157,8 +166,8 @@ class Compartment:
         """Create Compartment.
 
         Args:
-            features (CompartmentFeature | list[CompartmentFeature] | None, optional):
-                CompartmentFeature or list of CompartmentFeatures. Defaults to None.
+            features (List[CompartmentContextFeature], optional): compartment feature list. Defaults
+                to None.
         """
         if not features:
             features = []
@@ -177,16 +186,16 @@ class Compartment:
         """Create Compartment object.
 
         Args:
-            size_x (float): Size x.
-            size_y (float): Size y.
-            height (float): height of compartment.
-            rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+            size_x (float): Size x
+            size_y (float): Size y
+            height (float): height of compartment
+            rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to None.
-            mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+            mode (Mode): combination mode. Defaults to Mode.ADD.
 
         Returns:
-            BasePartObject: 3d object.
+            BasePartObject: 3d object
         """
         with BuildPart() as part:
             Box(
@@ -244,12 +253,10 @@ class Compartments:
         """Construct grid collection.
 
         Args:
-            grid ( list[list[int]] | None, optional): Configuration for arangement of compartments.
-                Defaults to [[1]].
-            compartment_list (Compartment | list[Compartment] | None): Compartment or list of
-                compartments. Defaults to None.
-            inner_wall (float): Space between aranged compartments. Defaults to 1.2.
-            outer_wall (float): Offset outside generrated arangement. Defaults to 0.95.
+            grid (List[List[int]]): Configuration for arangement of compartments
+            compartment_list (List[CompartmentType]): List of types of compartments
+            inner_wall (float): Space between aranged compartments
+            outer_wall (float): Offset outside generrated arangement
         """
         if grid is None:
             grid = [[1]]
@@ -276,10 +283,10 @@ class Compartments:
             size_x (float): size on the x axis
             size_y (float): size on the y axis
             height (float): Height of compartments
-            rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
-                of object. Defaults to Align.CENTER.
-            mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+            rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]]): align min, center, or max
+                of object. Defaults to None.
+            mode (Mode): combination mode. Defaults to Mode.ADD.
 
         Returns:
             BasePartObject: 3d object
@@ -385,10 +392,9 @@ class CompartmentsEqual(Compartments):
         """Generate equal spaced compartment collection.
 
         Args:
-            div_x (int): number of compartments in x direction. Defaults to 1.
-            div_y (int): number of compartments in y dirction. Deafults to 1.
-            compartment_list (Compartment | list[Compartment] | None, optional): Compartment or list
-                of compartments. Defaults to Compartment().
+            div_x (int): number of compartments in x direction
+            div_y (int): number of compartments in y dirction
+            compartment_list (Union[Compartment, List[Compartment]]): List of compartments
             inner_wall (float, optional): wall thickness between compartments. Defaults to 1.2.
             outer_wall (float, optional): wall thickness around compartments. Defaults to 0.95.
         """

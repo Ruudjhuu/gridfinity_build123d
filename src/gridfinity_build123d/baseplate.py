@@ -38,8 +38,9 @@ class BasePlateBlock(ObjectCreate):
         """Baseplateblock interface.
 
         Args:
-            features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
-                features. Defaults to None.
+            features (Union[BasePlateFeature, List[BasePlateFeature]], optional): Baseplate features.
+                Defaults to None.
+            something (int): an random integer
         """
         if not features:
             features = []
@@ -51,8 +52,8 @@ class BasePlateBlockFrame(BasePlateBlock):
     """Most simple kind of baseplate, only the bare minimum.
 
     Args:
-        features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
-            features. Defaults to None.
+        features (Union[BasePlateFeature, List[BasePlateFeature]], optional): Baseplate features.
+            Defaults to None.
     """
 
     def create_obj(
@@ -103,9 +104,9 @@ class BasePlateBlockFull(BasePlateBlock):
         """Construct BaseplateBlock.
 
         Args:
-            bottom_height (float): The hieght of the bottom part. Defaults to 6.4.
-            features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
-                features. Defaults to None.
+            bottom_height (float): The hieght of the bottom part. Defaults to 6.4
+            features (Union[BasePlateFeature, List[BasePlateFeature]], optional): Baseplate features.
+                Defaults to None.
         """
         super().__init__(features)
         self.bottom_height = bottom_height
@@ -145,9 +146,9 @@ class BasePlate(BasePartObject):
         Create a baseplate according to grid pattern.
 
         Args:
-            grid (list[list[bool]]): Pattern for creating baseplate.
-            baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
-                complete baseplate. Defaults to None.
+            grid (list[list[bool]]): Pattern for creating baseplate
+            baseplate_block (BasePlateBlock): Type of baseplateblock to construct a complete
+                baseplate.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to (0, 0, 0).
@@ -190,8 +191,8 @@ class BasePlateEqual(BasePlate):
         Args:
             size_x (int): x size of baseplate
             size_y (int): y size of baseplate
-            baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
-                complete baseplate.
+            baseplate_block (BasePlateBlock): Type of baseplateblock to construct a complete
+                baseplate.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to None.
