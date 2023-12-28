@@ -1,5 +1,14 @@
 import testutils
-from gridfinity_build123d import Base, BaseEqual, Bin, Label, MagnetHole, ScrewHole
+from gridfinity_build123d import (
+    Base,
+    BaseEqual,
+    Bin,
+    Corners,
+    Direction,
+    Label,
+    MagnetHole,
+    ScrewHole,
+)
 from gridfinity_build123d.bin import (
     Compartment,
     Compartments,
@@ -11,7 +20,11 @@ from gridfinity_build123d.bin import (
 class BinTest(testutils.UtilTestCase):
     def test_bin_standard(self) -> None:
         part = Bin(
-            base=BaseEqual(grid_x=2, grid_y=2, features=[MagnetHole(), ScrewHole()]),
+            base=BaseEqual(
+                grid_x=2,
+                grid_y=2,
+                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+            ),
             height_in_units=5,
             compartments=CompartmentsEqual(
                 div_x=3,
@@ -33,7 +46,11 @@ class BinTest(testutils.UtilTestCase):
             [1, 1, 4, 6, 7],
         ]
         part = Bin(
-            base=BaseEqual(grid_x=3, grid_y=3, features=[MagnetHole(), ScrewHole()]),
+            base=BaseEqual(
+                grid_x=3,
+                grid_y=3,
+                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+            ),
             height_in_units=5,
             compartments=Compartments(
                 grid=cmp_placement,
@@ -65,7 +82,10 @@ class BinTest(testutils.UtilTestCase):
         ]
 
         part = Bin(
-            base=Base(grid=base_grid, features=[MagnetHole(), ScrewHole()]),
+            base=Base(
+                grid=base_grid,
+                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+            ),
             height_in_units=5,
             compartments=Compartments(
                 grid=cmp_placement,

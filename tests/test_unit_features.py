@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from math import pi
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, MagicMixin, MagicMock, patch
 
 import mocks
 import testutils
@@ -11,13 +11,12 @@ from build123d import (
     BasePartObject,
     Box,
     BuildPart,
-    CenterOf,
     Mode,
+    Part,
     RotationLike,
 )
 from gridfinity_build123d.features import (
     Feature,
-    FeatureLocation,
     HoleFeature,
     Label,
     MagnetHole,
@@ -27,158 +26,13 @@ from gridfinity_build123d.features import (
     Sweep,
     Weighted,
 )
+from gridfinity_build123d.feature_locations import FeatureLocation
+from gridfinity_build123d.utils import Direction
 from parameterized import parameterized  # type: ignore[import-untyped]
 
 
-class FeatureLocationTest(testutils.UtilTestCase):
-    def test_feature_location_apply_BOTTOM_CONRNERS(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(
-                part,
-                feature_box.create,
-                FeatureLocation.BOTTOM_CORNERS,
-            )
-
-        bot_face = part.faces().sort_by(Axis.Z)[0]
-        self.assertEqual(4, len(bot_face.inner_wires()))
-        for wire in bot_face.inner_wires():
-            center = wire.center(CenterOf.BOUNDING_BOX)
-            self.assertAlmostEqual(3, abs(center.X))
-            self.assertAlmostEqual(3, abs(center.Y))
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1 * 4, part.part.volume)
-
-    def test_feature_location_apply_BOTTOM_MIDDLE(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(
-                part,
-                feature_box.create,
-                FeatureLocation.BOTTOM_MIDDLE,
-            )
-
-        bot_face = part.faces().sort_by(Axis.Z)[0]
-        self.assertEqual(1, len(bot_face.inner_wires()))
-        for wire in bot_face.inner_wires():
-            center = wire.center(CenterOf.BOUNDING_BOX)
-            self.assertAlmostEqual(0, center.X)
-            self.assertAlmostEqual(0, center.Y)
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1, part.part.volume)
-
-    def test_feature_location_apply_TOP_CONRNERS(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(part, feature_box.create, FeatureLocation.TOP_CORNERS)
-
-        top_face = part.faces().sort_by(Axis.Z)[-1]
-        self.assertEqual(4, len(top_face.inner_wires()))
-        for wire in top_face.inner_wires():
-            center = wire.center(CenterOf.BOUNDING_BOX)
-            self.assertAlmostEqual(3, abs(center.X))
-            self.assertAlmostEqual(3, abs(center.Y))
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1 * 4, part.part.volume)
-
-    def test_feature_location_apply_TOP_MIDDLE(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(part, feature_box.create, FeatureLocation.TOP_MIDDLE)
-
-        top_face = part.faces().sort_by(Axis.Z)[-1]
-        self.assertEqual(1, len(top_face.inner_wires()))
-        for wire in top_face.inner_wires():
-            center = wire.center(CenterOf.BOUNDING_BOX)
-            self.assertAlmostEqual(0, center.X)
-            self.assertAlmostEqual(0, center.Y)
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1, part.part.volume)
-
-    def test_feature_location_apply_CORNERS(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(part, feature_box.create, FeatureLocation.CORNERS)
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1 * 4, part.part.volume)
-
-    def test_feature_location_apply_UNDEFINED(self) -> None:
-        feature_box = mocks.BoxAsMock(
-            1,
-            1,
-            1,
-            align=(Align.CENTER, Align.CENTER, Align.MAX),
-            mode=Mode.SUBTRACT,
-        )
-
-        with BuildPart() as part:
-            Box(10, 10, 10)
-            FeatureLocation.apply(part, feature_box.create, FeatureLocation.UNDEFINED)
-
-        bbox = part.part.bounding_box()
-
-        self.assertVectorAlmostEqual((10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000 - 1, part.part.volume)
-
-
 class FeatureTest(testutils.UtilTestCase):
-    @patch("gridfinity_build123d.features.FeatureLocation.apply")
-    def test_feature_apply(self, apply_mock: MagicMock) -> None:
+    def test_feature_apply(self) -> None:
         class TestFeature(Feature):
             def create_obj(
                 self,
@@ -190,10 +44,31 @@ class FeatureTest(testutils.UtilTestCase):
                 return Box(1, 1, 1)  # pragma: no cover
 
         context = MagicMock(spec=BuildPart)
+        context.part = MagicMock(spec=Part)
         f_location = MagicMock(spec=FeatureLocation)
         feature = TestFeature(f_location)
         feature.apply(context)
-        apply_mock.assert_called_once_with(context, feature.create_obj, f_location)
+        f_location.apply_to.assert_called_once_with(context.part)
+
+    def test_feature_apply_no_location(self) -> None:
+        class TestFeature(Feature):
+            def create_obj(
+                self,
+                rotation: RotationLike = None,  # noqa:ARG002
+                align: Align | tuple[Align, Align, Align] | None = None,  # noqa:ARG002
+                mode: Mode = None,  # noqa:ARG002
+            ) -> BasePartObject:
+                return Box(1, 1, 1)
+
+        context = MagicMock(spec=BuildPart)
+        context.part = MagicMock(spec=Part)
+        feature = TestFeature(None)
+        with BuildPart() as part:
+            feature.apply(context)
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((1, 1, 1), bbox.size)
+        self.assertAlmostEqual(1, part.part.volume)
 
 
 class HoleFeatureTest(testutils.UtilTestCase):
@@ -208,26 +83,33 @@ class HoleFeatureTest(testutils.UtilTestCase):
         self.assertAlmostEqual(radius**2 * pi * depth * 2, part.volume)
 
 
+@patch("gridfinity_build123d.features.Corners")
 @patch("gridfinity_build123d.features.HoleFeature.__init__")
 class ScrewHoleTest(testutils.UtilTestCase):
-    def test_screw_hole(self, hole_mock: MagicMock) -> None:
+    def test_screw_hole(self, hole_mock: MagicMock, f_loc_mock: MagicMock) -> None:
         ScrewHole()
-        hole_mock.assert_called_once_with(1.5, 6, FeatureLocation.BOTTOM_CORNERS)
+        hole_mock.assert_called_once_with(1.5, 6, f_loc_mock.return_value)
+        f_loc_mock.assert_called_once_with(Direction.BOT)
 
-    def test_screw_hole_values(self, hole_mock: MagicMock) -> None:
+    def test_screw_hole_values(
+        self, hole_mock: MagicMock, f_loc_mock: MagicMock
+    ) -> None:
         ScrewHole(2, 3)
-        hole_mock.assert_called_once_with(2, 3, FeatureLocation.BOTTOM_CORNERS)
+        hole_mock.assert_called_once_with(2, 3, f_loc_mock.return_value)
+        f_loc_mock.assert_called_once_with(Direction.BOT)
 
 
 @patch("gridfinity_build123d.features.HoleFeature.__init__")
 class MagnetHoleTest(testutils.UtilTestCase):
-    def test_screw_hole(self, hole_mock: MagicMock) -> None:
-        MagnetHole()
-        hole_mock.assert_called_once_with(3.25, 2.4, FeatureLocation.CORNERS)
+    def test_magnet_hole(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+        MagnetHole(f_loc)
+        hole_mock.assert_called_once_with(3.25, 2.4, f_loc)
 
-    def test_screw_hole_values(self, hole_mock: MagicMock) -> None:
-        MagnetHole(2, 3)
-        hole_mock.assert_called_once_with(2, 3, FeatureLocation.CORNERS)
+    def test_magnet_hole_values(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+        MagnetHole(f_loc, 2, 3)
+        hole_mock.assert_called_once_with(2, 3, f_loc)
 
 
 class ScrewHoleCountersinkTest(testutils.UtilTestCase):

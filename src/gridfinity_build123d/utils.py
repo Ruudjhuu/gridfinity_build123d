@@ -22,6 +22,7 @@ from build123d import (
     Plane,
     Polyline,
     RectangleRounded,
+    Rotation,
     RotationLike,
     add,
     extrude,
@@ -115,6 +116,38 @@ class Direction(Enum):
 
         if direction == Direction.FRONT:
             return (0, -1, 0)
+
+        raise UnsuportedEnumValueError(direction)  # pragma: no cover
+
+    @staticmethod
+    def to_rotation(direction: Direction) -> Rotation:
+        """Convert direction to the logical rotation.
+
+        Args:
+            direction (Direction): Direction to convert.
+
+        Raises:
+            UnsuportedEnumValueError: Unsuported enum value.
+
+        Returns:
+            Rotation: Rotation.
+        """
+        if direction == Direction.TOP:
+            return Rotation(0, 0, 0)
+        if direction == Direction.BOT:
+            return Rotation(180, 0, 0)
+
+        if direction == Direction.RIGHT:
+            return Rotation(0, 90, 0)
+
+        if direction == Direction.LEFT:
+            return Rotation(0, -90, 0)
+
+        if direction == Direction.BACK:
+            return Rotation(-90, 0, 0)
+
+        if direction == Direction.FRONT:
+            return Rotation(90, 0, 0)
 
         raise UnsuportedEnumValueError(direction)  # pragma: no cover
 

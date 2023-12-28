@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum, auto
-from typing import Protocol
 
 from build123d import (
     Align,
@@ -15,9 +13,7 @@ from build123d import (
     BuildSketch,
     CounterBoreHole,
     CounterSinkHole,
-    GridLocations,
     Hole,
-    Locations,
     Mode,
     PolarLocations,
     Polyline,
@@ -31,95 +27,14 @@ from build123d import (
 )
 
 from .constants import gf_bin, gridfinity_standard
-from .utils import ObjectCreate
-
-
-class CallableCreateObj(Protocol):
-    """Protocol reasambling a Feature create_obj call."""
-
-    def __call__(
-        self,
-        rotation: RotationLike = ...,
-        align: Align | tuple[Align, Align, Align] = ...,
-        mode: Mode = ...,
-    ) -> BasePartObject:
-        """Create the build123d 3d object.
-
-        Args:
-            rotation (RotationLike): Angels to rotate around axes. Defaults to (0, 0, 0).
-            align (Union[Align, tuple[Align, Align, Align]]): Align min center of max of
-                object.
-            mode (Mode): Combination mode.
-        """
-        ...  # pragma: no cover
-
-
-class FeatureLocation(Enum):
-    """Location where a feature should be applied."""
-
-    BOTTOM_CORNERS = auto()
-    BOTTOM_MIDDLE = auto()
-    TOP_CORNERS = auto()
-    TOP_MIDDLE = auto()
-    CORNERS = auto()
-    UNDEFINED = auto()
-
-    @staticmethod
-    def apply(
-        context: BuildPart,
-        create_obj: CallableCreateObj,
-        location: FeatureLocation,
-    ) -> None:
-        """Apply an object on a location.
-
-        This function depends on a builder context being active.
-
-        Args:
-            context (BuildPart): Context to apply feature to.
-            create_obj (CallableCreateObj): Callable which creates a BasePartObject
-            location (FeatureLocation): Feature Location
-
-        Raises:
-            ValueError: Unsuported feature location
-        """
-        bbox = context.part.bounding_box()
-        corner_distance = bbox.size.X - 2 * gridfinity_standard.bottom.hole_from_side
-        if location == FeatureLocation.BOTTOM_CORNERS:
-            with Locations((0, 0, bbox.min.Z)), GridLocations(
-                corner_distance,
-                corner_distance,
-                2,
-                2,
-            ):
-                create_obj(rotation=(180, 0, 0))
-        elif location == FeatureLocation.BOTTOM_MIDDLE:
-            with Locations((0, 0, bbox.min.Z)):
-                create_obj(rotation=(180, 0, 0))
-        elif location == FeatureLocation.TOP_CORNERS:
-            with Locations((0, 0, bbox.max.Z)), GridLocations(
-                corner_distance,
-                corner_distance,
-                2,
-                2,
-            ):
-                create_obj()
-        elif location == FeatureLocation.TOP_MIDDLE:
-            with Locations((0, 0, bbox.max.Z)):
-                create_obj()
-        elif location == FeatureLocation.CORNERS:
-            with GridLocations(corner_distance, corner_distance, 2, 2):
-                create_obj()
-        elif location == FeatureLocation.UNDEFINED:
-            create_obj()
-        else:  # pragma: no cover
-            msg = f"Unsuported feature location: {location}"
-            raise ValueError(msg)
+from .feature_locations import Corners, FeatureLocation, Middle
+from .utils import Direction, ObjectCreate
 
 
 class Feature(ObjectCreate):
     """Feature interface."""
 
-    def __init__(self, feature_location: FeatureLocation) -> None:
+    def __init__(self, feature_location: FeatureLocation | None) -> None:
         """Construct feature.
 
         Args:
@@ -129,7 +44,11 @@ class Feature(ObjectCreate):
 
     def apply(self, context: BuildPart) -> None:
         """Apply a feature."""
-        FeatureLocation.apply(context, self.create_obj, self._feature_location)
+        if self._feature_location:
+            with self._feature_location.apply_to(context.part):
+                self.create_obj()
+        else:
+            self.create_obj()
 
 
 class BaseBlockFeature(Feature):
@@ -163,7 +82,7 @@ class HoleFeature(BaseBlockFeature, BasePlateFeature):
         self,
         radius: float,
         depth: float,
-        feature_location: FeatureLocation = FeatureLocation.UNDEFINED,
+        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a Hole baseblock feature.
 
@@ -195,7 +114,7 @@ class ScrewHole(HoleFeature):
         self,
         radius: float = gridfinity_standard.screw.radius,
         depth: float = gridfinity_standard.screw.depth,
-        feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
+        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a ScrewHole baseblock feature.
 
@@ -203,8 +122,11 @@ class ScrewHole(HoleFeature):
             radius (float): radius
             depth (float): depth
             feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.BOTTOM_CORNERS.
+                Defaults to Corners(Direction.BOT).
         """
+        if not feature_location:
+            feature_location = Corners(Direction.BOT)
+
         super().__init__(radius, depth, feature_location)
 
 
@@ -213,17 +135,17 @@ class MagnetHole(HoleFeature):
 
     def __init__(
         self,
+        feature_location: FeatureLocation,
         radius: float = gridfinity_standard.magnet.radius,
         depth: float = gridfinity_standard.magnet.thickness,
-        feature_location: FeatureLocation = FeatureLocation.CORNERS,
     ) -> None:
         """Create a MagnetHole feature.
 
         Args:
+            feature_location (FeatureLocation): Location of feature.
             radius (float): radius
             depth (float): depth
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.CORNERS.
+
         """
         super().__init__(radius, depth, feature_location)
 
@@ -237,7 +159,7 @@ class ScrewHoleCountersink(ScrewHole):
         counter_sink_radius: float = 4.25,
         depth: float = gridfinity_standard.screw.depth,
         counter_sink_angle: float = 82,
-        feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
+        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a Countersink ScrewHole feature.
 
@@ -247,8 +169,11 @@ class ScrewHoleCountersink(ScrewHole):
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
             counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
             feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.BOTTOM_CORNERS.
+                Defaults to Corners(Direction.BOT.
         """
+        if not feature_location:
+            feature_location = Corners(Direction.BOT)
+
         super().__init__(radius, depth, feature_location)
         self.counter_sink_radius = counter_sink_radius
         self.counter_sink_angle = counter_sink_angle
@@ -279,7 +204,7 @@ class ScrewHoleCounterbore(ScrewHole):
         counter_bore_radius: float = gridfinity_standard.screw.radius * 1.5,
         counter_bore_depth: float = 2,
         depth: float = gridfinity_standard.screw.depth,
-        feature_location: FeatureLocation = FeatureLocation.BOTTOM_CORNERS,
+        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a CounterBore ScrewHole feature.
 
@@ -292,6 +217,9 @@ class ScrewHoleCounterbore(ScrewHole):
             feature_location (FeatureLocation, optional): Location of feature.
                 Defaults to FeatureLocation.BOTTOM_CORNERS.
         """
+        if not feature_location:
+            feature_location = Corners(Direction.BOT)
+
         super().__init__(radius, depth, feature_location)
         self.counter_bore_radius = counter_bore_radius
         self.counter_bore_depth = counter_bore_depth
@@ -318,7 +246,7 @@ class Weighted(BasePlateFeature):
 
     def __init__(
         self,
-        feature_location: FeatureLocation = FeatureLocation.BOTTOM_MIDDLE,
+        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Construct Weighted feature.
 
@@ -326,6 +254,8 @@ class Weighted(BasePlateFeature):
             feature_location (FeatureLocation, optional): Location of feature.
                 Defaults to FeatureLocation.BOTTOM_MIDDLE.
         """
+        if not feature_location:
+            feature_location = Middle(Direction.BOT)
         super().__init__(feature_location)
 
     def create_obj(  # noqa: D102
