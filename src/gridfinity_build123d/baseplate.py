@@ -117,14 +117,16 @@ class BasePlateBlockFull(BasePlateBlock):
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         with BuildPart() as part:
-            BasePlateBlockFrame().create_obj()
+            frame = BasePlateBlockFrame().create_obj(mode=Mode.PRIVATE)
             with BuildSketch():
-                bot_face = part.faces().sort_by(Axis.Z)[0]
+                bot_face = frame.faces().sort_by(Axis.Z)[0]
                 make_face(bot_face.outer_wire())
             extrude(amount=self.bottom_height, dir=(0, 0, -1))
 
             for feature in self.features:
                 feature.apply(part)
+
+            add(frame)
 
         return BasePartObject(part.part, rotation, align, mode)
 
