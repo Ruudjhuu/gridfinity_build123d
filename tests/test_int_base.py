@@ -1,5 +1,12 @@
 import testutils
-from gridfinity_build123d import Base, BaseEqual, MagnetHole, ScrewHole
+from gridfinity_build123d import (
+    Base,
+    BaseEqual,
+    Corners,
+    Direction,
+    MagnetHole,
+    ScrewHole,
+)
 
 
 class BaseTest(testutils.UtilTestCase):
@@ -14,7 +21,11 @@ class BaseTest(testutils.UtilTestCase):
         self.assertAlmostEqual(73106.17327094806, part.volume)
 
     def test_base_magnets(self) -> None:
-        part = BaseEqual(grid_x=2, grid_y=3, features=MagnetHole())
+        part = BaseEqual(
+            grid_x=2,
+            grid_y=3,
+            features=MagnetHole(Corners(Direction.BOT)),
+        )
 
         self.assertTrue(part.is_valid)
         self.assertTrue(part.is_manifold)
@@ -25,7 +36,11 @@ class BaseTest(testutils.UtilTestCase):
         self.assertAlmostEqual(71194.82830050986, part.volume)
 
     def test_base_magnets_and_screws(self) -> None:
-        part = BaseEqual(grid_x=2, grid_y=3, features=[MagnetHole(), ScrewHole()])
+        part = BaseEqual(
+            grid_x=2,
+            grid_y=3,
+            features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+        )
 
         self.assertTrue(part.is_valid)
         self.assertTrue(part.is_manifold)
