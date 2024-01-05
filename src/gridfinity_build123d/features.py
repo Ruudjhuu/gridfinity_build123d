@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from build123d import (
     Align,
@@ -27,8 +28,10 @@ from build123d import (
 )
 
 from .constants import gf_bin, gridfinity_standard
-from .feature_locations import Corners, FeatureLocation, Middle
-from .utils import Direction, ObjectCreate
+from .utils import ObjectCreate
+
+if TYPE_CHECKING:
+    from .feature_locations import FeatureLocation
 
 
 class Feature(ObjectCreate):
@@ -80,17 +83,16 @@ class HoleFeature(BaseBlockFeature, BasePlateFeature):
 
     def __init__(
         self,
+        feature_location: FeatureLocation,
         radius: float,
         depth: float,
-        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a Hole baseblock feature.
 
         Args:
             radius (float): radius
             depth (float): depth
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.UNDEFINED.
+            feature_location (FeatureLocation): Location of feature.
         """
         super().__init__(feature_location)
         self.radius = radius
@@ -112,22 +114,18 @@ class ScrewHole(HoleFeature):
 
     def __init__(
         self,
+        feature_location: FeatureLocation,
         radius: float = gridfinity_standard.screw.radius,
         depth: float = gridfinity_standard.screw.depth,
-        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a ScrewHole baseblock feature.
 
         Args:
+            feature_location (FeatureLocation): Location of feature.
             radius (float): radius
             depth (float): depth
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to Corners(Direction.BOT).
         """
-        if not feature_location:
-            feature_location = Corners(Direction.BOT)
-
-        super().__init__(radius, depth, feature_location)
+        super().__init__(feature_location, radius, depth)
 
 
 class MagnetHole(HoleFeature):
@@ -147,7 +145,7 @@ class MagnetHole(HoleFeature):
             depth (float): depth
 
         """
-        super().__init__(radius, depth, feature_location)
+        super().__init__(feature_location, radius, depth)
 
 
 class ScrewHoleCountersink(ScrewHole):
@@ -155,26 +153,22 @@ class ScrewHoleCountersink(ScrewHole):
 
     def __init__(
         self,
+        feature_location: FeatureLocation,
         radius: float = 1.75,
         counter_sink_radius: float = 4.25,
         depth: float = gridfinity_standard.screw.depth,
         counter_sink_angle: float = 82,
-        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a Countersink ScrewHole feature.
 
         Args:
+            feature_location (FeatureLocation): Location of feature.
             radius (float, optional): radius. Defaults to 1.75.
             counter_sink_radius (float, optional): radius of countersink. Default to 4.25.
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
             counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to Corners(Direction.BOT.
         """
-        if not feature_location:
-            feature_location = Corners(Direction.BOT)
-
-        super().__init__(radius, depth, feature_location)
+        super().__init__(feature_location, radius, depth)
         self.counter_sink_radius = counter_sink_radius
         self.counter_sink_angle = counter_sink_angle
 
@@ -200,27 +194,23 @@ class ScrewHoleCounterbore(ScrewHole):
 
     def __init__(
         self,
+        feature_location: FeatureLocation,
         radius: float = gridfinity_standard.screw.radius,
         counter_bore_radius: float = gridfinity_standard.screw.radius * 1.5,
         counter_bore_depth: float = 2,
         depth: float = gridfinity_standard.screw.depth,
-        feature_location: FeatureLocation | None = None,
     ) -> None:
         """Create a CounterBore ScrewHole feature.
 
         Args:
+            feature_location (FeatureLocation): Location of feature.
             radius (float, optional): radius. Defaults to gridfinity_standard.screw.radius.
             counter_bore_radius (float, optional): counter bore radius. Defaults to
                 gridfinity_standard.screw.radius * 1.5.
             counter_bore_depth (float, optional): counter bore depth. Defaults to 2.
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.BOTTOM_CORNERS.
         """
-        if not feature_location:
-            feature_location = Corners(Direction.BOT)
-
-        super().__init__(radius, depth, feature_location)
+        super().__init__(feature_location, radius, depth)
         self.counter_bore_radius = counter_bore_radius
         self.counter_bore_depth = counter_bore_depth
 
@@ -246,16 +236,13 @@ class Weighted(BasePlateFeature):
 
     def __init__(
         self,
-        feature_location: FeatureLocation | None = None,
+        feature_location: FeatureLocation,
     ) -> None:
         """Construct Weighted feature.
 
         Args:
-            feature_location (FeatureLocation, optional): Location of feature.
-                Defaults to FeatureLocation.BOTTOM_MIDDLE.
+            feature_location (FeatureLocation): Location of feature.
         """
-        if not feature_location:
-            feature_location = Middle(Direction.BOT)
         super().__init__(feature_location)
 
     def create_obj(  # noqa: D102

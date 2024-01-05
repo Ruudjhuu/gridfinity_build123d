@@ -69,8 +69,39 @@ class FaceDirection(FeatureLocation):
             yield
 
 
+class FaceDirectionBAK(FeatureLocation):
+    """Face Direction location.
+
+    Locates feature on face by direction.
+    """
+
+    def __init__(self, face_direction: Direction) -> None:
+        """Create FaceDirection.
+
+        Args:
+            face_direction (Direction | None, optional): Direction of face where feature should be
+                located. Defaults to None.
+        """
+        self._direction = face_direction
+
+    @contextmanager
+    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
+        bbox = part.bounding_box()
+
+        # with location
+
+        if self._direction:
+            face = Utils.get_face_by_direction(part, self._direction)
+            with Locations(face.center()), Locations(
+                Direction.to_rotation(self._direction),
+            ):
+                yield
+        else:
+            yield
+
+
 class Middle(FaceDirection):
-    """Middle feature location.
+    """MiddleFace feature location.
 
     Locates the feature in the middle of a face
     """
@@ -82,7 +113,7 @@ class Middle(FaceDirection):
 
 
 class Corners(FaceDirection):
-    """Corners feature location.
+    """CornersFace feature location.
 
     Locates a feature in the corner.
     """
