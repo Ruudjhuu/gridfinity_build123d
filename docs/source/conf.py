@@ -7,6 +7,11 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path("../src").resolve()))
+
 project = "gridfinity_build123d"
 copyright = "2023, Ruudjhuu"  # noqa: A001
 author = "Ruudjhuu"
