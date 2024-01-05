@@ -5,6 +5,7 @@ from enum import Enum, auto
 from pathlib import Path
 from subprocess import check_call
 from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock
 
 from build123d import Box, Part
 from gridfinity_build123d import (
@@ -16,10 +17,13 @@ from gridfinity_build123d import (
     Bin,
     Compartment,
     CompartmentsEqual,
+    Corners,
+    Direction,
     FeatureLocation,
     HoleFeature,
     Label,
     MagnetHole,
+    Middle,
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
@@ -121,7 +125,11 @@ class Convert:
 Convert.part_to_png(Base([[True, True], [True]]), "base", CameraPosition.CAMERA_BOT)
 Convert.part_to_png(BaseEqual(2, 2), "base_equal", CameraPosition.CAMERA_BOT)
 Convert.part_to_png(
-    BaseEqual(2, 2, [MagnetHole(), ScrewHole()]),
+    BaseEqual(
+        2,
+        2,
+        [MagnetHole(Corners(Direction.BOT)), ScrewHole(Corners(Direction.BOT))],
+    ),
     "base_holes",
     CameraPosition.CAMERA_BOT,
 )
@@ -172,7 +180,12 @@ Convert.part_to_png(
     BasePlateEqual(
         2,
         2,
-        BasePlateBlockFull(features=[ScrewHoleCountersink(), Weighted()]),
+        BasePlateBlockFull(
+            features=[
+                ScrewHoleCountersink(Corners(Direction.BOT)),
+                Weighted(Middle(Direction.BOT)),
+            ],
+        ),
     ),
     "base_plate_weigthed",
     CameraPosition.CAMERA_BOT,
@@ -182,39 +195,40 @@ Convert.part_to_png(
 ############
 # Features #
 ############
+f_loc_mock = MagicMock(spec=FeatureLocation)
 
 Convert.part_to_png(
-    Box(3, 3, 3) - HoleFeature(1, 2).create_obj(),
+    Box(3, 3, 3) - HoleFeature(f_loc_mock, 1, 2).create_obj(),
     "hole_feature",
     CameraPosition.CAMERA_TOP,
 )
 
 Convert.part_to_png(
-    Box(4, 4, 3) - ScrewHole().create_obj(),
+    Box(4, 4, 3) - ScrewHole(f_loc_mock).create_obj(),
     "screw_hole",
     CameraPosition.CAMERA_TOP,
 )
 
 Convert.part_to_png(
-    Box(8, 8, 4) - MagnetHole().create_obj(),
+    Box(8, 8, 4) - MagnetHole(f_loc_mock).create_obj(),
     "magnet_hole",
     CameraPosition.CAMERA_TOP,
 )
 
 Convert.part_to_png(
-    Box(10, 10, 4) - ScrewHoleCountersink().create_obj(),
+    Box(10, 10, 4) - ScrewHoleCountersink(f_loc_mock).create_obj(),
     "countersink",
     CameraPosition.CAMERA_TOP,
 )
 
 Convert.part_to_png(
-    Box(8, 8, 4) - ScrewHoleCounterbore(counter_bore_depth=0).create_obj(),
+    Box(8, 8, 4) - ScrewHoleCounterbore(f_loc_mock, counter_bore_depth=0).create_obj(),
     "counterbore",
     CameraPosition.CAMERA_TOP,
 )
 
 Convert.part_to_png(
-    Weighted().create_obj(),
+    Weighted(f_loc_mock).create_obj(),
     "weigthed",
     CameraPosition.CAMERA_TOP,
 )
@@ -233,10 +247,10 @@ Convert.part_to_png(
 
 obj = Base(
     features=[
-        MagnetHole(feature_location=FeatureLocation.TOP_CORNERS),
-        ScrewHoleCountersink(feature_location=FeatureLocation.TOP_MIDDLE),
-        ScrewHoleCounterbore(feature_location=FeatureLocation.BOTTOM_CORNERS),
-        Weighted(feature_location=FeatureLocation.BOTTOM_MIDDLE),  # type: ignore[list-item]
+        MagnetHole(feature_location=Corners(Direction.TOP)),
+        ScrewHoleCountersink(feature_location=Middle(Direction.TOP)),
+        ScrewHoleCounterbore(feature_location=Corners(Direction.BOT)),
+        Weighted(feature_location=Middle(Direction.BOT)),  # type: ignore[list-item]
     ],
 )
 Convert.part_to_png(
@@ -268,7 +282,7 @@ Convert.parts_to_gif(
         BasePlate([[True, True, True], [True, True], [True]], BasePlateBlockFull()),
         BasePlate(
             [[True, True, True], [True, True], [True]],
-            BasePlateBlockFull(features=MagnetHole()),
+            BasePlateBlockFull(features=MagnetHole(Corners(Direction.TOP))),
         ),
     ],
     "baseplate",
