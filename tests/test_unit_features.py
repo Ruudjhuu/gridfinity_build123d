@@ -74,7 +74,8 @@ class FeatureTest(testutils.UtilTestCase):
 class HoleFeatureTest(testutils.UtilTestCase):
     @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[misc]
     def test_hole_feature(self, radius: float, depth: float) -> None:
-        part = HoleFeature(radius, depth).create_obj()
+        f_loc = MagicMock(spec=FeatureLocation)
+        part = HoleFeature(f_loc, radius, depth).create_obj()
 
         bbox = part.bounding_box()
 
@@ -83,20 +84,17 @@ class HoleFeatureTest(testutils.UtilTestCase):
         self.assertAlmostEqual(radius**2 * pi * depth * 2, part.volume)
 
 
-@patch("gridfinity_build123d.features.Corners")
 @patch("gridfinity_build123d.features.HoleFeature.__init__")
 class ScrewHoleTest(testutils.UtilTestCase):
-    def test_screw_hole(self, hole_mock: MagicMock, f_loc_mock: MagicMock) -> None:
-        ScrewHole()
-        hole_mock.assert_called_once_with(1.5, 6, f_loc_mock.return_value)
-        f_loc_mock.assert_called_once_with(Direction.BOT)
+    def test_screw_hole(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+        ScrewHole(f_loc)
+        hole_mock.assert_called_once_with(f_loc, 1.5, 6)
 
-    def test_screw_hole_values(
-        self, hole_mock: MagicMock, f_loc_mock: MagicMock
-    ) -> None:
-        ScrewHole(2, 3)
-        hole_mock.assert_called_once_with(2, 3, f_loc_mock.return_value)
-        f_loc_mock.assert_called_once_with(Direction.BOT)
+    def test_screw_hole_values(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+        ScrewHole(f_loc, 2, 3)
+        hole_mock.assert_called_once_with(f_loc, 2, 3)
 
 
 @patch("gridfinity_build123d.features.HoleFeature.__init__")
@@ -104,17 +102,19 @@ class MagnetHoleTest(testutils.UtilTestCase):
     def test_magnet_hole(self, hole_mock: MagicMock) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
         MagnetHole(f_loc)
-        hole_mock.assert_called_once_with(3.25, 2.4, f_loc)
+        hole_mock.assert_called_once_with(f_loc, 3.25, 2.4)
 
     def test_magnet_hole_values(self, hole_mock: MagicMock) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
         MagnetHole(f_loc, 2, 3)
-        hole_mock.assert_called_once_with(2, 3, f_loc)
+        hole_mock.assert_called_once_with(f_loc, 2, 3)
 
 
 class ScrewHoleCountersinkTest(testutils.UtilTestCase):
     def test_screw_hole_countersink(self) -> None:
-        part = ScrewHoleCountersink().create_obj()
+        f_loc = MagicMock(spec=FeatureLocation)
+
+        part = ScrewHoleCountersink(f_loc).create_obj()
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((8.5, 8.5, 12), bbox.size)
@@ -122,6 +122,7 @@ class ScrewHoleCountersinkTest(testutils.UtilTestCase):
 
     @patch("gridfinity_build123d.features.CounterSinkHole")
     def test_screw_hole_countersink_args(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
         hole_mock.side_effect = mocks.BoxAsMock(1, 1, 1).create
 
         radius = 1
@@ -129,6 +130,7 @@ class ScrewHoleCountersinkTest(testutils.UtilTestCase):
         depth = 3
         counter_sink_angle = 4
         ScrewHoleCountersink(
+            f_loc,
             radius=radius,
             counter_sink_radius=counter_sink_radius,
             depth=depth,
@@ -146,7 +148,9 @@ class ScrewHoleCountersinkTest(testutils.UtilTestCase):
 
 class ScrewHoleCounterboreTest(testutils.UtilTestCase):
     def test_screw_hole_counterbore(self) -> None:
-        part = ScrewHoleCounterbore().create_obj()
+        f_loc = MagicMock(spec=FeatureLocation)
+
+        part = ScrewHoleCounterbore(f_loc).create_obj()
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((4.5, 4.5, 12), bbox.size)
@@ -154,6 +158,7 @@ class ScrewHoleCounterboreTest(testutils.UtilTestCase):
 
     @patch("gridfinity_build123d.features.CounterBoreHole")
     def test_screw_hole_counterbore_args(self, hole_mock: MagicMock) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
         hole_mock.side_effect = mocks.BoxAsMock(1, 1, 1).create
 
         radius = 1
@@ -161,6 +166,7 @@ class ScrewHoleCounterboreTest(testutils.UtilTestCase):
         counter_bore_depth = 4
         depth = 3
         ScrewHoleCounterbore(
+            f_loc,
             radius=radius,
             counter_bore_radius=counter_bore_radius,
             counter_bore_depth=counter_bore_depth,
@@ -178,7 +184,9 @@ class ScrewHoleCounterboreTest(testutils.UtilTestCase):
 
 class WeightedTest(testutils.UtilTestCase):
     def test_weigthed(self) -> None:
-        part = Weighted().create_obj()
+        f_loc = MagicMock(spec=FeatureLocation)
+
+        part = Weighted(f_loc).create_obj()
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((38.4, 38.4, 4.0), bbox.size)

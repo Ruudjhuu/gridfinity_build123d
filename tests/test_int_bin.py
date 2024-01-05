@@ -23,7 +23,10 @@ class BinTest(testutils.UtilTestCase):
             base=BaseEqual(
                 grid_x=2,
                 grid_y=2,
-                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+                features=[
+                    MagnetHole(Corners(Direction.BOT)),
+                    ScrewHole(Corners(Direction.BOT)),
+                ],
             ),
             height_in_units=5,
             compartments=CompartmentsEqual(
@@ -49,7 +52,10 @@ class BinTest(testutils.UtilTestCase):
             base=BaseEqual(
                 grid_x=3,
                 grid_y=3,
-                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+                features=[
+                    MagnetHole(Corners(Direction.BOT)),
+                    ScrewHole(Corners(Direction.BOT)),
+                ],
             ),
             height_in_units=5,
             compartments=Compartments(
@@ -84,7 +90,10 @@ class BinTest(testutils.UtilTestCase):
         part = Bin(
             base=Base(
                 grid=base_grid,
-                features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+                features=[
+                    MagnetHole(Corners(Direction.BOT)),
+                    ScrewHole(Corners(Direction.BOT)),
+                ],
             ),
             height_in_units=5,
             compartments=Compartments(
