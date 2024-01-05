@@ -7,14 +7,18 @@ Example:
 
 The following code creates a feature rich base:
 
-.. code-block:: python
+.. testsetup:: *
+
+    from gridfinity_build123d import *
+
+.. testcode::
             
     Base(
         features=[
-            MagnetHole(feature_location=FeatureLocation.TOP_CORNERS),
-            ScrewHoleCountersink(feature_location=FeatureLocation.TOP_MIDDLE),
-            ScrewHoleCounterbore(feature_location=FeatureLocation.BOTTOM_CORNERS),
-            Weighted(feature_location=FeatureLocation.BOTTOM_MIDDLE),
+            MagnetHole(feature_location=Corners(Direction.TOP)),
+            ScrewHoleCountersink(feature_location=Middle(Direction.TOP)),
+            ScrewHoleCounterbore(feature_location=Corners(Direction.BOT)),
+            Weighted(feature_location=Middle(Direction.BOT)),  # type: ignore[list-item]
         ],
     )
 
