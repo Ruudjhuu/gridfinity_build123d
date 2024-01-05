@@ -39,7 +39,10 @@ class BaseTest(testutils.UtilTestCase):
         part = BaseEqual(
             grid_x=2,
             grid_y=3,
-            features=[MagnetHole(Corners(Direction.BOT)), ScrewHole()],
+            features=[
+                MagnetHole(Corners(Direction.BOT)),
+                ScrewHole(Corners(Direction.BOT)),
+            ],
         )
 
         self.assertTrue(part.is_valid)

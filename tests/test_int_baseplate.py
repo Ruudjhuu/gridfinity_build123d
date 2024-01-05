@@ -7,6 +7,7 @@ from gridfinity_build123d import (
     Corners,
     Direction,
     MagnetHole,
+    Middle,
     ScrewHoleCountersink,
     Weighted,
 )
@@ -29,8 +30,8 @@ class BasePlateTest(testutils.UtilTestCase):
                 baseplate_block=BasePlateBlockFull(
                     features=[
                         MagnetHole(Corners(Direction.TOP)),
-                        ScrewHoleCountersink(),
-                        Weighted(),
+                        ScrewHoleCountersink(Corners(Direction.BOT)),
+                        Weighted(Middle(Direction.BOT)),
                     ],
                 ),
             )
