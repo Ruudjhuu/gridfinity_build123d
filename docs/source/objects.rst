@@ -8,6 +8,10 @@ Bins
 
 .. currentmodule:: gridfinity_build123d.bin
 
+.. testsetup:: *
+
+    from gridfinity_build123d import *
+
 .. grid:: 2
 
     .. grid-item-card:: :class:`Bin`
@@ -17,7 +21,7 @@ Bins
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             Bin(
                 Base(), height_in_units=4,
@@ -36,7 +40,7 @@ Bins
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             Bin(
                 Base(),
@@ -60,7 +64,7 @@ Bins
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             Bin(
                 Base(),
@@ -94,11 +98,11 @@ BasePlates
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             BasePlateEqual(
-                grid_x=2,
-                grid_y=2,
+                size_x=2,
+                size_y=2,
             )
 
         .. raw:: html
@@ -115,7 +119,7 @@ BasePlates
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             BasePlate([[True,True],[True]])
 
@@ -132,12 +136,12 @@ BasePlates
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             BasePlateEqual(
-                grid_x=2,
-                grid_y=2,
-                baseplateblock=BasePlateBlockFull(),
+                size_x=2,
+                size_y=2,
+                baseplate_block=BasePlateBlockFull(),
             )
 
         .. raw:: html
@@ -153,12 +157,12 @@ BasePlates
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             BasePlateEqual(
-                grid_x=2,
-                grid_y=2,
-                baseplateblock=BasePlateBlockFull(),
+                size_x=2,
+                size_y=2,
+                baseplate_block=BasePlateBlockFull(),
             )
 
         .. raw:: html
@@ -181,7 +185,7 @@ Bases
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             BaseEqual(
                 grid_x=2,
@@ -201,7 +205,7 @@ Bases
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
             
             Base([[True,True],[True]])
 
@@ -219,9 +223,12 @@ Bases
             <details>
             <summary>source</summary>
 
-        .. code-block:: python
+        .. testcode::
 
-            BaseEqual(2, 2, [MagnetHole(), ScrewHole()])
+            BaseEqual(2, 2, [MagnetHole(
+                Corners(Direction.BOT)),
+                ScrewHole(Corners(Direction.BOT),
+                )])
 
         .. raw:: html
 
