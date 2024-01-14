@@ -10,17 +10,18 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from build123d import (
+    BoundBox,
     GridLocations,
+    Location,
     Locations,
     Part,
 )
 
 from .constants import gridfinity_standard
-from .utils import Direction, Utils
 
 
 class FeatureLocation(ABC):
-    """Feature location type.
+    """Feature location.
 
     Child classes of this type are responsible for the location of features.
     """
@@ -39,114 +40,115 @@ class FeatureLocation(ABC):
         Yields:
             Iterator[None]: context manager return value.
         """
-        raise NotImplementedError  # pragma: no cover
 
 
-class FaceDirection(FeatureLocation):
-    """Face Direction location.
+class TopMiddle(FeatureLocation):
+    """Top Middle feature location.
 
-    Locates feature on face by direction.
+    Locate a feature top center of the boundingbox of an object
     """
-
-    def __init__(self, face_direction: Direction | None = None) -> None:
-        """Create FaceDirection.
-
-        Args:
-            face_direction (Direction | None, optional): Direction of face where feature should be
-                located. Defaults to None.
-        """
-        self._direction = face_direction
-
-    @contextmanager
-    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
-        if self._direction:
-            face = Utils.get_face_by_direction(part, self._direction)
-            with Locations(face.center()), Locations(
-                Direction.to_rotation(self._direction),
-            ):
-                yield
-        else:
-            yield
-
-
-class FaceDirectionBAK(FeatureLocation):
-    """Face Direction location.
-
-    Locates feature on face by direction.
-    """
-
-    def __init__(self, face_direction: Direction) -> None:
-        """Create FaceDirection.
-
-        Args:
-            face_direction (Direction | None, optional): Direction of face where feature should be
-                located. Defaults to None.
-        """
-        self._direction = face_direction
 
     @contextmanager
     def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
         bbox = part.bounding_box()
-
-        # with location
-
-        if self._direction:
-            face = Utils.get_face_by_direction(part, self._direction)
-            with Locations(face.center()), Locations(
-                Direction.to_rotation(self._direction),
-            ):
-                yield
-        else:
+        center = bbox.center()
+        center.Z = bbox.max.Z
+        with Locations(center):
             yield
 
 
-class Middle(FaceDirection):
-    """MiddleFace feature location.
+class BottomMiddle(FeatureLocation):
+    """Bottom Middle feature location.
 
-    Locates the feature in the middle of a face
+    Locate a feature bottom center of the boundingbox of an object
     """
 
     @contextmanager
     def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
-        with super().apply_to(part):
+        bbox = part.bounding_box()
+        center = bbox.center()
+        center.Z = bbox.min.Z
+        with Locations(Location(center, (180, 0, 0))):
             yield
 
 
-class Corners(FaceDirection):
-    """CornersFace feature location.
+class Corners(FeatureLocation):
+    """Abstract corners class.
 
-    Locates a feature in the corner.
+    Contains helper function to locate objects in the corners of a face from a boundingbox.
     """
 
-    def __init__(
-        self,
-        face_direction: Direction,
-        offset: float = gridfinity_standard.bottom.hole_from_side,
-    ) -> None:
-        """Construct Conrers location object.
+    def __init__(self, offset: float = 0) -> None:
+        """Only callable by a child object.
 
         Args:
-            face_direction (Direction): Direction of the face where features should be located in the
-                corners.
-            offset (float, optional): Distance from feature to corner. Defaults to
-                gridfinity_standard.bottom.hole_from_side.
+            offset (float, optional): The ofset from corner to final location. Defaults to 0.
         """
-        super().__init__(face_direction)
         self._offset = offset
 
     @contextmanager
-    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
-        if not self._direction:  # pragma: no cover
-            msg = "No direction given"
-            raise ValueError(msg)
-        face = Utils.get_face_by_direction(part, self._direction)
-        self._corner_distance_x = face.length - 2 * self._offset
-        self._corner_distance_y = face.width - 2 * self._offset
+    def _apply_on_corners(self, center: Location, bbox: BoundBox) -> Iterator[None]:
+        self._corner_distance_x = bbox.size.X - 2 * self._offset
+        self._corner_distance_y = bbox.size.Y - 2 * self._offset
 
-        with super().apply_to(part), GridLocations(
+        with Locations(center), GridLocations(
             self._corner_distance_x,
             self._corner_distance_y,
             2,
             2,
         ):
+            yield
+
+
+class BottomCorners(Corners):
+    """Bottom Corners.
+
+    Locate a feature at the corners of the bottom plane of a objects boundingbox.
+    """
+
+    def __init__(
+        self,
+        offset: float = gridfinity_standard.bottom.hole_from_side,
+    ) -> None:
+        """Create Bottom corners object.
+
+        Args:
+            offset (float, optional): The ofset from corner to final location. Defaults to
+                gridfinity_standard.bottom.hole_from_side.
+        """
+        super().__init__(offset)
+
+    @contextmanager
+    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
+        bbox = part.bounding_box()
+        center = bbox.center()
+        center.Z = bbox.min.Z
+        with self._apply_on_corners(Location(center, (180, 0, 0)), bbox):
+            yield
+
+
+class TopCorners(Corners):
+    """Top Corners.
+
+    Locate a feature at the conrers of the top plane of a boundingbox.
+    """
+
+    def __init__(
+        self,
+        offset: float = gridfinity_standard.bottom.hole_from_side,
+    ) -> None:
+        """Create Top corners object.
+
+        Args:
+            offset (float, optional): The ofset from corner to final location. Defaults to
+                gridfinity_standard.bottom.hole_from_side.
+        """
+        super().__init__(offset)
+
+    @contextmanager
+    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
+        bbox = part.bounding_box()
+        center = bbox.center()
+        center.Z = bbox.max.Z
+        with self._apply_on_corners(Location(center), bbox):
             yield

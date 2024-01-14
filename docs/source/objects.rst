@@ -226,8 +226,8 @@ Bases
         .. testcode::
 
             BaseEqual(2, 2, [MagnetHole(
-                Corners(Direction.BOT)),
-                ScrewHole(Corners(Direction.BOT),
+                BottomCorners()),
+                ScrewHole(BottomCorners(),
                 )])
 
         .. raw:: html

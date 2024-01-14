@@ -1,92 +1,125 @@
-from unittest.mock import MagicMock, patch
-
 import testutils
-from build123d import Align, Axis, Box, BuildPart, Mode, Part
-from gridfinity_build123d.feature_locations import (
-    Corners,
-    FaceDirection,
-    Middle,
+from build123d import (
+    Align,
+    Axis,
+    Box,
+    BuildPart,
+    CenterOf,
+    Mode,
+    Vector,
 )
-from gridfinity_build123d.utils import Direction
-from parameterized import parameterized  # type: ignore[import-untyped]
+from gridfinity_build123d.feature_locations import (
+    BottomCorners,
+    BottomMiddle,
+    TopCorners,
+    TopMiddle,
+)
 
 
-class FaceDirectionTest(testutils.UtilTestCase):
-    @parameterized.expand(
-        [
-            ["TOP", Direction.TOP, Axis.Z, -1],
-            ["BOT", Direction.BOT, Axis.Z, 0],
-            ["LEFT", Direction.LEFT, Axis.X, 0],
-            ["RIGHT", Direction.RIGHT, Axis.X, -1],
-            ["FRONT", Direction.FRONT, Axis.Y, 0],
-            ["BACK", Direction.BACK, Axis.Y, -1],
-        ],
-    )  # type: ignore[misc]
-    def test_facedirection(
-        self,
-        name: str,  # noqa:ARG002
-        direction: Direction,
-        axis: Axis,
-        index: int,
-    ) -> None:
+class TopMiddleTest(testutils.UtilTestCase):
+    def test_topmiddle(self) -> None:
         with BuildPart() as part:
-            Box(20, 20, 20)
-            location = FaceDirection(direction)
-            with location.apply_to(part):
+            Box(50, 50, 30)
+            with TopMiddle().apply_to(part.part):
                 Box(
                     1,
                     1,
                     1,
-                    mode=Mode.SUBTRACT,
                     align=(Align.CENTER, Align.CENTER, Align.MAX),
+                    mode=Mode.SUBTRACT,
                 )
-        self.assertEqual(1, len(part.faces().sort_by(axis)[index].inner_wires()))
-        bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((20, 20, 20), bbox.size)
-        self.assertAlmostEqual(7999, part.part.volume)
 
-    def test_facedirection_none(self) -> None:
+        wires = part.faces().sort_by(Axis.Z)[-1].inner_wires()
+        self.assertEqual(1, len(wires))
+
+        self.assertEqual(Vector(0, 0, 15), wires[0].center(CenterOf.BOUNDING_BOX))
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
+        self.assertAlmostEqual(50 * 50 * 30 - 1, part.part.volume)
+
+
+class BottomMiddleTest(testutils.UtilTestCase):
+    def test_bottommiddle(self) -> None:
         with BuildPart() as part:
-            Box(20, 20, 20, align=Align.CENTER)
-            location = FaceDirection()
-            with location.apply_to(part):
+            Box(50, 50, 30)
+            with BottomMiddle().apply_to(part.part):
                 Box(
                     1,
                     1,
                     1,
-                    mode=Mode.SUBTRACT,
-                    align=Align.CENTER,
-                )
-        bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((20, 20, 20), bbox.size)
-        self.assertAlmostEqual(7999, part.part.volume)
-
-
-class MiddleTest(testutils.UtilTestCase):
-    @patch("gridfinity_build123d.feature_locations.FaceDirection.apply_to")
-    def test_middle_apply_to(self, fdir_mock: MagicMock) -> None:
-        direction = MagicMock(spec=Direction)
-        part = MagicMock(spec=Part)
-        with Middle(direction).apply_to(part):
-            pass
-        fdir_mock.assert_called_once_with(part)
-
-
-class CornersTest(testutils.UtilTestCase):
-    def test_corners_default(self) -> None:
-        with BuildPart() as part:
-            Box(50, 50, 50)
-            context = Corners(Direction.TOP)
-            with context.apply_to(part):
-                Box(
-                    1,
-                    1,
-                    1,
-                    mode=Mode.SUBTRACT,
                     align=(Align.CENTER, Align.CENTER, Align.MAX),
+                    mode=Mode.SUBTRACT,
+                )
+        wires = part.faces().sort_by(Axis.Z)[0].inner_wires()
+        self.assertEqual(1, len(wires))
+
+        self.assertEqual(Vector(0, 0, -15), wires[0].center(CenterOf.BOUNDING_BOX))
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
+        self.assertAlmostEqual(50 * 50 * 30 - 1, part.part.volume)
+
+
+class BottomCornersTest(testutils.UtilTestCase):
+    def test_bottomcorners(self) -> None:
+        with BuildPart() as part:
+            Box(50, 50, 30)
+
+            with BottomCorners().apply_to(part.part):
+                Box(
+                    1,
+                    1,
+                    1,
+                    align=(Align.CENTER, Align.CENTER, Align.MAX),
+                    mode=Mode.SUBTRACT,
                 )
 
-        self.assertEqual(4, len(part.faces().sort_by(Axis.Z)[-1].inner_wires()))
+        faces = part.faces().sort_by(Axis.Z)[0].inner_wires()
+
+        self.assertEqual(4, len(faces))
+        locations = [
+            Vector(17, 17, -15),
+            Vector(-17, 17, -15),
+            Vector(17, -17, -15),
+            Vector(-17, -17, -15),
+        ]
+
+        for face in faces:
+            self.assertIn(face.center(CenterOf.BOUNDING_BOX), locations)
+
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
-        self.assertAlmostEqual(124996, part.part.volume)
+        self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
+        self.assertAlmostEqual(50 * 50 * 30 - 4, part.part.volume)
+
+
+class TopCornersTest(testutils.UtilTestCase):
+    def test_topcorners(self) -> None:
+        with BuildPart() as part:
+            Box(50, 50, 30)
+
+            with TopCorners().apply_to(part.part):
+                Box(
+                    1,
+                    1,
+                    1,
+                    align=(Align.CENTER, Align.CENTER, Align.MAX),
+                    mode=Mode.SUBTRACT,
+                )
+
+        faces = part.faces().sort_by(Axis.Z)[-1].inner_wires()
+
+        self.assertEqual(4, len(faces))
+        locations = [
+            Vector(17, 17, 15),
+            Vector(-17, 17, 15),
+            Vector(17, -17, 15),
+            Vector(-17, -17, 15),
+        ]
+
+        for face in faces:
+            self.assertIn(face.center(CenterOf.BOUNDING_BOX), locations)
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
+        self.assertAlmostEqual(50 * 50 * 30 - 4, part.part.volume)
