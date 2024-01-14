@@ -1,8 +1,7 @@
 mypy==1.8.0
 coverage==7.4.0
 vulture==2.10
-ocp_tessellate==1.1.2
-ocp_vscode==1.2.2
+ocp_vscode==2.1.1
 parameterized==0.9.0
 ruff==0.1.11
  -e .
