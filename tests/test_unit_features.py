@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from math import pi
-from unittest.mock import ANY, MagicMixin, MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import mocks
 import testutils
@@ -15,6 +15,7 @@ from build123d import (
     Part,
     RotationLike,
 )
+from gridfinity_build123d.feature_locations import FeatureLocation
 from gridfinity_build123d.features import (
     Feature,
     HoleFeature,
@@ -26,8 +27,6 @@ from gridfinity_build123d.features import (
     Sweep,
     Weighted,
 )
-from gridfinity_build123d.feature_locations import FeatureLocation
-from gridfinity_build123d.utils import Direction
 from parameterized import parameterized  # type: ignore[import-untyped]
 
 

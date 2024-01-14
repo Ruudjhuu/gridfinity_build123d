@@ -2,8 +2,7 @@ import testutils
 from gridfinity_build123d import (
     Base,
     BaseEqual,
-    Corners,
-    Direction,
+    BottomCorners,
     MagnetHole,
     ScrewHole,
 )
@@ -24,7 +23,7 @@ class BaseTest(testutils.UtilTestCase):
         part = BaseEqual(
             grid_x=2,
             grid_y=3,
-            features=MagnetHole(Corners(Direction.BOT)),
+            features=MagnetHole(BottomCorners()),
         )
 
         self.assertTrue(part.is_valid)
@@ -40,8 +39,8 @@ class BaseTest(testutils.UtilTestCase):
             grid_x=2,
             grid_y=3,
             features=[
-                MagnetHole(Corners(Direction.BOT)),
-                ScrewHole(Corners(Direction.BOT)),
+                MagnetHole(BottomCorners()),
+                ScrewHole(BottomCorners()),
             ],
         )
 

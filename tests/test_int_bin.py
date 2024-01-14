@@ -3,8 +3,7 @@ from gridfinity_build123d import (
     Base,
     BaseEqual,
     Bin,
-    Corners,
-    Direction,
+    BottomCorners,
     Label,
     MagnetHole,
     ScrewHole,
@@ -24,8 +23,8 @@ class BinTest(testutils.UtilTestCase):
                 grid_x=2,
                 grid_y=2,
                 features=[
-                    MagnetHole(Corners(Direction.BOT)),
-                    ScrewHole(Corners(Direction.BOT)),
+                    MagnetHole(BottomCorners()),
+                    ScrewHole(BottomCorners()),
                 ],
             ),
             height_in_units=5,
@@ -53,8 +52,8 @@ class BinTest(testutils.UtilTestCase):
                 grid_x=3,
                 grid_y=3,
                 features=[
-                    MagnetHole(Corners(Direction.BOT)),
-                    ScrewHole(Corners(Direction.BOT)),
+                    MagnetHole(BottomCorners()),
+                    ScrewHole(BottomCorners()),
                 ],
             ),
             height_in_units=5,
@@ -91,8 +90,8 @@ class BinTest(testutils.UtilTestCase):
             base=Base(
                 grid=base_grid,
                 features=[
-                    MagnetHole(Corners(Direction.BOT)),
-                    ScrewHole(Corners(Direction.BOT)),
+                    MagnetHole(BottomCorners()),
+                    ScrewHole(BottomCorners()),
                 ],
             ),
             height_in_units=5,

@@ -15,10 +15,10 @@ The following code creates a feature rich base:
             
     Base(
         features=[
-            MagnetHole(feature_location=Corners(Direction.TOP)),
-            ScrewHoleCountersink(feature_location=Middle(Direction.TOP)),
-            ScrewHoleCounterbore(feature_location=Corners(Direction.BOT)),
-            Weighted(feature_location=Middle(Direction.BOT)),  # type: ignore[list-item]
+            MagnetHole(feature_location=TopCorners()),
+            ScrewHoleCountersink(feature_location=TopMiddle()),
+            ScrewHoleCounterbore(feature_location=BottomCorners()),
+            Weighted(feature_location=BottomMiddle()),  # type: ignore[list-item]
         ],
     )
 

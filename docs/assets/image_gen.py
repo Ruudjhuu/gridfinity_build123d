@@ -15,21 +15,22 @@ from gridfinity_build123d import (
     BasePlateBlockFull,
     BasePlateEqual,
     Bin,
+    BottomCorners,
+    BottomMiddle,
     Compartment,
     CompartmentsEqual,
-    Corners,
-    Direction,
-    FeatureLocation,
     HoleFeature,
     Label,
     MagnetHole,
-    Middle,
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
     StackingLip,
+    TopCorners,
+    TopMiddle,
     Weighted,
 )
+from gridfinity_build123d.feature_locations import FeatureLocation
 
 
 class CameraPosition(Enum):
@@ -128,7 +129,7 @@ Convert.part_to_png(
     BaseEqual(
         2,
         2,
-        [MagnetHole(Corners(Direction.BOT)), ScrewHole(Corners(Direction.BOT))],
+        [MagnetHole(BottomCorners()), ScrewHole(BottomCorners())],
     ),
     "base_holes",
     CameraPosition.CAMERA_BOT,
@@ -182,8 +183,8 @@ Convert.part_to_png(
         2,
         BasePlateBlockFull(
             features=[
-                ScrewHoleCountersink(Corners(Direction.BOT)),
-                Weighted(Middle(Direction.BOT)),
+                ScrewHoleCountersink(BottomCorners()),
+                Weighted(BottomMiddle()),
             ],
         ),
     ),
@@ -247,10 +248,10 @@ Convert.part_to_png(
 
 obj = Base(
     features=[
-        MagnetHole(feature_location=Corners(Direction.TOP)),
-        ScrewHoleCountersink(feature_location=Middle(Direction.TOP)),
-        ScrewHoleCounterbore(feature_location=Corners(Direction.BOT)),
-        Weighted(feature_location=Middle(Direction.BOT)),  # type: ignore[list-item]
+        MagnetHole(feature_location=TopCorners()),
+        ScrewHoleCountersink(feature_location=TopMiddle()),
+        ScrewHoleCounterbore(feature_location=BottomCorners()),
+        Weighted(feature_location=BottomMiddle()),  # type: ignore[list-item]
     ],
 )
 Convert.part_to_png(
@@ -282,7 +283,7 @@ Convert.parts_to_gif(
         BasePlate([[True, True, True], [True, True], [True]], BasePlateBlockFull()),
         BasePlate(
             [[True, True, True], [True, True], [True]],
-            BasePlateBlockFull(features=MagnetHole(Corners(Direction.TOP))),
+            BasePlateBlockFull(features=MagnetHole(TopCorners())),
         ),
     ],
     "baseplate",

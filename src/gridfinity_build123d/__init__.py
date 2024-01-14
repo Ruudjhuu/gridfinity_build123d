@@ -23,8 +23,11 @@ __all__ = [
     "BasePlateBlockFrame",
     "BasePlateBlockFull",
     "FeatureLocation",
-    "Corners",
-    "Middle",
+    "BottomCorners",
+    "BottomMiddle",
+    "TopCorners",
+    "TopMiddle",
+    "FeatureLocation",
 ]
 
 from .base import Base, BaseEqual
@@ -35,7 +38,13 @@ from .baseplate import (
     BasePlateEqual,
 )
 from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
-from .feature_locations import Corners, FeatureLocation, Middle
+from .feature_locations import (
+    BottomCorners,
+    BottomMiddle,
+    FeatureLocation,
+    TopCorners,
+    TopMiddle,
+)
 from .features import (
     HoleFeature,
     Label,
