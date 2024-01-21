@@ -14,15 +14,15 @@ python3 -m pip install git+https://github.com/Ruudjhuu/gridfinity_build123d
 # Usage
 ```python
 from gridfinity_build123d import (
-    Base,
+    BaseEqual,
     Bin,
-    CompartmentsEqual,
     Compartment,
+    CompartmentsEqual,
 )
-    
+
 part = Bin(
-    Base(grid_x=2, grid_y=1),
-    height_in_units = 3,
+    BaseEqual(grid_x=2, grid_y=1),
+    height_in_units=3,
     compartments=CompartmentsEqual(compartment_list=[Compartment()]),
 )
 
