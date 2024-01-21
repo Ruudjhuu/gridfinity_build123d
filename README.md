@@ -5,7 +5,7 @@ See the [documentation](http://gridfinity-build123d.readthedocs.io/) for more in
 
 <img src="docs/assets/baseplate.gif" width="320"/> <img src="docs/assets/bin.gif" width="320"/> 
 
-# Instalation 
+# Installation 
 
 ```bash
 python3 -m pip install git+https://github.com/Ruudjhuu/gridfinity_build123d
