@@ -1,13 +1,13 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 
-name: Sphinx Doctest
+name: Doctest
 
 on:
   pull_request:
     branches: ["main"]
 
 jobs:
-  sphinx_doctest:
+  doctest:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -25,7 +25,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r docs/requirements.txt
           python -m pip install -r requirements.txt
-      - name: Doctest
+      - name: Sphinx doctest
         working-directory: ./docs
         run: |
           make doctest
+      - name: Readme test
+        run: | 
+          python -m pytest --markdown-docs README.md
+      
