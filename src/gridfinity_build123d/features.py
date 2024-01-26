@@ -25,6 +25,10 @@ from build123d import (
     extrude,
     fillet,
     make_face,
+    Plane,
+    Line,
+    mirror,
+    Rotation,
 )
 
 from .constants import gf_bin, gridfinity_standard
@@ -228,6 +232,34 @@ class ScrewHoleCounterbore(ScrewHole):
                 depth=self.depth,
                 mode=Mode.ADD,
             )
+        return BasePartObject(part.part, rotation, align, mode)
+
+
+class GridfinityRefinedConnectionCutout(Feature):
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        with BuildPart() as part:
+            # TODO correct values need to be measured
+            middle_width = 5.8 / 2
+            middle_height = 6.5 / 2
+            thickness = 2.8
+
+            with BuildPart() as part:
+                with BuildSketch() as sketch:
+                    with BuildLine():
+                        l0 = Line((0, 0), (middle_width, 0))
+                        l1 = Line(l0 @ 1, (middle_width, middle_height))
+                        l2 = Line(l1 @ 1, ((l1 @ 1).X + 3.9, (l1 @ 1).Y + 2.92))
+                        l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 2.53))
+                        Line(l3 @ 1, (0, (l3 @ 1).Y))
+
+                        mirror(about=Plane.YZ)
+                    make_face()
+                extrude(sketch.sketch, -thickness)
         return BasePartObject(part.part, rotation, align, mode)
 
 

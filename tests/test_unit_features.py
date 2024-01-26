@@ -26,6 +26,7 @@ from gridfinity_build123d.features import (
     ScrewHoleCountersink,
     Sweep,
     Weighted,
+    GridfinityRefinedConnectionCutout,
 )
 from parameterized import parameterized  # type: ignore[import-untyped]
 
@@ -179,6 +180,17 @@ class ScrewHoleCounterboreTest(testutils.UtilTestCase):
             depth=depth,
             mode=ANY,
         )
+
+
+class GridfinityRefinedConnectionCutoutTest(testutils.UtilTestCase):
+    def test_gridfinityrefinedconnectioncutout(self) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+
+        part = GridfinityRefinedConnectionCutout(f_loc).create_obj()
+
+        bbox = part.bounding_box()
+        self.assertVectorAlmostEqual((8.5, 8.5, 12), bbox.size)
+        self.assertAlmostEqual(456.54773188858275, part.volume)
 
 
 class WeightedTest(testutils.UtilTestCase):
