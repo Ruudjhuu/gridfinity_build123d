@@ -207,7 +207,7 @@ class BottomSides(FeatureLocation):
             angle = pp_edge.tangent_at(0).get_signed_angle(to_front.tangent_at(0))
 
             for i in range(nr_of_points):
-                pos = edge.location_at(1 / (nr_of_points + 1) * (i + 1)).position
+                pos = edge.location_at(1 / (nr_of_points * 2) * (i * 2 + 1)).position
                 pts_list.append(
                     Location(
                         pos - face.center_location.position,
@@ -216,10 +216,3 @@ class BottomSides(FeatureLocation):
                 )
 
         return pts_list
-
-    @staticmethod
-    def _get_points_on_edge(edge: Edge, nr_of_points: int) -> list[Vector]:
-        return [
-            edge.position_at(1 / (nr_of_points + 1) * (i + 1))
-            for i in range(nr_of_points)
-        ]

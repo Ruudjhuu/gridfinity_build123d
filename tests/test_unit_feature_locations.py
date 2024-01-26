@@ -202,16 +202,16 @@ class BottomSidesTest(testutils.UtilTestCase):
 
         self.assertEqual(10, len(wires))
         wire_locs = [
-            Vector(-23.0, -12.5, -15.0),
-            Vector(-(8 + 1 / 3), -23.0, -15.0),
-            Vector(8 + 1 / 3, -23.0, -15.0),
-            Vector(23.0, -12.5, -15.0),
+            Vector(-12.5, -23.0, -15.0),
+            Vector(-23.0, -(16 + 2 / 3), -15.0),
+            Vector(12.5, -23.0, -15.0),
+            Vector(23.0, -(16 + 2 / 3), -15.0),
             Vector(-23.0, 0, -15.0),
-            Vector(-23.0, 12.5, -15.0),
-            Vector(-(8 + 1 / 3), 23.0, -15.0),
+            Vector(-23.0, 16 + 2 / 3, -15.0),
+            Vector(-12.5, 23.0, -15.0),
             Vector(23.0, 0, -15.0),
-            Vector(8 + 1 / 3, 23.0, -15.0),
-            Vector(23.0, 12.5, -15.0),
+            Vector(23.0, 16 + 2 / 3, -15.0),
+            Vector(12.5, 23.0, -15.0),
         ]
 
         for wire in wires:

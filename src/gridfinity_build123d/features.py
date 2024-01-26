@@ -244,17 +244,17 @@ class GridfinityRefinedConnectionCutout(Feature):
     ) -> BasePartObject:
         with BuildPart() as part:
             # TODO correct values need to be measured
-            middle_width = 5.8 / 2
-            middle_height = 6.5 / 2
-            thickness = 2.8
+            middle_width = 6 / 2
+            middle_height = 3
+            thickness = 3
 
             with BuildPart() as part:
                 with BuildSketch() as sketch:
                     with BuildLine():
                         l0 = Line((0, 0), (middle_width, 0))
                         l1 = Line(l0 @ 1, (middle_width, middle_height))
-                        l2 = Line(l1 @ 1, ((l1 @ 1).X + 3.9, (l1 @ 1).Y + 2.92))
-                        l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 2.53))
+                        l2 = Line(l1 @ 1, ((l1 @ 1).X + 4, (l1 @ 1).Y + 3))
+                        l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 3))
                         Line(l3 @ 1, (0, (l3 @ 1).Y))
 
                         mirror(about=Plane.YZ)
