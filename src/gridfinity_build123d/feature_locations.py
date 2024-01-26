@@ -10,11 +10,20 @@ from contextlib import contextmanager
 from typing import Iterator
 
 from build123d import (
+    Axis,
     BoundBox,
+    Box,
+    Edge,
+    Face,
+    GeomType,
     GridLocations,
     Location,
     Locations,
+    Mode,
     Part,
+    Plane,
+    ShapePredicate,
+    Vector,
 )
 
 from .constants import gridfinity_standard
@@ -152,3 +161,65 @@ class TopCorners(Corners):
         center.Z = bbox.max.Z
         with self._apply_on_corners(Location(center), bbox):
             yield
+
+
+class BottomSides(FeatureLocation):
+    def __init__(self, nr_x: int = 1, nr_y: int = 1, offset: float = 0) -> None:
+        self._nr_x = nr_x
+        self._nr_y = nr_y
+        self._offset = offset
+
+    @contextmanager
+    def apply_to(self, part: Part) -> Iterator[None]:
+        bbox = part.bounding_box()
+
+        box = Box(bbox.size.X, bbox.size.Y, bbox.size.Z, mode=Mode.PRIVATE)
+        box.locate(Location(bbox.center()))
+
+        face = box.faces().sort_by(Axis.Z)[0]
+
+        pts: list[Location] = []
+        pts += self._get_locations_on_edges(Axis.X, face, self._nr_x)
+        pts += self._get_locations_on_edges(Axis.Y, face, self._nr_y)
+
+        with Locations(face), Locations(pts), Locations((0, self._offset, 0)):
+            yield
+
+    def _get_locations_on_edges(
+        self,
+        edge_filter: ShapePredicate | Axis | Plane | GeomType,
+        face: Face,
+        nr_of_points: int,
+    ) -> list[Location]:
+        pts_list: list[Location] = []
+
+        for edge in face.edges().filter_by(edge_filter):
+            pp_edge = edge.perpendicular_line(0.1, 0.5, Plane(face))
+
+            if not face.is_inside(pp_edge.start_point()):
+                pp_edge = Edge.make_line(pp_edge.end_point(), pp_edge.start_point())
+
+            to_front = Edge.make_line(
+                pp_edge.start_point(),
+                pp_edge.start_point() + Vector(0, -1, 0),
+            )
+
+            angle = pp_edge.tangent_at(0).get_signed_angle(to_front.tangent_at(0))
+
+            for i in range(nr_of_points):
+                pos = edge.location_at(1 / (nr_of_points + 1) * (i + 1)).position
+                pts_list.append(
+                    Location(
+                        pos - face.center_location.position,
+                        (0, 0, angle),
+                    ),
+                )
+
+        return pts_list
+
+    @staticmethod
+    def _get_points_on_edge(edge: Edge, nr_of_points: int) -> list[Vector]:
+        return [
+            edge.position_at(1 / (nr_of_points + 1) * (i + 1))
+            for i in range(nr_of_points)
+        ]
