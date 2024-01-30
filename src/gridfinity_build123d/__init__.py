@@ -28,6 +28,11 @@ __all__ = [
     "TopCorners",
     "TopMiddle",
     "FeatureLocation",
+    "BottomSides",
+    "GridfinityRefinedConnectionCutout",
+    "GridfinityRefinedScrewHole",
+    "GridfinityRefinedMagnetHolePressfit",
+    "GridfinityRefinedConnector",
 ]
 
 from .base import Base, BaseEqual
@@ -38,14 +43,19 @@ from .baseplate import (
     BasePlateEqual,
 )
 from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
+from .connectors import GridfinityRefinedConnector
 from .feature_locations import (
     BottomCorners,
     BottomMiddle,
+    BottomSides,
     FeatureLocation,
     TopCorners,
     TopMiddle,
 )
 from .features import (
+    GridfinityRefinedConnectionCutout,
+    GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedScrewHole,
     HoleFeature,
     Label,
     MagnetHole,

@@ -1,34 +1,47 @@
+"""Connectors.
+
+This module contians standalone connector objects.
+"""
 from __future__ import annotations
 
 from build123d import (
     Align,
+    Axis,
     BasePartObject,
     BuildLine,
     BuildPart,
     BuildSketch,
-    Mode,
-    Part,
-    RotationLike,
-    Solid,
-    Polyline,
-    make_face,
-    PolarLocations,
-    extrude,
-    mirror,
-    Plane,
-    chamfer,
-    Axis,
     Line,
+    Mode,
+    Plane,
+    RotationLike,
+    chamfer,
+    extrude,
+    make_face,
+    mirror,
 )
 
 
 class GridfinityRefinedConnector(BasePartObject):
+    """Gridfiniity refined connector.
+
+    A conector object used in the Gridfinity Refined project to connect baseplates together.
+    """
+
     def __init__(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
+        """Create Gridfinity Refined connector.
+
+        Args:
+            rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
+            align (Align | tuple[Align, Align, Align], optional): align min, center,
+                or max of object. Defaults to None.
+            mode (Mode, optional): combination mode. Defaults to Mode.ADD.
+        """
         middle_width = 5.8 / 2
         middle_height = 6.5 / 2
         thickness = 2.8
