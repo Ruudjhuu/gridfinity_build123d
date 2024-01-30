@@ -12,23 +12,26 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
+    CenterArc,
     CounterBoreHole,
     CounterSinkHole,
     Hole,
+    Line,
+    Locations,
     Mode,
+    Plane,
     PolarLocations,
     Polyline,
     RotationLike,
     SagittaArc,
+    Transition,
     add,
     chamfer,
     extrude,
     fillet,
     make_face,
-    Plane,
-    Line,
     mirror,
-    Rotation,
+    sweep,
 )
 
 from .constants import gf_bin, gridfinity_standard
@@ -236,30 +239,140 @@ class ScrewHoleCounterbore(ScrewHole):
 
 
 class GridfinityRefinedConnectionCutout(Feature):
+    """Gridfinity refined conecction cutout.
+
+    Cutout shape used to connect two objects with a GridfinityRefinedConnector.
+    """
+
     def create_obj(  # noqa: D102
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
+        middle_width = 6 / 2
+        middle_height = 3
+        thickness = 3
+
         with BuildPart() as part:
-            # TODO correct values need to be measured
-            middle_width = 6 / 2
-            middle_height = 3
-            thickness = 3
+            with BuildSketch() as sketch:
+                with BuildLine():
+                    l0 = Line((0, 0), (middle_width, 0))
+                    l1 = Line(l0 @ 1, (middle_width, middle_height))
+                    l2 = Line(l1 @ 1, ((l1 @ 1).X + 4, (l1 @ 1).Y + 3))
+                    l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 3))
+                    Line(l3 @ 1, (0, (l3 @ 1).Y))
 
-            with BuildPart() as part:
-                with BuildSketch() as sketch:
-                    with BuildLine():
-                        l0 = Line((0, 0), (middle_width, 0))
-                        l1 = Line(l0 @ 1, (middle_width, middle_height))
-                        l2 = Line(l1 @ 1, ((l1 @ 1).X + 4, (l1 @ 1).Y + 3))
-                        l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 3))
-                        Line(l3 @ 1, (0, (l3 @ 1).Y))
+                    mirror(about=Plane.YZ)
+                make_face()
+            extrude(sketch.sketch, -thickness)
+        return BasePartObject(part.part, rotation, align, mode)
 
-                        mirror(about=Plane.YZ)
-                    make_face()
-                extrude(sketch.sketch, -thickness)
+
+class GridfinityRefinedScrewHole(ScrewHoleCountersink):
+    """Refined screw hole.
+
+    Gridfinity refined baseplate middle screw hole.
+    """
+
+    def __init__(
+        self,
+        feature_location: FeatureLocation,
+        radius: float = 8,
+        counter_sink_radius: float = 10.5,
+        depth: float = 6,
+        counter_sink_angle: float = 90,
+    ) -> None:
+        """Construct refined screw hole.
+
+        Args:
+            feature_location (FeatureLocation): Location of the feature.
+            radius (float, optional): Radius of the hole. Defaults to 8.
+            counter_sink_radius (float, optional): Radius of countersink. Defaults to 10.5.
+            depth (float, optional): Depth of the hole. Defaults to 6.
+            counter_sink_angle (float, optional): Angle of countersink. Defaults to 90.
+        """
+        super().__init__(
+            feature_location,
+            radius,
+            counter_sink_radius,
+            depth,
+            counter_sink_angle,
+        )
+
+
+class GridfinityRefinedMagnetHolePressfit(Feature):
+    """Refined magnet hole.
+
+    Gridfinity Refined pressfit magnet hole.
+    """
+
+    def __init__(
+        self,
+        feature_location: FeatureLocation | None,
+        radius: float = 3.05,
+        depth: float = 2.4,
+        slit_length: float = 0.1,
+        slit_width: float = 10.1,
+        slit_depth: float = 2,
+        chamfer: float = 0.6,
+    ) -> None:
+        """Construct Gridfinity Refined pressfit magnet hole.
+
+        Args:
+            feature_location (FeatureLocation | None): Location of the hole.
+            radius (float, optional): Radius of the hole. Defaults to 3.05.
+            depth (float, optional): depth of the hole. Defaults to 2.4.
+            slit_length (float, optional): Length of the slit. Defaults to 0.1.
+            slit_width (float, optional): Width of the slit. Defaults to 10.1.
+            slit_depth (float, optional): Depth of the slit. Defaults to 2.
+            chamfer (float, optional): Chamfer. Defaults to 0.6.
+        """
+        super().__init__(feature_location)
+        self._radius = radius
+        self._depth = depth
+        self._slit_length = slit_length
+        self._slit_width = slit_width
+        self._slit_depth = slit_depth
+        self._chamfer = chamfer
+
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        with BuildSketch() as profile:
+            with BuildLine():
+                Polyline((0, 0), (0, -self._chamfer), (self._chamfer, 0), close=True)
+            make_face()
+
+        with BuildPart() as part:
+            with BuildSketch():
+                with BuildLine():
+                    ln1 = CenterArc((0, 0), self._radius, 135, 180 + 90)
+                    ln2 = Line(ln1 @ 1, (0, self._radius + self._radius / 2))
+                    Line(ln2 @ 1, ln1 @ 0)
+                make_face()
+            extrude(amount=-self._depth)
+
+            with BuildSketch(Plane.XZ) as sweep_sketch, Locations((self._radius, 0)):
+                add(profile)
+            sweep(
+                sweep_sketch.sketch,
+                part.faces().sort_by(Axis.Z)[-1].outer_wire(),
+                # Should be Transition.RIGHT, but that fails. Round is the next best thing.
+                transition=Transition.ROUND,
+            )
+
+            with Locations(Plane(part.faces().sort_by(Axis.Z)[0])):
+                Box(
+                    self._slit_width,
+                    self._slit_length,
+                    self._slit_depth,
+                    align=(Align.CENTER, Align.CENTER, Align.MAX),
+                )
+
         return BasePartObject(part.part, rotation, align, mode)
 
 

@@ -25,7 +25,7 @@ from build123d import (
 from gridfinity_build123d.utils import ObjectCreate, StackProfile, Utils
 
 if TYPE_CHECKING:
-    from gridfinity_build123d.features import BasePlateFeature
+    from gridfinity_build123d.features import Feature
 
 
 class BasePlateBlock(ObjectCreate):
@@ -33,12 +33,12 @@ class BasePlateBlock(ObjectCreate):
 
     def __init__(
         self,
-        features: BasePlateFeature | list[BasePlateFeature] | None = None,
+        features: Feature | list[Feature] | None = None,
     ) -> None:
         """Baseplateblock interface.
 
         Args:
-            features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
+            features (Feature | list[Feature] | None, optional): Baseplate
                 features. Defaults to None.
         """
         if not features:
@@ -98,13 +98,13 @@ class BasePlateBlockFull(BasePlateBlock):
     def __init__(
         self,
         bottom_height: float = 6.4,
-        features: BasePlateFeature | list[BasePlateFeature] | None = None,
+        features: Feature | list[Feature] | None = None,
     ) -> None:
         """Construct BaseplateBlock.
 
         Args:
             bottom_height (float): The hieght of the bottom part. Defaults to 6.4.
-            features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
+            features (Feature | list[Feature] | None, optional): Baseplate
                 features. Defaults to None.
         """
         super().__init__(features)
@@ -138,6 +138,7 @@ class BasePlate(BasePartObject):
         self,
         grid: list[list[bool]],
         baseplate_block: BasePlateBlock | None = None,
+        features: Feature | list[Feature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -151,12 +152,18 @@ class BasePlate(BasePartObject):
             baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
                 complete baseplate. Defaults to None.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
+            features (Feature | list[Feature]): Features applied to the basePlate. Defaults to None.
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to (0, 0, 0).
             mode (Mode): combination mode. Defaults to Mode.ADD.
         """
         if baseplate_block is None:
             baseplate_block = BasePlateBlockFrame()
+
+        if not features:
+            features = []
+
+        self.features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as part:
             Utils.place_by_grid(baseplate_block.create_obj(mode=Mode.PRIVATE), grid)
@@ -170,6 +177,9 @@ class BasePlate(BasePartObject):
             )
             fillet(wires, 4)
 
+            for feature in self.features:
+                feature.apply(part)
+
         super().__init__(part.part, rotation, align, mode)
 
 
@@ -178,9 +188,10 @@ class BasePlateEqual(BasePlate):
 
     def __init__(
         self,
-        size_x: int,
-        size_y: int,
+        size_x: int = 1,
+        size_y: int = 1,
         baseplate_block: BasePlateBlock | None = None,
+        features: Feature | list[Feature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -190,10 +201,11 @@ class BasePlateEqual(BasePlate):
         Create a baseplate according to grid pattern.
 
         Args:
-            size_x (int): x size of baseplate
-            size_y (int): y size of baseplate
+            size_x (int, optional): x size of baseplate. Defaults to 1.
+            size_y (int, optional): y size of baseplate. Defaults to 1.
             baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
                 complete baseplate.
+            features (Feature | list[Feature]): Features applied to the basePlate. Defaults to None.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
                 of object. Defaults to None.
@@ -203,4 +215,4 @@ class BasePlateEqual(BasePlate):
             baseplate_block = BasePlateBlockFrame()
 
         grid: list[list[bool]] = [[True] * size_x for _ in range(size_y)]
-        super().__init__(grid, baseplate_block, rotation, align, mode)
+        super().__init__(grid, baseplate_block, features, rotation, align, mode)

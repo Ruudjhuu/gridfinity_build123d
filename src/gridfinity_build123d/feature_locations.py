@@ -16,12 +16,13 @@ from build123d import (
     Edge,
     Face,
     GeomType,
-    GridLocations,
     Location,
     Locations,
     Mode,
     Part,
     Plane,
+    PolarLocations,
+    Rotation,
     ShapePredicate,
     Vector,
 )
@@ -96,16 +97,19 @@ class Corners(FeatureLocation):
         self._offset = offset
 
     @contextmanager
-    def _apply_on_corners(self, center: Location, bbox: BoundBox) -> Iterator[None]:
-        self._corner_distance_x = bbox.size.X - 2 * self._offset
-        self._corner_distance_y = bbox.size.Y - 2 * self._offset
+    def _apply_on_corners(
+        self,
+        center: Location,
+        bbox: BoundBox,
+    ) -> Iterator[None]:
+        polar_dist = (bbox.size.X**2 + bbox.size.Y**2) ** 0.5
+        polar_offset = (self._offset**2 + self._offset**2) ** 0.5
 
-        with Locations(center), GridLocations(
-            self._corner_distance_x,
-            self._corner_distance_y,
-            2,
-            2,
-        ):
+        with Locations(center), PolarLocations(
+            polar_dist / 2 - polar_offset,
+            4,
+            -45,
+        ), Locations(Rotation(0, 0, -90)):
             yield
 
 
@@ -164,13 +168,27 @@ class TopCorners(Corners):
 
 
 class BottomSides(FeatureLocation):
+    """Bottom Sides.
+
+    Locate objects at the sides of the bottom plane
+    """
+
     def __init__(self, nr_x: int = 1, nr_y: int = 1, offset: float = 0) -> None:
+        """Creste BottomSides object.
+
+        Args:
+            nr_x (int, optional): Number of objects which should be located on edges parallel
+                to the x axis. Defaults to 1.
+            nr_y (int, optional): Number of objects which should be located on edges parallel
+                with the y axis. Defaults to 1.
+            offset (float, optional): Distance from the side to the located objects. Defaults to 0.
+        """
         self._nr_x = nr_x
         self._nr_y = nr_y
         self._offset = offset
 
     @contextmanager
-    def apply_to(self, part: Part) -> Iterator[None]:
+    def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
         bbox = part.bounding_box()
 
         box = Box(bbox.size.X, bbox.size.Y, bbox.size.Z, mode=Mode.PRIVATE)

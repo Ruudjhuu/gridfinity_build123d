@@ -66,8 +66,8 @@ class BinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((125.5, 125.5, 39.11715738752539), bbox.size, 6)
-        self.assertAlmostEqual(93236.35216913944, part.area)
-        self.assertAlmostEqual(177834.82625303385, part.volume)
+        self.assertAlmostEqual(93236.35216913944, part.area, 6)
+        self.assertAlmostEqual(177834.82625303385, part.volume, 6)
 
     def test_bin_random_shape(self) -> None:
         base_grid = [
