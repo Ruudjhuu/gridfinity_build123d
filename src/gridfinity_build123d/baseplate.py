@@ -12,14 +12,18 @@ from build123d import (
     Axis,
     BasePartObject,
     Box,
+    BuildLine,
     BuildPart,
     BuildSketch,
+    Line,
     Mode,
+    Plane,
     RotationLike,
     add,
     extrude,
     fillet,
     make_face,
+    mirror,
 )
 
 from gridfinity_build123d.utils import ObjectCreate, StackProfile, Utils
@@ -80,18 +84,6 @@ class BasePlateBlockFrame(BasePlateBlock):
         return BasePartObject(part.part, rotation, align, mode)
 
 
-class BasePlateBlockSkeleton(BasePlateBlock):
-    """Placeholder for future skeletonized baseplate."""
-
-    def create_obj(  # noqa: D102
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Align | tuple[Align, Align, Align] | None = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        raise NotImplementedError  # pragma: no cover
-
-
 class BasePlateBlockFull(BasePlateBlock):
     """Baseplate block with a full bottom."""
 
@@ -128,6 +120,41 @@ class BasePlateBlockFull(BasePlateBlock):
 
             add(frame)
 
+        return BasePartObject(part.part, rotation, align, mode)
+
+
+class BasePlateBlockSkeleton(BasePlateBlockFull):
+    """Placeholder for future skeletonized baseplate."""
+
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.ADD,
+    ) -> BasePartObject:
+        length = 36.3
+        nodge = 9.4
+        radius = 4.25
+        length_s = length / 2 - nodge
+        length_l = length / 2
+
+        with BuildPart() as part:
+            super().create_obj()
+            with BuildSketch():
+                with BuildLine() as line:
+                    ln1 = Line((0, length_l), (length_s, length_l))
+                    ln2 = Line(ln1 @ 1, (length_s, length_s))
+                    ln3 = Line(ln2 @ 1, (length_l, length_s))
+                    Line(ln3 @ 1, (length_l, 0))
+                    vertex = line.vertices().sort_by_distance((length / 4, length / 4))[
+                        0
+                    ]
+                    fillet(vertex, radius)
+                    mirror(about=Plane.XZ)
+                    mirror(about=Plane.YZ)
+
+                make_face()
+            extrude(amount=-self.bottom_height, mode=Mode.SUBTRACT)
         return BasePartObject(part.part, rotation, align, mode)
 
 
