@@ -8,6 +8,7 @@ from gridfinity_build123d.baseplate import (
     BasePlateBlock,
     BasePlateBlockFrame,
     BasePlateBlockFull,
+    BasePlateBlockSkeleton,
     BasePlateEqual,
 )
 from gridfinity_build123d.features import Feature
@@ -156,3 +157,12 @@ class BasePlateEqualTest(testutils.UtilTestCase):
             ANY,
             ANY,
         )
+
+
+class BasePlateBlockSkeletonTest(testutils.UtilTestCase):
+    def test_baseplateblockskeleton(self) -> None:
+        part = BasePlateBlockSkeleton().create_obj()
+
+        bbox = part.bounding_box()
+        self.assertVectorAlmostEqual((42, 42, 11.05), bbox.size)
+        self.assertAlmostEqual(6310.636342511634, part.volume)
