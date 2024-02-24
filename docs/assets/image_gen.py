@@ -13,6 +13,7 @@ from gridfinity_build123d import (
     BaseEqual,
     BasePlate,
     BasePlateBlockFull,
+    BasePlateBlockSkeleton,
     BasePlateEqual,
     Bin,
     BottomCorners,
@@ -280,7 +281,10 @@ Convert.parts_to_gif(
         BasePlate([[True, True, True], [True]]),
         BasePlate([[True, True, True], [True, True]]),
         BasePlate([[True, True, True], [True, True], [True]]),
-        BasePlate([[True, True, True], [True, True], [True]], BasePlateBlockFull()),
+        BasePlate(
+            [[True, True, True], [True, True], [True]],
+            BasePlateBlockSkeleton(features=MagnetHole(TopCorners())),
+        ),
         BasePlate(
             [[True, True, True], [True, True], [True]],
             BasePlateBlockFull(features=MagnetHole(TopCorners())),

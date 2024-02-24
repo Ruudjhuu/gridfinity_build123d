@@ -33,6 +33,7 @@ __all__ = [
     "GridfinityRefinedScrewHole",
     "GridfinityRefinedMagnetHolePressfit",
     "GridfinityRefinedConnector",
+    "BasePlateBlockSkeleton",
 ]
 
 from .base import Base, BaseEqual
@@ -40,6 +41,7 @@ from .baseplate import (
     BasePlate,
     BasePlateBlockFrame,
     BasePlateBlockFull,
+    BasePlateBlockSkeleton,
     BasePlateEqual,
 )
 from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
