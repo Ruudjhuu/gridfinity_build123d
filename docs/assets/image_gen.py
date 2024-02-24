@@ -18,8 +18,12 @@ from gridfinity_build123d import (
     Bin,
     BottomCorners,
     BottomMiddle,
+    BottomSides,
     Compartment,
     CompartmentsEqual,
+    GridfinityRefinedConnectionCutout,
+    GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedScrewHole,
     HoleFeature,
     Label,
     MagnetHole,
@@ -65,7 +69,7 @@ class Convert:
                 Convert._part_to_png(
                     part,
                     Path(tmp_dir),
-                    str(Path(tmp_dir).joinpath(f"{idx}")),
+                    str(Path(tmp_dir).joinpath(f"{idx}".zfill(3))),
                     camera_pos,
                 )
             check_call(
@@ -288,6 +292,34 @@ Convert.parts_to_gif(
         BasePlate(
             [[True, True, True], [True, True], [True]],
             BasePlateBlockFull(features=MagnetHole(TopCorners())),
+        ),
+        BasePlate(
+            [[True, True, True], [True, True], [True]],
+            BasePlateBlockFull(bottom_height=3),
+        ),
+        BasePlate(
+            [[True, True, True], [True, True], [True]],
+            BasePlateBlockFull(bottom_height=3),
+            features=GridfinityRefinedConnectionCutout(BottomSides(nr_x=3, nr_y=3)),
+        ),
+        BasePlate(
+            [[True, True, True], [True, True], [True]],
+            BasePlateBlockFull(
+                bottom_height=3,
+                features=GridfinityRefinedScrewHole(BottomMiddle()),
+            ),
+            features=GridfinityRefinedConnectionCutout(BottomSides(nr_x=3, nr_y=3)),
+        ),
+        BasePlate(
+            [[True, True, True], [True, True], [True]],
+            baseplate_block=BasePlateBlockFull(
+                bottom_height=3,
+                features=[
+                    GridfinityRefinedScrewHole(BottomMiddle()),
+                    GridfinityRefinedMagnetHolePressfit(BottomCorners()),
+                ],
+            ),
+            features=GridfinityRefinedConnectionCutout(BottomSides(nr_x=3, nr_y=3)),
         ),
     ],
     "baseplate",
