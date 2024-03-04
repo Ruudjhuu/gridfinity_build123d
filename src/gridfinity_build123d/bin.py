@@ -197,7 +197,7 @@ class Compartment:
             )
 
             for feature in self.features:
-                feature.create(part)
+                feature.apply(part)
 
             fillet_edges = [
                 i

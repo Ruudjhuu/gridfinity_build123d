@@ -24,7 +24,7 @@ from .constants import gridfinity_standard
 from .utils import StackProfile, Utils
 
 if TYPE_CHECKING:
-    from .features import BaseBlockFeature
+    from .features import ObjectFeature
 
 
 class Base(BasePartObject):
@@ -36,7 +36,7 @@ class Base(BasePartObject):
     def __init__(
         self,
         grid: list[list[bool]] | None = None,
-        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
+        features: ObjectFeature | list[ObjectFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -45,7 +45,7 @@ class Base(BasePartObject):
 
         Args:
             grid (list[list[bool]],optional): Grid pattern. Defaults to [[True]].
-            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): Feature or Feature
+            features (ObjectFeature | list[ObjectFeature] | None, optional): Feature or Feature
                 list. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
@@ -97,7 +97,7 @@ class BaseEqual(Base):
         self,
         grid_x: int = 1,
         grid_y: int = 1,
-        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
+        features: ObjectFeature | list[ObjectFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -107,8 +107,8 @@ class BaseEqual(Base):
         Args:
             grid_x (int, optional): Number of grid units on x axis. Defaults to 1.
             grid_y (int, optional): Number of grid units on y axis. Defaults to 1.
-            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): BaseBlockFeature
-                or list of BaseBlockFeatures. Defaults to None.
+            features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
+                or list of ObjectFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.
@@ -130,7 +130,7 @@ class BaseBlock(BasePartObject):
 
     def __init__(
         self,
-        features: BaseBlockFeature | list[BaseBlockFeature] | None = None,
+        features: ObjectFeature | list[ObjectFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -138,8 +138,8 @@ class BaseBlock(BasePartObject):
         """Construct BaseBlock.
 
         Args:
-            features (BaseBlockFeature | list[BaseBlockFeature] | None, optional): BaseBlockFeature
-                or list of BaseBlockFeatures. Defaults to None.
+            features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
+                or list of ObjectFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to None.

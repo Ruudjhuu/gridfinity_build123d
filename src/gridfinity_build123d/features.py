@@ -42,19 +42,35 @@ if TYPE_CHECKING:
     from .feature_locations import FeatureLocation
 
 
-class Feature(ObjectCreate):
-    """Feature interface."""
+class Feature(ABC):
+    """Feature Interface."""
+
+    @abstractmethod
+    def apply(self, context: BuildPart) -> None:
+        """Apply a feature to the context.
+
+        Args:
+            context (BuildPart): Context part to apply feature to.
+        """
+        raise NotImplementedError
+
+
+class ObjectFeature(Feature, ObjectCreate):
+    """Feature created by standalone object.
+
+    Feature which creates standalone object and is dependend on a Feature Location for
+    placement.
+    """
 
     def __init__(self, feature_location: FeatureLocation | None) -> None:
-        """Construct feature.
+        """Construct ObjectFeature.
 
         Args:
             feature_location (FeatureLocation): Location of the feature when applied.
         """
         self._feature_location = feature_location
 
-    def apply(self, context: BuildPart) -> None:
-        """Apply a feature."""
+    def apply(self, context: BuildPart) -> None:  # noqa: D102
         if self._feature_location:
             with self._feature_location.apply_to(context.part):
                 self.create_obj()
@@ -62,31 +78,14 @@ class Feature(ObjectCreate):
             self.create_obj()
 
 
-class BaseBlockFeature(Feature):
-    """This type is accepted for baseblock features."""
+class ContextFeature(Feature):
+    """Feature created by context builder.
 
-    def create_obj(  # noqa: D102
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Align | tuple[Align, Align, Align] | None = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        raise NotImplementedError  # pragma: no cover
+    This feature is created by depending on the active context builder.
+    """
 
 
-class BasePlateFeature(Feature):
-    """This type is accepted for baseplate features."""
-
-    def create_obj(  # noqa: D102
-        self,
-        rotation: RotationLike = (0, 0, 0),
-        align: Align | tuple[Align, Align, Align] | None = None,
-        mode: Mode = Mode.ADD,
-    ) -> BasePartObject:
-        raise NotImplementedError  # pragma: no cover
-
-
-class HoleFeature(BaseBlockFeature, BasePlateFeature):
+class HoleFeature(ObjectFeature):
     """Hole Feature."""
 
     def __init__(
@@ -239,7 +238,7 @@ class ScrewHoleCounterbore(ScrewHole):
         return BasePartObject(part.part, rotation, align, mode)
 
 
-class GridfinityRefinedConnectionCutout(Feature):
+class GridfinityRefinedConnectionCutout(ObjectFeature):
     """Gridfinity refined conecction cutout.
 
     Cutout shape used to connect two objects with a GridfinityRefinedConnector.
@@ -302,7 +301,7 @@ class GridfinityRefinedScrewHole(ScrewHoleCountersink):
         )
 
 
-class GridfinityRefinedMagnetHolePressfit(Feature):
+class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
     """Refined magnet hole.
 
     Gridfinity Refined pressfit magnet hole.
@@ -377,7 +376,7 @@ class GridfinityRefinedMagnetHolePressfit(Feature):
         return BasePartObject(part.part, rotation, align, mode)
 
 
-class Weighted(BasePlateFeature):
+class Weighted(ObjectFeature):
     """Weigthed cutout feature for baseplates."""
 
     def __init__(
@@ -421,7 +420,7 @@ class Weighted(BasePlateFeature):
         return BasePartObject(part.part, rotation, align, mode)
 
 
-class ContextFeature(ABC):
+class ContextFeaturebak(ABC):
     """Interface for feature using a builder context."""
 
     @abstractmethod
@@ -455,7 +454,7 @@ class Label(CompartmentFeature):
 
         self.angle = angle if angle else 0.0000001
 
-    def create(self, context: BuildPart) -> None:  # noqa: D102
+    def apply(self, context: BuildPart) -> None:  # noqa: D102
         face_top = context.faces().sort_by(Axis.Z)[-1]
         edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
         try:
@@ -488,7 +487,7 @@ class Sweep(CompartmentFeature):
         """
         self.radius = radius
 
-    def create(self, context: BuildPart) -> None:  # noqa: D102
+    def apply(self, context: BuildPart) -> None:  # noqa: D102
         face_bottom = context.faces().sort_by(Axis.Z)[0]
         edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
         try:

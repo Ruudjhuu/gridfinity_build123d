@@ -17,13 +17,13 @@ from build123d import (
 )
 from gridfinity_build123d.feature_locations import FeatureLocation
 from gridfinity_build123d.features import (
-    Feature,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
     GridfinityRefinedScrewHole,
     HoleFeature,
     Label,
     MagnetHole,
+    ObjectFeature,
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
@@ -35,7 +35,7 @@ from parameterized import parameterized  # type: ignore[import-untyped]
 
 class FeatureTest(testutils.UtilTestCase):
     def test_feature_apply(self) -> None:
-        class TestFeature(Feature):
+        class TestFeature(ObjectFeature):
             def create_obj(
                 self,
                 rotation: RotationLike = None,  # noqa:ARG002
@@ -53,7 +53,7 @@ class FeatureTest(testutils.UtilTestCase):
         f_location.apply_to.assert_called_once_with(context.part)
 
     def test_feature_apply_no_location(self) -> None:
-        class TestFeature(Feature):
+        class TestFeature(ObjectFeature):
             def create_obj(
                 self,
                 rotation: RotationLike = None,  # noqa:ARG002
@@ -232,7 +232,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label().create(part)
+            Label().apply(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -244,7 +244,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label_angle(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label(10).create(part)
+            Label(10).apply(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -256,7 +256,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label_angle_zero(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Label(0).create(part)
+            Label(0).apply(part)
 
         top_face = part.faces().filter_by(Axis.Z)[-1]
         self.assertEqual(50 - 12, top_face.width)
@@ -268,7 +268,7 @@ class LabelTest(testutils.UtilTestCase):
     def test_label_too_small_box(self) -> None:
         with BuildPart() as part:
             Box(10, 10, 10)
-            self.assertRaises(ValueError, Label().create, part)
+            self.assertRaises(ValueError, Label().apply, part)
 
     def test_label_unvalid_angle(self) -> None:
         self.assertRaises(ValueError, Label, -1)
@@ -279,7 +279,7 @@ class SweepTest(testutils.UtilTestCase):
     def test_sweep(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep().create(part)
+            Sweep().apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 5, bot_face.width)
@@ -294,7 +294,7 @@ class SweepTest(testutils.UtilTestCase):
     def test_sweep_radius(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep(20).create(part)
+            Sweep(20).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 20, bot_face.width)
@@ -309,4 +309,4 @@ class SweepTest(testutils.UtilTestCase):
     def test_sweep_small_box(self) -> None:
         with BuildPart() as part:
             Box(4, 4, 4)
-            self.assertRaises(ValueError, Sweep().create, part)
+            self.assertRaises(ValueError, Sweep().apply, part)

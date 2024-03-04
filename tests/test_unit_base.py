@@ -5,7 +5,7 @@ import mocks
 import testutils
 from build123d import BuildPart, Vector
 from gridfinity_build123d.base import Base, BaseBlock, BaseEqual
-from gridfinity_build123d.features import BaseBlockFeature
+from gridfinity_build123d.features import ObjectFeature
 
 
 @patch("gridfinity_build123d.base.BaseBlock", autospec=True)
@@ -104,7 +104,7 @@ class BaseBlockTest(testutils.UtilTestCase):
         self.assertEqual(12240.821519721352, part.part.volume)
 
     def test_baseblock_one_feature(self) -> None:
-        feature = MagicMock(spec=BaseBlockFeature)
+        feature = MagicMock(spec=ObjectFeature)
 
         with BuildPart() as part:
             BaseBlock(features=feature)
@@ -116,8 +116,8 @@ class BaseBlockTest(testutils.UtilTestCase):
         self.assertEqual(12240.821519721352, part.part.volume)
 
     def test_baseblock_multiple_features(self) -> None:
-        feature_1 = MagicMock(spec=BaseBlockFeature)
-        feature_2 = MagicMock(spec=BaseBlockFeature)
+        feature_1 = MagicMock(spec=ObjectFeature)
+        feature_2 = MagicMock(spec=ObjectFeature)
 
         with BuildPart() as part:
             BaseBlock(features=[feature_1, feature_2])

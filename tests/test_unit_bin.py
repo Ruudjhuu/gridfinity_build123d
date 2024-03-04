@@ -378,7 +378,7 @@ class CompartmentTest(unittest.TestCase):
         with BuildPart() as part:
             Compartment(features=feature).create(size_x, size_y, height)
 
-        feature.create.assert_called_once()
+        feature.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
@@ -395,8 +395,8 @@ class CompartmentTest(unittest.TestCase):
         with BuildPart() as part:
             Compartment(features=[feature_1, feature_2]).create(size_x, size_y, height)
 
-        feature_1.create.assert_called_once()
-        feature_2.create.assert_called_once()
+        feature_1.apply.assert_called_once()
+        feature_2.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
