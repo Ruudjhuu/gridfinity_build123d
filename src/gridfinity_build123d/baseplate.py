@@ -2,6 +2,7 @@
 
 Module containg classes to create baseplates.
 """
+
 from __future__ import annotations
 
 from math import isclose
