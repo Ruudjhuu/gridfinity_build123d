@@ -1,7 +1,6 @@
 # ruff: noqa
 """Gridfinity standard constants."""
 
-
 from dataclasses import dataclass
 
 
