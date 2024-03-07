@@ -63,7 +63,7 @@ class gf_bin:
         angle = 36
 
     @dataclass
-    class sweep:
-        """Sweep contants."""
+    class scoop:
+        """Scoop contants."""
 
         radius = 5
