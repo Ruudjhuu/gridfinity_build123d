@@ -8,11 +8,11 @@ from gridfinity_build123d import (
     MagnetHole,
     ScrewHole,
 )
-from gridfinity_build123d.bin import (
+from gridfinity_build123d.bin import StackingLip
+from gridfinity_build123d.compartments import (
     Compartment,
     Compartments,
     CompartmentsEqual,
-    StackingLip,
 )
 
 

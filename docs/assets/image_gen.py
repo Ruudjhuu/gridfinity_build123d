@@ -256,7 +256,7 @@ obj = Base(
         MagnetHole(feature_location=TopCorners()),
         ScrewHoleCountersink(feature_location=TopMiddle()),
         ScrewHoleCounterbore(feature_location=BottomCorners()),
-        Weighted(feature_location=BottomMiddle()),  # type: ignore[list-item]
+        Weighted(feature_location=BottomMiddle()),
     ],
 )
 Convert.part_to_png(

@@ -44,7 +44,8 @@ from .baseplate import (
     BasePlateBlockSkeleton,
     BasePlateEqual,
 )
-from .bin import Bin, Compartment, Compartments, CompartmentsEqual, StackingLip
+from .bin import Bin, StackingLip
+from .compartments import Compartment, Compartments, CompartmentsEqual
 from .connectors import GridfinityRefinedConnector
 from .feature_locations import (
     BottomCorners,

@@ -52,7 +52,7 @@ class Feature(ABC):
         Args:
             context (BuildPart): Context part to apply feature to.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class ObjectFeature(Feature, ObjectCreate):
@@ -418,19 +418,6 @@ class Weighted(ObjectFeature):
                 add(sketch)
             extrude(amount=appendix_height, dir=(0, 0, -1))
         return BasePartObject(part.part, rotation, align, mode)
-
-
-class ContextFeaturebak(ABC):
-    """Interface for feature using a builder context."""
-
-    @abstractmethod
-    def create(self, context: BuildPart) -> None:
-        """Apply the feature to the object in context.
-
-        Args:
-            context (BuildPart): Context to apply the feature to.
-        """
-        raise NotImplementedError  # pragma: no cover
 
 
 class CompartmentFeature(ContextFeature):
