@@ -27,7 +27,7 @@ from gridfinity_build123d.features import (
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
-    Sweep,
+    Scoop,
     Weighted,
 )
 from parameterized import parameterized  # type: ignore[import-untyped]
@@ -275,11 +275,11 @@ class LabelTest(testutils.UtilTestCase):
         self.assertRaises(ValueError, Label, 91)
 
 
-class SweepTest(testutils.UtilTestCase):
-    def test_sweep(self) -> None:
+class ScoopTest(testutils.UtilTestCase):
+    def test_scoop(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep().apply(part)
+            Scoop().apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 5, bot_face.width)
@@ -291,10 +291,10 @@ class SweepTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
         self.assertEqual(124731.74770424681, part.part.volume)
 
-    def test_sweep_radius(self) -> None:
+    def test_scoop_radius(self) -> None:
         with BuildPart() as part:
             Box(50, 50, 50)
-            Sweep(20).apply(part)
+            Scoop(20).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
         self.assertAlmostEqual(50 - 20, bot_face.width)
@@ -306,7 +306,7 @@ class SweepTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
         self.assertEqual(120707.96326794896, part.part.volume)
 
-    def test_sweep_small_box(self) -> None:
+    def test_scoop_small_box(self) -> None:
         with BuildPart() as part:
             Box(4, 4, 4)
-            self.assertRaises(ValueError, Sweep().apply, part)
+            self.assertRaises(ValueError, Scoop().apply, part)

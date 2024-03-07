@@ -15,7 +15,7 @@ __all__ = [
     "CompartmentsEqual",
     "Label",
     "HoleFeature",
-    "Sweep",
+    "Scoop",
     "Utils",
     "Direction",
     "BasePlate",
@@ -65,7 +65,7 @@ from .features import (
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
-    Sweep,
+    Scoop,
     Weighted,
 )
 from .utils import Direction, Utils

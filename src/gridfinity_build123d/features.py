@@ -463,14 +463,14 @@ class Label(CompartmentFeature):
             raise ValueError(msg) from exp
 
 
-class Sweep(CompartmentFeature):
-    """Compartment Sweep feature."""
+class Scoop(CompartmentFeature):
+    """Compartment Scoop feature."""
 
-    def __init__(self, radius: float = gf_bin.sweep.radius) -> None:
-        """Construct Compartment Sweep feature.
+    def __init__(self, radius: float = gf_bin.scoop.radius) -> None:
+        """Construct Compartment Scoop feature.
 
         Args:
-            radius (float, optional): Radius of the sweep. Defaults to gf_bin.sweep.radius.
+            radius (float, optional): Radius of the scoop. Defaults to gf_bin.scoop.radius.
         """
         self.radius = radius
 
@@ -480,5 +480,5 @@ class Sweep(CompartmentFeature):
         try:
             fillet(edge_bottom_front, radius=self.radius)
         except ValueError as exp:
-            msg = "Sweep could not be created, Parent object too small"
+            msg = "Scoop could not be created, Parent object too small"
             raise ValueError(msg) from exp
