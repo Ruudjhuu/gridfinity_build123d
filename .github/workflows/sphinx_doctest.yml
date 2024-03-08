@@ -30,6 +30,5 @@ jobs:
         run: |
           make doctest
       - name: Readme test
-        run: | 
+        run: |
           python -m pytest --markdown-docs README.md
-      

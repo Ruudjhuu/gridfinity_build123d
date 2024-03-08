@@ -12,7 +12,7 @@ The following code creates a feature rich base:
     from gridfinity_build123d import *
 
 .. testcode::
-            
+
     Base(
         features=[
             MagnetHole(feature_location=TopCorners()),
@@ -83,4 +83,3 @@ Features List
 
         +++
         Label for bin compartments.
-

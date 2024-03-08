@@ -15,14 +15,14 @@ Bins
 .. grid:: 2
 
     .. grid-item-card:: :class:`Bin`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             Bin(
                 Base(), height_in_units=4,
             )
@@ -34,14 +34,14 @@ Bins
         .. image:: ../assets/bin.png
 
     .. grid-item-card:: :class:`CompartmentsEqual`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             Bin(
                 Base(),
                 height_in_units=4,
@@ -58,14 +58,14 @@ Bins
         .. image:: ../assets/bin_compartment.png
 
     .. grid-item-card:: :class:`StackingLip`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             Bin(
                 Base(),
                 height_in_units=4,
@@ -92,14 +92,14 @@ BasePlates
 .. grid:: 2
 
     .. grid-item-card:: :class:`BasePlateEqual`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             BasePlateEqual(
                 size_x=2,
                 size_y=2,
@@ -113,31 +113,31 @@ BasePlates
 
 
     .. grid-item-card:: :class:`BasePlate`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             BasePlate([[True,True],[True]])
 
         .. raw:: html
 
             </details>
-        
+
         .. image:: ../assets/base_plate.png
 
     .. grid-item-card:: :class:`BasePlateBlockFull`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             BasePlateEqual(
                 size_x=2,
                 size_y=2,
@@ -151,14 +151,14 @@ BasePlates
         .. image:: ../assets/base_plate_full.png
 
     .. grid-item-card:: :class:`BasePlateBlockFull`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             BasePlateEqual(
                 size_x=2,
                 size_y=2,
@@ -170,7 +170,7 @@ BasePlates
             </details>
 
         .. image:: ../assets/base_plate_weigthed.png
-            
+
 
 Bases
 -----
@@ -179,14 +179,14 @@ Bases
 .. grid:: 2
 
     .. grid-item-card:: :class:`BaseEqual`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             BaseEqual(
                 grid_x=2,
                 grid_y=2,
@@ -199,14 +199,14 @@ Bases
         .. image:: ../assets/base_equal.png
 
     .. grid-item-card:: :class:`Base`
-        
+
         .. raw:: html
 
             <details>
             <summary>source</summary>
 
         .. testcode::
-            
+
             Base([[True,True],[True]])
 
         .. raw:: html
@@ -217,7 +217,7 @@ Bases
 
 
     .. grid-item-card:: :class:`BaseBlock`
-        
+
         .. raw:: html
 
             <details>
@@ -235,4 +235,3 @@ Bases
             </details>
 
         .. image:: ../assets/base_holes.png
-
