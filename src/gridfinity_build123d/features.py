@@ -466,17 +466,30 @@ class Label(CompartmentFeature):
 class Scoop(CompartmentFeature):
     """Compartment Scoop feature."""
 
-    def __init__(self, radius: float = gf_bin.scoop.radius) -> None:
+    def __init__(
+        self,
+        radius: float = gf_bin.scoop.radius,
+        wall_correction: float = 0,
+    ) -> None:
         """Construct Compartment Scoop feature.
 
         Args:
             radius (float, optional): Radius of the scoop. Defaults to gf_bin.scoop.radius.
+            wall_correction (float, optional): Makes wall of sweep side thicker. Can be used to
+                compesate for the stacking lid so one smooth ramp is created to make it easier to
+                    pick items out of a bin.
         """
         self.radius = radius
+        self.wall_correction = wall_correction
 
     def apply(self, context: BuildPart) -> None:  # noqa: D102
+        if self.wall_correction:
+            face_front = context.faces().sort_by(Axis.Y)[0]
+            extrude(face_front, amount=-self.wall_correction, mode=Mode.SUBTRACT)
+
         face_bottom = context.faces().sort_by(Axis.Z)[0]
         edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
+
         try:
             fillet(edge_bottom_front, radius=self.radius)
         except ValueError as exp:

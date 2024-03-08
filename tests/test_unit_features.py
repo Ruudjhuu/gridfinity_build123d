@@ -310,3 +310,18 @@ class ScoopTest(testutils.UtilTestCase):
         with BuildPart() as part:
             Box(4, 4, 4)
             self.assertRaises(ValueError, Scoop().apply, part)
+
+    def test_scoop_wall_correction(self) -> None:
+        with BuildPart() as part:
+            Box(50, 50, 50)
+            Scoop(wall_correction=10).apply(part)
+
+        bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
+        self.assertAlmostEqual(50 - 5 - 10, bot_face.width)
+
+        front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
+        self.assertAlmostEqual(50 - 5, front_face.length)
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((50, 50 - 10, 50), bbox.size)
+        self.assertEqual(99731.74770424681, part.part.volume)
