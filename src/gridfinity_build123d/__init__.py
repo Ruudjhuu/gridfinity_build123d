@@ -62,10 +62,10 @@ from .features import (
     HoleFeature,
     Label,
     MagnetHole,
+    Scoop,
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
-    Scoop,
     Weighted,
 )
 from .utils import Direction, Utils

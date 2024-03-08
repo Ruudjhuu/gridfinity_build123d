@@ -17,8 +17,8 @@ This repository is a Python library for constructing Gridfinity objects using Bu
 Overview
 ========
 
-This module contains a set of "Root objects" that hold arguments to pass through a list of "features". 
-Features are applied to the root object. For example, the root object BasePlate can include a Feature MagnetHole. 
+This module contains a set of "Root objects" that hold arguments to pass through a list of "features".
+Features are applied to the root object. For example, the root object BasePlate can include a Feature MagnetHole.
 Features have FeatureLocations, providing the user with the flexibility to place features wherever they desire.
 
 Grids

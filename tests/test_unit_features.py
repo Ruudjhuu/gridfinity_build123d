@@ -24,10 +24,10 @@ from gridfinity_build123d.features import (
     Label,
     MagnetHole,
     ObjectFeature,
+    Scoop,
     ScrewHole,
     ScrewHoleCounterbore,
     ScrewHoleCountersink,
-    Scoop,
     Weighted,
 )
 from parameterized import parameterized  # type: ignore[import-untyped]
