@@ -11,6 +11,7 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
+    Location,
     Locations,
     Mode,
     Part,
@@ -86,9 +87,10 @@ class Bin(BasePartObject):
                     )
 
             if lip:
-                lip.create(
-                    Utils.get_face_by_direction(part, Direction.TOP).outer_wire(),
-                )
+                with Locations((0, 0, part.part.bounding_box().max.Z)):
+                    lip.create(
+                        Utils.get_face_by_direction(part, Direction.TOP).outer_wire(),
+                    )
 
         super().__init__(part.part, rotation, align, mode)
 
@@ -115,6 +117,7 @@ class StackingLip:
         Returns:
             BasePartObject: 3d object
         """
+        path.move(Location((0, 0, -path.center().Z)))
         with BuildSketch() as profile:
             StackProfile(StackProfile.ProfileType.BIN)
             vertex = profile.vertices().sort_by(Axis.Y)[-1]
@@ -136,8 +139,15 @@ class StackingLip:
             make_face()
         with BuildPart() as part:
             with BuildSketch(Plane.XZ) as sweep_sketch:
-                right_edge_center = path.edges().sort_by(Axis.X)[-1].center()
-                with Locations((right_edge_center.X, right_edge_center.Z)), Locations(
+                edge = (
+                    path.edges()
+                    .sort_by(Axis.X)
+                    .filter_by(lambda edge: edge.intersections(Axis.X))
+                    .sort_by(Axis.X)[-1]
+                )
+                point = edge.intersections(Axis.X)[0]
+
+                with Locations((point.X, point.Z)), Locations(
                     (-profile.sketch.bounding_box().max.X, 0),
                 ):
                     add(profile)

@@ -7,11 +7,15 @@ import testutils
 from build123d import (
     Align,
     Box,
+    BuildLine,
     BuildPart,
     BuildSketch,
     Mode,
+    Polyline,
     RectangleRounded,
     Vector,
+    fillet,
+    make_face,
 )
 from gridfinity_build123d.bin import (
     Bin,
@@ -99,6 +103,40 @@ class StackingLipTest(testutils.UtilTestCase):
         with BuildPart() as part:
             StackingLip().create(sketch.wire())
 
+        self.assertVectorAlmostEqual((0, 0, 0.316689612), part.part.center())
+
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((100, 100, 6.967157), bbox.size, 6)
         self.assertAlmostEqual(4928.067652835152, part.part.volume)
+
+    def test_stackinglip_shape_challenging_wire_filter(self) -> None:
+        length = 20
+        with BuildSketch() as sketch:
+            with BuildLine() as line:
+                Polyline(
+                    (-length, -length),
+                    (-length, length),
+                    (length, length),
+                    (length, length * 2),
+                    (-length * 2, length * 2),
+                    (-length * 2, -length),
+                    close=True,
+                )
+                fillet(line.line.vertices(), radius=5)
+            make_face()
+
+        with BuildPart() as part:
+            StackingLip().create(sketch.wire())
+
+        self.assertVectorAlmostEqual(
+            (-17.027797498223467, 17.027797498223478, 0.3189224851944485),
+            part.part.center(),
+        )
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual(
+            (60.0000002, 60.0000002, 6.967157387525385),
+            bbox.size,
+            6,
+        )
+        self.assertAlmostEqual(2825.2437085703145, part.part.volume)
