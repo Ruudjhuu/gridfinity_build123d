@@ -5,6 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from bd_warehouse.thread import Thread
 from build123d import (
     Align,
     Axis,
@@ -16,6 +17,7 @@ from build123d import (
     CenterArc,
     CounterBoreHole,
     CounterSinkHole,
+    Cylinder,
     Hole,
     Line,
     Locations,
@@ -299,6 +301,43 @@ class GridfinityRefinedScrewHole(ScrewHoleCountersink):
             depth,
             counter_sink_angle,
         )
+
+
+class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
+    """Gridfinity refined threaded screwhole for bins."""
+
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        apex_radius = 15.5 / 2
+        apex_width = 0.24
+        root_radius = 13.8 / 2
+        root_width = 1.21
+        pitch = root_width + 0.29
+        length = 4
+
+        with BuildPart() as part:
+            Cylinder(
+                root_radius,
+                length,
+                align=(Align.CENTER, Align.CENTER, Align.MAX),
+            )
+            Thread(
+                apex_radius,
+                apex_width,
+                root_radius,
+                root_width,
+                pitch,
+                length,
+                apex_offset=0,
+                end_finishes=["chamfer", "chamfer"],
+                align=(Align.CENTER, Align.CENTER, Align.MAX),
+            )
+
+        return BasePartObject(part.part, rotation, align, mode)
 
 
 class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
