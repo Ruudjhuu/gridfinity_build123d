@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from bd_warehouse.thread import Thread
+from bd_warehouse.thread import Thread  # type: ignore[import-untyped]
 from build123d import (
     Align,
     Axis,
@@ -25,6 +25,8 @@ from build123d import (
     Plane,
     PolarLocations,
     Polyline,
+    RadiusArc,
+    Rotation,
     RotationLike,
     SagittaArc,
     Transition,
@@ -411,6 +413,52 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
                     self._slit_depth,
                     align=(Align.CENTER, Align.CENTER, Align.MAX),
                 )
+
+        return BasePartObject(part.part, rotation, align, mode)
+
+
+class GridfinityRefinedMagnetHoleSide(ObjectFeature):
+    """Gridfinity refined threaded screwhole for bins."""
+
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        thickness = 1.9
+        radius = 5.86 / 2
+        width_small = (5.86 - 1.68 * 2) / 2
+        bottom_thickness = 0.6
+
+        with BuildSketch() as sketch:
+            with BuildLine():
+                ln1 = RadiusArc((-radius, 0), (-width_small, 2.65), radius)
+                ln2 = Line(ln1 @ 1, ((ln1 @ 1).X * -1, (ln1 @ 1).Y))
+                ln3 = RadiusArc(ln2 @ 1, (radius, 0), radius)
+                Polyline(
+                    ln3 @ 1,
+                    ((ln3 @ 1).X, -3.5),
+                    ((ln3 @ 1).X + 1.47, -5.6),
+                    ((ln1 @ 0).X, -5.6),
+                    ln1 @ 0,
+                )
+            make_face()
+
+        with BuildSketch() as sketch2:
+            with BuildLine():
+                add(ln2)
+                lnn1 = Line(ln2 @ 0, ((ln2 @ 0).X, (ln2 @ 0).Y + 4.3))
+                lnn2 = SagittaArc(lnn1 @ 1, ((ln2 @ 1).X, (lnn1 @ 1).Y), 1.25)
+                Line(lnn2 @ 1, ln2 @ 1)
+            make_face()
+
+        with BuildPart() as part, Locations(Rotation(0, 0, -135)):
+            with Locations((0, 0, -bottom_thickness)):
+                add(sketch)
+            extrude(amount=-thickness)
+            add(sketch2)
+            extrude(amount=-thickness - bottom_thickness)
 
         return BasePartObject(part.part, rotation, align, mode)
 
