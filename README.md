@@ -4,6 +4,7 @@ Gridfinity (design by Zack Freedman) is a grid based storage solution. This repo
 See the [documentation](http://gridfinity-build123d.readthedocs.io/) for more information and examples.
 
 <img src="docs/assets/baseplate.gif" width="320"/> <img src="docs/assets/bin.gif" width="320"/>
+<img src="docs/assets/base.gif" width="320"/>
 
 # Installation
 
