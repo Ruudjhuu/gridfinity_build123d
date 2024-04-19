@@ -30,3 +30,6 @@ part.export_stl("bin_2x1x3.stl")
 part.export_step("bin_2x1x3.step")
 
 ```
+
+# Credits
+[grizzie17](https://www.printables.com/@grizzie17) -- [gridfinity-refined](https://www.printables.com/model/413761-gridfinity-refined)
