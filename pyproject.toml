@@ -2,7 +2,7 @@
 name = "gridfinity_build123d"
 version = "0.1.0"
 description = "Build123d library for gridfinity objects"
-dependencies = ["build123d==0.3.0"]
+dependencies = ["build123d==0.5.0"]
 requires-python = ">=3.8"
 
 [build-system]
