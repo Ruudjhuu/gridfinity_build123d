@@ -418,7 +418,7 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
 
 
 class GridfinityRefinedMagnetHoleSide(ObjectFeature):
-    """Gridfinity refined threaded screwhole for bins."""
+    """Gridfinity refined magnet hole pushed in from the side for bins."""
 
     def create_obj(  # noqa: D102
         self,
