@@ -23,7 +23,9 @@ from gridfinity_build123d import (
     CompartmentsEqual,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedMagnetHoleSide,
     GridfinityRefinedScrewHole,
+    GridfinityRefinedThreadedScrewHole,
     HoleFeature,
     Label,
     MagnetHole,
@@ -399,4 +401,27 @@ Convert.parts_to_gif(
     ],
     "bin",
     CameraPosition.CAMERA_TOP,
+)
+
+Convert.parts_to_gif(
+    [
+        BaseEqual(),
+        BaseEqual(features=[ScrewHole(BottomCorners())]),
+        BaseEqual(features=[ScrewHole(BottomCorners()), MagnetHole(BottomCorners())]),
+        BaseEqual(
+            features=[
+                ScrewHole(BottomCorners()),
+                MagnetHole(BottomCorners()),
+                GridfinityRefinedThreadedScrewHole(BottomMiddle()),
+            ],
+        ),
+        BaseEqual(
+            features=[
+                GridfinityRefinedMagnetHoleSide(BottomCorners()),
+                GridfinityRefinedThreadedScrewHole(BottomMiddle()),
+            ],
+        ),
+    ],
+    "base",
+    CameraPosition.CAMERA_BOT,
 )
