@@ -19,6 +19,7 @@ from gridfinity_build123d.feature_locations import FeatureLocation
 from gridfinity_build123d.features import (
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedMagnetHoleSide,
     GridfinityRefinedScrewHole,
     GridfinityRefinedThreadedScrewHole,
     HoleFeature,
@@ -231,6 +232,20 @@ class GridfinityRefinedMagnetHolePressfitTest(testutils.UtilTestCase):
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((10.1, 8.825, 2.4), bbox.size)
         self.assertAlmostEqual(81.06553626082864, part.volume)
+
+
+class GridfinityRefinedMagnetHoleSideTest(testutils.UtilTestCase):
+    def test_gridfinityrefinedmagnetholeside(self) -> None:
+        f_loc = MagicMock(spec=FeatureLocation)
+
+        part = GridfinityRefinedMagnetHoleSide(f_loc).create_obj()
+
+        bbox = part.bounding_box()
+        self.assertVectorAlmostEqual(
+            (13.235459941111982, 12.196012972767754, 2.5),
+            bbox.size,
+        )
+        self.assertAlmostEqual(123.02036572781127, part.volume)
 
 
 class WeightedTest(testutils.UtilTestCase):

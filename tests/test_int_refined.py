@@ -1,18 +1,24 @@
 import testutils
 from gridfinity_build123d import (
+    BaseEqual,
     BasePlateBlockFull,
     BasePlateEqual,
+    Bin,
     BottomCorners,
     BottomMiddle,
     BottomSides,
+    Compartment,
+    CompartmentsEqual,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedMagnetHoleSide,
     GridfinityRefinedScrewHole,
+    GridfinityRefinedThreadedScrewHole,
 )
 
 
 class RefinedBaseTest(testutils.UtilTestCase):
-    def test_refined(self) -> None:
+    def test_refined_base(self) -> None:
         part = BasePlateEqual(
             size_x=2,
             size_y=3,
@@ -30,3 +36,22 @@ class RefinedBaseTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((84, 126, 7.65), bbox.size, 5)
         self.assertAlmostEqual(25953.3508979137, part.area)
         self.assertAlmostEqual(30090.400157643642, part.volume)
+
+
+class RefinedBinTest(testutils.UtilTestCase):
+    def test_refined_bin(self) -> None:
+        part = Bin(
+            BaseEqual(
+                features=[
+                    GridfinityRefinedThreadedScrewHole(BottomMiddle()),
+                    GridfinityRefinedMagnetHoleSide(BottomCorners()),
+                ],
+            ),
+            height_in_units=5,
+            compartments=CompartmentsEqual(Compartment()),
+        )
+
+        bbox = part.bounding_box()
+        self.assertVectorAlmostEqual((41.5, 41.5, 35), bbox.size, 5)
+        self.assertAlmostEqual(13684.04729945622, part.area)
+        self.assertAlmostEqual(14967.280072952866, part.volume)

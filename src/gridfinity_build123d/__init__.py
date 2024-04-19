@@ -33,6 +33,8 @@ __all__ = [
     "GridfinityRefinedScrewHole",
     "GridfinityRefinedMagnetHolePressfit",
     "GridfinityRefinedConnector",
+    "GridfinityRefinedMagnetHoleSide",
+    "GridfinityRefinedThreadedScrewHole",
     "BasePlateBlockSkeleton",
 ]
 
@@ -58,7 +60,9 @@ from .feature_locations import (
 from .features import (
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
+    GridfinityRefinedMagnetHoleSide,
     GridfinityRefinedScrewHole,
+    GridfinityRefinedThreadedScrewHole,
     HoleFeature,
     Label,
     MagnetHole,
