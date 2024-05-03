@@ -3,7 +3,7 @@ coverage==7.5.0
 vulture==2.11
 ocp_vscode==2.3.2
 parameterized==0.9.0
-ruff==0.3.0
+ruff==0.4.2
 pytest==8.2.0
 pytest-markdown-docs==0.5.1
 bd_warehouse @ git+https://github.com/gumyr/bd_warehouse@4bd669b
