@@ -33,4 +33,5 @@ part.export_step("bin_2x1x3.step")
 ```
 
 # Credits
+@zackfreedman -- [gridfinity](https://youtu.be/ra_9zU-mnl8)
 [grizzie17](https://www.printables.com/@grizzie17) -- [gridfinity-refined](https://www.printables.com/model/413761-gridfinity-refined)
