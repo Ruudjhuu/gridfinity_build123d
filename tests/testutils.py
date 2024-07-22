@@ -23,9 +23,7 @@ class UtilTestCase(TestCase):
 
     def _isclose(self, a: float, b: float, places: int) -> bool:
         diff = abs(a - b)
-        if round(diff, places) == 0:
-            return True
-        return False
+        return round(diff, places) == 0
 
     def _vec_almost_equal(self, vec_a: Vector, vec_b: Vector, places: int) -> bool:
         return all(
