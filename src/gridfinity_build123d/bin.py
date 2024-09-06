@@ -142,10 +142,10 @@ class StackingLip:
                 edge = (
                     path.edges()
                     .sort_by(Axis.X)
-                    .filter_by(lambda edge: edge.intersections(Axis.X))
+                    .filter_by(lambda edge: edge.find_intersection_points(Axis.X))
                     .sort_by(Axis.X)[-1]
                 )
-                point = edge.intersections(Axis.X)[0]
+                point = edge.find_intersection_points(Axis.X)[0]
 
                 with Locations((point.X, point.Z)), Locations(
                     (-profile.sketch.bounding_box().max.X, 0),
