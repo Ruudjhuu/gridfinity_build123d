@@ -151,9 +151,6 @@ class PolygonHoleFeature(ObjectFeature):
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
 
-        # with BuildPart() as part:
-        #     Hole(radius=self.radius, depth=self.depth, mode=Mode.ADD)
-
         with BuildPart() as part:
             with BuildSketch():
                 RegularPolygon(radius=self.radius,
