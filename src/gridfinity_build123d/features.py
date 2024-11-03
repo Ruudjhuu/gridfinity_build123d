@@ -150,13 +150,14 @@ class PolygonHoleFeature(ObjectFeature):
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
-
         with BuildPart() as part:
             with BuildSketch():
-                RegularPolygon(radius=self.radius,
-                               side_count=self.sides,
-                               major_radius=False,
-                               mode=Mode.ADD)
+                RegularPolygon(
+                    radius=self.radius,
+                    side_count=self.sides,
+                    major_radius=False,
+                    mode=Mode.ADD,
+                )
             extrude(amount=self.depth, both=True)
 
         return BasePartObject(part.part, rotation, align, mode)
