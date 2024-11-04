@@ -16,7 +16,7 @@ from build123d import (
     RotationLike,
 )
 from gridfinity_build123d.base import Base
-from gridfinity_build123d.feature_locations import FeatureLocation, BottomCorners
+from gridfinity_build123d.feature_locations import BottomCorners, FeatureLocation
 from gridfinity_build123d.features import (
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
@@ -127,8 +127,8 @@ class PolygonHoleFeatureTest(testutils.UtilTestCase):
         n_sides = 4
         base2 = Base(
             features=PolygonHoleFeature(
-                BottomCorners(), radius=radius, depth=depth, sides=n_sides
-            )
+                BottomCorners(), radius=radius, depth=depth, sides=n_sides,
+            ),
         )
 
         delta = base1 - base2
