@@ -3,6 +3,7 @@ from unittest import TestCase
 
 import testutils
 from build123d import Axis, Box, BuildPart, BuildSketch, Vector, add
+
 from gridfinity_build123d.utils import (
     Attach,
     Direction,

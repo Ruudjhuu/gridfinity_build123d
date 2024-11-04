@@ -15,6 +15,8 @@ from build123d import (
     Part,
     RotationLike,
 )
+from parameterized import parameterized  # type: ignore[import-untyped]
+
 from gridfinity_build123d.base import Base
 from gridfinity_build123d.feature_locations import BottomCorners, FeatureLocation
 from gridfinity_build123d.features import (
@@ -34,7 +36,6 @@ from gridfinity_build123d.features import (
     ScrewHoleCountersink,
     Weighted,
 )
-from parameterized import parameterized  # type: ignore[import-untyped]
 
 
 class FeatureTest(testutils.UtilTestCase):
@@ -127,7 +128,10 @@ class PolygonHoleFeatureTest(testutils.UtilTestCase):
         n_sides = 4
         base2 = Base(
             features=PolygonHoleFeature(
-                BottomCorners(), radius=radius, depth=depth, sides=n_sides,
+                BottomCorners(),
+                radius=radius,
+                depth=depth,
+                sides=n_sides,
             ),
         )
 
