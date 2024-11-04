@@ -15,7 +15,8 @@ from build123d import (
     Part,
     RotationLike,
 )
-from gridfinity_build123d.feature_locations import FeatureLocation
+from gridfinity_build123d.base import Base
+from gridfinity_build123d.feature_locations import BottomCorners, FeatureLocation
 from gridfinity_build123d.features import (
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
@@ -26,6 +27,7 @@ from gridfinity_build123d.features import (
     Label,
     MagnetHole,
     ObjectFeature,
+    PolygonHoleFeature,
     Scoop,
     ScrewHole,
     ScrewHoleCounterbore,
@@ -112,6 +114,35 @@ class MagnetHoleTest(testutils.UtilTestCase):
         f_loc = MagicMock(spec=FeatureLocation)
         MagnetHole(f_loc, 2, 3)
         hole_mock.assert_called_once_with(f_loc, 2, 3)
+
+
+class PolygonHoleFeatureTest(testutils.UtilTestCase):
+    def test_square_holes(self) -> None:
+        # Create a base with no holes
+        base1 = Base()
+
+        # Base with square holes
+        radius = 3
+        depth = 1
+        n_sides = 4
+        base2 = Base(
+            features=PolygonHoleFeature(
+                BottomCorners(), radius=radius, depth=depth, sides=n_sides,
+            ),
+        )
+
+        delta = base1 - base2
+
+        # 4 holes -> solids
+        self.assertEqual(4, len(delta.solids()))
+
+        # The hole solids should be cubes
+        self.assertEqual(6, len(delta.solids()[0].faces()))
+
+        # The volume of a solids should be 2*radius * 4 sides * depth
+        len_side = 2 * radius
+        volume_expected = len_side**2 * depth
+        self.assertAlmostEqual(volume_expected, delta.solids()[0].volume)
 
 
 class ScrewHoleCountersinkTest(testutils.UtilTestCase):

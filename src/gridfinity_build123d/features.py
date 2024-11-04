@@ -26,6 +26,7 @@ from build123d import (
     PolarLocations,
     Polyline,
     RadiusArc,
+    RegularPolygon,
     Rotation,
     RotationLike,
     SagittaArc,
@@ -117,6 +118,48 @@ class HoleFeature(ObjectFeature):
     ) -> BasePartObject:
         with BuildPart() as part:
             Hole(radius=self.radius, depth=self.depth, mode=Mode.ADD)
+        return BasePartObject(part.part, rotation, align, mode)
+
+
+class PolygonHoleFeature(ObjectFeature):
+    """Polygon Hole Feature."""
+
+    def __init__(
+        self,
+        feature_location: FeatureLocation,
+        radius: float,
+        depth: float,
+        sides: int,
+    ) -> None:
+        """Create a Polygon Hole baseblock feature.
+
+        Args:
+            radius (float): radius of inscribed circle.
+            depth (float): depth
+            sides (int): number of sides of polygon
+            feature_location (FeatureLocation): Location of feature.
+        """
+        super().__init__(feature_location)
+        self.radius = radius
+        self.sides = sides
+        self.depth = depth
+
+    def create_obj(  # noqa: D102
+        self,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.SUBTRACT,
+    ) -> BasePartObject:
+        with BuildPart() as part:
+            with BuildSketch():
+                RegularPolygon(
+                    radius=self.radius,
+                    side_count=self.sides,
+                    major_radius=False,
+                    mode=Mode.ADD,
+                )
+            extrude(amount=self.depth, both=True)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
