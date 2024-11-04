@@ -8,6 +8,7 @@ from build123d import (
     BuildPart,
     Vector,
 )
+
 from gridfinity_build123d.compartments import (
     Compartment,
     Compartments,

@@ -1,4 +1,5 @@
 import testutils
+
 from gridfinity_build123d import (
     BaseEqual,
     BasePlateBlockFull,

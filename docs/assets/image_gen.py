@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
 from build123d import Box, Part
+
 from gridfinity_build123d import (
     Base,
     BaseEqual,

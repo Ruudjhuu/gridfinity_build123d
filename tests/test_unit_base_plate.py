@@ -3,6 +3,7 @@ from unittest.mock import ANY, MagicMock, patch
 import mocks
 import testutils
 from build123d import BuildPart
+
 from gridfinity_build123d.baseplate import (
     BasePlate,
     BasePlateBlock,

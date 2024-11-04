@@ -17,6 +17,7 @@ from build123d import (
     fillet,
     make_face,
 )
+
 from gridfinity_build123d.bin import (
     Bin,
     StackingLip,
