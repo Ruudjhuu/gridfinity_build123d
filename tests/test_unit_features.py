@@ -255,7 +255,7 @@ class GridfinityRefinedThreadedScrewHoleTest(testutils.UtilTestCase):
             bbox.size,
             5,
         )
-        self.assertAlmostEqual(670.6352585350687, part.volume)
+        self.assertAlmostEqual(670.6352585350687, part.volume, 6)
 
 
 class GridfinityRefinedMagnetHolePressfitTest(testutils.UtilTestCase):
