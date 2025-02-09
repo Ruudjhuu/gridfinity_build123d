@@ -40,9 +40,9 @@ class UtilTestCase(TestCase):
         vec_list: list[Vector],
         places: int = 7,
     ) -> None:
-        rtn = any(
-            self._vec_almost_equal(input_vec, vector, places) for vector in vec_list
-        )
+        rtn = any(self._vec_almost_equal(input_vec, vector, places) for vector in vec_list)
         if not rtn:
-            msg = f"{safe_repr(input_vec)} not found in {safe_repr(vec_list)} within {places} places"
+            msg = (
+                f"{safe_repr(input_vec)} not found in {safe_repr(vec_list)} within {places} places"
+            )
             raise AssertionError(msg)

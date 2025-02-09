@@ -74,9 +74,7 @@ class Compartment:
                 feature.apply(part)
 
             fillet_edges = [
-                i
-                for i in part.edges()
-                if i not in part.faces().sort_by(Axis.Z)[-1].edges()
+                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
             ]
 
             fillet(fillet_edges, gf_bin.inner_radius)
