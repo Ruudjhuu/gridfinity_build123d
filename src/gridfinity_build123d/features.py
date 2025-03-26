@@ -22,6 +22,7 @@ from build123d import (
     Line,
     Locations,
     Mode,
+    Part,
     Plane,
     PolarLocations,
     Polyline,
@@ -77,7 +78,12 @@ class ObjectFeature(Feature, ObjectCreate):
 
     def apply(self, context: BuildPart) -> None:  # noqa: D102
         if self._feature_location:
-            with self._feature_location.apply_to(context.part):
+            context_part = context.part
+            if not isinstance(context_part,Part):
+                msg = "Context has no part"
+                raise ValueError(msg)
+
+            with self._feature_location.apply_to(context_part):
                 self.create_obj()
         else:
             self.create_obj()
