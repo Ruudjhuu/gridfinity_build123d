@@ -161,7 +161,7 @@ class Utils:  # pylint: disable=too-few-public-methods
             UnsuportedEnumValueError: Unsuported Enum value
         """
         context_part = context.part
-        if not isinstance(context_part,Part):
+        if not isinstance(context_part, Part):
             msg = "Context has no part"
             raise TypeError(msg)
 
