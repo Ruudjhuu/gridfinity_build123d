@@ -14,6 +14,7 @@ python3 -m pip install git+https://github.com/Ruudjhuu/gridfinity_build123d
 
 # Usage
 ```python
+import build123d
 from gridfinity_build123d import (
     BaseEqual,
     Bin,
@@ -27,8 +28,8 @@ part = Bin(
     compartments=CompartmentsEqual(compartment_list=[Compartment()]),
 )
 
-part.export_stl("bin_2x1x3.stl")
-part.export_step("bin_2x1x3.step")
+build123d.export_stl(part, "bin_2x1x3.stl")
+build123d.export_step(part, "bin_2x1x3.step")
 
 ```
 
