@@ -147,7 +147,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         attach: Attach,
         offset_value: float = 0,
     ) -> None:
-        """attach.
+        """Attach.
 
         Attaches other object acording to "attach".
 

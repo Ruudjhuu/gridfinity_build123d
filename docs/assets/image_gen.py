@@ -7,6 +7,7 @@ from subprocess import check_call
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
+import build123d
 from build123d import Box, Part
 
 from gridfinity_build123d import (
@@ -39,6 +40,8 @@ from gridfinity_build123d import (
     Weighted,
 )
 from gridfinity_build123d.feature_locations import FeatureLocation
+
+logger = logging.getLogger(__name__)
 
 
 class CameraPosition(Enum):
@@ -87,7 +90,7 @@ class Convert:
                 ],
             )
             file_path = Path(file_name + ".gif").resolve()
-            logging.info("gif written to %s", file_path)
+            logger.info("gif written to %s", file_path)
 
     @staticmethod
     def _part_to_png(
@@ -98,7 +101,7 @@ class Convert:
     ) -> None:
         tmp_stl = work_dir.joinpath("tmp.stl")
         tmp_scad = work_dir.joinpath("tmp.scad")
-        part.export_stl(str(tmp_stl))
+        build123d.export_stl(part, str(tmp_stl))
         with tmp_scad.open("w") as file:
             file.write(f'import("{tmp_stl}");\n')
 
@@ -119,7 +122,7 @@ class Convert:
         )
 
         file_path = Path(file_name + ".png").resolve()
-        logging.info("Image written to %s", file_path)
+        logger.info("Image written to %s", file_path)
 
         tmp_stl.unlink()
         tmp_scad.unlink()

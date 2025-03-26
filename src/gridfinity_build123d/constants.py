@@ -1,4 +1,4 @@
-# ruff: noqa
+# ruff: noqa:N801
 """Gridfinity standard constants."""
 
 from dataclasses import dataclass
