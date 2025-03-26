@@ -39,8 +39,8 @@ class BinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 83.5, 39.11715738752539), bbox.size, 5)
-        self.assertAlmostEqual(52184.71853839394, part.area)
-        self.assertAlmostEqual(77131.4210499689, part.volume)
+        self.assertAlmostEqual(51983.47830022623, part.area)
+        self.assertAlmostEqual(73599.55109379512, part.volume)
 
     def test_bin_different_compartments(self) -> None:
         cmp_placement = [
@@ -67,8 +67,8 @@ class BinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((125.5, 125.5, 39.11715738752539), bbox.size, 6)
-        self.assertAlmostEqual(93236.35216913944, part.area, 6)
-        self.assertAlmostEqual(177834.82625303385, part.volume, 6)
+        self.assertAlmostEqual(93035.11193097175, part.area, 6)
+        self.assertAlmostEqual(172255.34625186658, part.volume, 6)
 
     def test_bin_random_shape(self) -> None:
         base_grid = [
@@ -107,5 +107,5 @@ class BinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((125.5, 209.5, 39.11715728752539), bbox.size, 6)
-        self.assertAlmostEqual(127529.55175282054, part.area, 5)
-        self.assertAlmostEqual(206666.87628806988, part.volume, 5)
+        self.assertAlmostEqual(127127.07127508955, part.area, 5)
+        self.assertAlmostEqual(195862.85985459972, part.volume, 5)

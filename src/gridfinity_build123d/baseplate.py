@@ -147,9 +147,7 @@ class BasePlateBlockSkeleton(BasePlateBlockFull):
                     ln2 = Line(ln1 @ 1, (length_s, length_s))
                     ln3 = Line(ln2 @ 1, (length_l, length_s))
                     Line(ln3 @ 1, (length_l, 0))
-                    vertex = line.vertices().sort_by_distance((length / 4, length / 4))[
-                        0
-                    ]
+                    vertex = line.vertices().sort_by_distance((length / 4, length / 4))[0]
                     fillet(vertex, radius)
                     mirror(about=Plane.XZ)
                     mirror(about=Plane.YZ)

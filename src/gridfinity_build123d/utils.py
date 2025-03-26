@@ -160,54 +160,47 @@ class Utils:  # pylint: disable=too-few-public-methods
         Raises:
             UnsuportedEnumValueError: Unsuported Enum value
         """
+        context_part = context.part
+        if not isinstance(context_part, Part):  # pragma: no cover
+            msg = "Context has no part"
+            raise TypeError(msg)
+
         location: tuple[float, float, float] = (0, 0, 0)
 
         if attach == Attach.TOP:
             location = (
                 0,
                 0,
-                context.part.bounding_box().max.Z
-                + -1 * part.bounding_box().min.Z
-                + offset_value,
+                context_part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset_value,
             )
         elif attach == Attach.BOTTOM:
             location = (
                 0,
                 0,
-                context.part.bounding_box().min.Z
-                + -1 * part.bounding_box().max.Z
-                - offset_value,
+                context_part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset_value,
             )
         elif attach == Attach.LEFT:
             location = (
-                context.part.bounding_box().min.X
-                + -1 * part.bounding_box().max.X
-                - offset_value,
+                context_part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset_value,
                 0,
                 0,
             )
         elif attach == Attach.RIGHT:
             location = (
-                context.part.bounding_box().max.X
-                + -1 * part.bounding_box().min.X
-                + offset_value,
+                context_part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset_value,
                 0,
                 0,
             )
         elif attach == Attach.FRONT:
             location = (
                 0,
-                context.part.bounding_box().min.Y
-                + -1 * part.bounding_box().max.Y
-                - offset_value,
+                context_part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset_value,
                 0,
             )
         elif attach == Attach.BACK:
             location = (
                 0,
-                context.part.bounding_box().max.Y
-                + -1 * part.bounding_box().min.Y
-                + offset_value,
+                context_part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset_value,
                 0,
             )
         else:  # pragma: no cover
@@ -227,9 +220,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         Returns:
             Face: face
         """
-        return context.faces().sort_by(Axis((0, 0, 0), Direction.to_tuple(direction)))[
-            -1
-        ]
+        return context.faces().sort_by(Axis((0, 0, 0), Direction.to_tuple(direction)))[-1]
 
     @staticmethod
     def get_subclasses(class_name: type) -> list[Any]:

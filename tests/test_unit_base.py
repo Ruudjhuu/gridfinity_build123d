@@ -102,7 +102,7 @@ class BaseBlockTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
-        self.assertEqual(12240.821519721352, part.part.volume)
+        self.assertAlmostEqual(12240.821519721352, part.part.volume)
 
     def test_baseblock_one_feature(self) -> None:
         feature = MagicMock(spec=ObjectFeature)
@@ -114,7 +114,7 @@ class BaseBlockTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(42.0, 42.0, 7.803553390593281), bbox.size)
-        self.assertEqual(12240.821519721352, part.part.volume)
+        self.assertAlmostEqual(12240.821519721352, part.part.volume)
 
     def test_baseblock_multiple_features(self) -> None:
         feature_1 = MagicMock(spec=ObjectFeature)

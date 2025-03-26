@@ -69,9 +69,7 @@ class Base(BasePartObject):
                 .filter_by(Axis.Z)
                 .filter_by(
                     lambda edge: any(
-                        True
-                        for vertex in edge.vertices()
-                        if vertex in top_face.vertices()
+                        True for vertex in edge.vertices() if vertex in top_face.vertices()
                     ),
                 )
             )
