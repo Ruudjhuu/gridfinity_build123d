@@ -5,5 +5,4 @@ ocp_vscode==2.7.1
 parameterized==0.9.0
 ruff==0.11.2
 pytest-markdown-docs==0.9.0
-pytest-markdown-docs==0.7.1
  -e .
