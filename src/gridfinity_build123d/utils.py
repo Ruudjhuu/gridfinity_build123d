@@ -22,10 +22,12 @@ from build123d import (
     Part,
     Plane,
     Polyline,
+    Rectangle,
     RectangleRounded,
     RotationLike,
     add,
     extrude,
+    fillet,
     make_face,
     offset,
     sweep,
@@ -265,8 +267,8 @@ class Utils:  # pylint: disable=too-few-public-methods
             BasePartObject: gridlike object
         """
         bbox = obj.bounding_box()
-        width = bbox.size.X
-        length = bbox.size.Y
+        width = gridfinity_standard.grid.size
+        length = gridfinity_standard.grid.size
 
         locations: list[Location] = []
         for row_nr, row_value in enumerate(grid):
@@ -282,6 +284,36 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         with BuildPart() as part, Locations(locations):
             add(obj)
+
+        return BasePartObject(part.part, rotation, align, mode)
+
+    @staticmethod
+    def create_upper_bin_block(
+        grid: list[list[bool]],
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.ADD,
+    ):
+        width = gridfinity_standard.grid.size
+        length = gridfinity_standard.grid.size
+
+        locations: list[Location] = []
+        for row_nr, row_value in enumerate(grid):
+            for column_nr, column_value in enumerate(row_value):
+                if column_value:
+                    locations.append(
+                        Location((width * (column_nr + 1), length * -(row_nr + 1))),
+                    )
+
+        with BuildPart() as part:
+            with BuildSketch() as base:
+                with Locations(locations):
+                    Rectangle(length, width)
+                offset(amount=-0.25)
+                tol = gridfinity_standard.grid.tollerance
+                fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol * 0.5)
+
+            extrude(amount=gridfinity_standard.bottom.platform_height)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -321,10 +353,15 @@ class Utils:  # pylint: disable=too-few-public-methods
                     )
 
             with BuildSketch() as rect:
+                if profile_type == StackProfile.ProfileType.BIN:
+                    e = gridfinity_standard.grid.tollerance
+                else:
+                    e = 0.0
+
                 RectangleRounded(
-                    gridfinity_standard.grid.size,
-                    gridfinity_standard.grid.size,
-                    gridfinity_standard.grid.radius,
+                    gridfinity_standard.grid.size - e,
+                    gridfinity_standard.grid.size - e,
+                    gridfinity_standard.grid.radius - e * 0.5,
                 )
             extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 

@@ -52,7 +52,7 @@ class gridfinity_standard:
 class gf_bin:
     """Bin constants."""
 
-    inner_radius = 1.8
+    inner_radius = 4 - 0.95
     inner_wall = 1.2
 
     @dataclass

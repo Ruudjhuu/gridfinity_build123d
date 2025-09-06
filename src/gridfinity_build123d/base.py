@@ -11,6 +11,7 @@ from build123d import (
     BuildPart,
     BuildSketch,
     Location,
+    Locations,
     Mode,
     Rectangle,
     RotationLike,
@@ -60,32 +61,23 @@ class Base(BasePartObject):
         features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as base:
-            base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
+            base_block = BaseBlock(features=features, mode=Mode.PRIVATE, standalone=False)
             Utils.place_by_grid(base_block, grid)
 
-            top_face = base.faces().sort_by(Axis.Z)[-1]
-            edges = (
-                base.edges()
-                .filter_by(Axis.Z)
-                .filter_by(
-                    lambda edge: any(
-                        True for vertex in edge.vertices() if vertex in top_face.vertices()
+            top_face_1 = base.faces().sort_by(Axis.Z)[-1]
+            z_top = top_face_1.bounding_box().min.Z
+
+            with Locations((0, 0, z_top)):
+                Utils.create_upper_bin_block(
+                    grid,
+                    align=(
+                        Align.CENTER,
+                        Align.CENTER,
+                        Align.MIN,
                     ),
                 )
-            )
-            fillet(objects=edges, radius=gridfinity_standard.grid.radius)
 
-        with BuildPart() as cutter:
-            with BuildSketch(Location((0, 0, base.part.bounding_box().max.Z))):
-                add(base.faces().sort_by(Axis.Z)[-1])
-                offset(amount=-gridfinity_standard.grid.tollerance / 2)
-            extrude(amount=base.part.bounding_box().size.Z, dir=(0, 0, -1))
-
-        with BuildPart() as part:
-            add(base)
-            add(cutter, mode=Mode.INTERSECT)
-
-        super().__init__(part.part, rotation, align, mode)
+        super().__init__(base.part, rotation, align, mode)
 
 
 class BaseEqual(Base):
@@ -128,6 +120,7 @@ class BaseBlock(BasePartObject):
 
     def __init__(
         self,
+        standalone: bool = True,
         features: ObjectFeature | list[ObjectFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -136,6 +129,10 @@ class BaseBlock(BasePartObject):
         """Construct BaseBlock.
 
         Args:
+            standalone (bool, optional):
+                Whether the top part of the base block should be extruded. When
+                called from Base as part of a grid, the upper block is generated
+                separately.
             features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
                 or list of ObjectFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
@@ -154,12 +151,19 @@ class BaseBlock(BasePartObject):
                 gridfinity_standard.stacking_lip.offset,
             )
 
-            with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
-                Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
-            extrude(
-                to_extrude=rect2.sketch,
-                amount=gridfinity_standard.bottom.platform_height,
-            )
+            if standalone:
+                face_top = baseblock.faces().sort_by(Axis.Z)[-1]
+                extrude(
+                    to_extrude=face_top,
+                    amount=gridfinity_standard.bottom.platform_height,
+                )
+
+                with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
+                    Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
+                extrude(
+                    to_extrude=rect2.sketch,
+                    amount=gridfinity_standard.bottom.platform_height,
+                )
 
             for feature in features:
                 feature.apply(baseblock)
