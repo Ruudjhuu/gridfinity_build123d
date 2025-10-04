@@ -1,4 +1,4 @@
-mypy==1.17.1
+mypy==1.18.2
 coverage==7.10.1
 vulture==2.14
 ocp_vscode==2.8.9
