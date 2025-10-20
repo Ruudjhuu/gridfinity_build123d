@@ -61,7 +61,7 @@ class Base(BasePartObject):
         features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as base:
-            base_block = BaseBlock(features=features, mode=Mode.PRIVATE, standalone=False)
+            base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
             Utils.place_by_grid(base_block, grid)
 
             top_face_1 = base.faces().sort_by(Axis.Z)[-1]
@@ -120,7 +120,6 @@ class BaseBlock(BasePartObject):
 
     def __init__(
         self,
-        standalone: bool = True,
         features: ObjectFeature | list[ObjectFeature] | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -129,10 +128,6 @@ class BaseBlock(BasePartObject):
         """Construct BaseBlock.
 
         Args:
-            standalone (bool, optional):
-                Whether the top part of the base block should be extruded. When
-                called from Base as part of a grid, the upper block is generated
-                separately.
             features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
                 or list of ObjectFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
@@ -151,21 +146,59 @@ class BaseBlock(BasePartObject):
                 gridfinity_standard.stacking_lip.offset,
             )
 
-            if standalone:
-                face_top = baseblock.faces().sort_by(Axis.Z)[-1]
-                extrude(
-                    to_extrude=face_top,
-                    amount=gridfinity_standard.bottom.platform_height,
-                )
-
-                with BuildSketch(baseblock.faces().sort_by(Axis.Z)[-1]) as rect2:
-                    Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
-                extrude(
-                    to_extrude=rect2.sketch,
-                    amount=gridfinity_standard.bottom.platform_height,
-                )
-
             for feature in features:
                 feature.apply(baseblock)
 
         super().__init__(baseblock.part, rotation, align, mode)
+
+
+class BaseBlockPlatform(BasePartObject):
+    """BaseBlockPlatform.
+
+    Create a single baseblock with rectangular platform. The rectangular platform makes it
+    posible to stack the blocks in x and y direction. After creating an array it is meant to
+    cut the platform to size.
+    """
+
+    def __init__(
+        self,
+        features: ObjectFeature | list[ObjectFeature] | None = None,
+        rotation: RotationLike = (0, 0, 0),
+        align: Align | tuple[Align, Align, Align] | None = None,
+        mode: Mode = Mode.ADD,
+    ):
+        """Construct BaseBlockPlatform.
+
+        Args:
+            features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
+                or list of ObjectFeatures. Defaults to None.
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to None.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+        """
+        if not features:
+            features = []
+
+        base_block = BaseBlock(features=[], rotation=rotation, mode=Mode.ADD)
+
+        with BuildPart() as baseblock_platform:
+            add(base_block)
+
+            face_top = baseblock_platform.faces().sort_by(Axis.Z)[-1]
+            extrude(
+                to_extrude=face_top,
+                amount=gridfinity_standard.bottom.platform_height,
+            )
+
+            with BuildSketch(baseblock_platform.faces().sort_by(Axis.Z)[-1]) as rect2:
+                Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
+            extrude(
+                to_extrude=rect2.sketch,
+                amount=gridfinity_standard.bottom.platform_height,
+            )
+
+            for feature in features:
+                feature.apply(baseblock_platform)
+
+        super().__init__(baseblock_platform.part, rotation, align, mode)
