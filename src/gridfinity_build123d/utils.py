@@ -309,7 +309,7 @@ class Utils:  # pylint: disable=too-few-public-methods
             with BuildSketch() as base:
                 with Locations(locations):
                     Rectangle(length, width)
-                offset(amount=-0.25)
+                offset(amount=-gridfinity_standard.grid.tollerance / 2)
                 tol = gridfinity_standard.grid.tollerance
                 fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol * 0.5)
 
