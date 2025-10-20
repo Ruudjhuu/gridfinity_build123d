@@ -267,8 +267,8 @@ class Utils:  # pylint: disable=too-few-public-methods
             BasePartObject: gridlike object
         """
         bbox = obj.bounding_box()
-        width = gridfinity_standard.grid.size
-        length = gridfinity_standard.grid.size
+        width = bbox.size.X
+        length = bbox.size.Y
 
         locations: list[Location] = []
         for row_nr, row_value in enumerate(grid):
