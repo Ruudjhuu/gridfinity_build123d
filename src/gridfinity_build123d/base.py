@@ -185,12 +185,6 @@ class BaseBlockPlatform(BasePartObject):
         with BuildPart() as baseblock_platform:
             add(base_block)
 
-            face_top = baseblock_platform.faces().sort_by(Axis.Z)[-1]
-            extrude(
-                to_extrude=face_top,
-                amount=gridfinity_standard.bottom.platform_height,
-            )
-
             with BuildSketch(baseblock_platform.faces().sort_by(Axis.Z)[-1]) as rect2:
                 Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
             extrude(
