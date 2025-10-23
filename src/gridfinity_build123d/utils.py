@@ -243,6 +243,68 @@ class Utils:  # pylint: disable=too-few-public-methods
         return classes
 
     @staticmethod
+    def locate_grid(grid: list[list[bool]], width: float, length: float) -> list[Location]:
+        """Generate locations for a grid with given spacing in x and y directions.
+
+        Args:
+            grid (list[list[bool]]): grid
+            width (float): spacing of the grid in the x-direction.
+            length (float): spacing of the grid in the y-direction.
+
+        Returns:
+            list[Location]: the locations for the grid.
+
+        """
+        locations: list[Location] = []
+        for row_nr, row_value in enumerate(grid):
+            for column_nr, column_value in enumerate(row_value):
+                if column_value:
+                    locations.append(
+                        Location((width * (column_nr + 1), length * -(row_nr + 1))),
+                    )
+
+        return locations
+
+    @staticmethod
+    def place_sketch_by_grid(
+        obj: BaseSketchObject,
+        grid: list[list[bool]],
+        width: float | None = None,
+        length: float | None = None,
+        rotation: float = 0,
+        align: Align | tuple[Align, Align] = Align.CENTER,
+        mode: Mode = Mode.ADD,
+    ) -> BaseSketchObject:
+        """Place multiple instances of a sketch according to a grid.
+
+        Args:
+            obj (BaseSketchObject): sketch to be copied
+            grid (list[list[bool]]): grid
+            width (float | None): spacing of the grid in the x-direction. Defaults to None.
+            length (float | None): spacing of the grid in the y-direction. Defaults to None.
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to Align.CENTER.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+
+        Returns:
+            BaseSketchObject: gridlike sketch
+
+        """
+        bbox = obj.bounding_box()
+        if width is None:
+            width = bbox.size.X
+        if length is None:
+            length = bbox.size.Y
+
+        locations = Utils.locate_grid(grid, width, length)
+
+        with BuildSketch() as sketch, Locations(locations):
+            add(obj)
+
+        return BaseSketchObject(sketch.sketch, rotation, align, mode)
+
+    @staticmethod
     def place_by_grid(
         obj: BasePartObject,
         grid: list[list[bool]],
@@ -270,13 +332,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         width = bbox.size.X
         length = bbox.size.Y
 
-        locations: list[Location] = []
-        for row_nr, row_value in enumerate(grid):
-            for column_nr, column_value in enumerate(row_value):
-                if column_value:
-                    locations.append(
-                        Location((width * (column_nr + 1), length * -(row_nr + 1))),
-                    )
+        locations = Utils.locate_grid(grid, width, length)
 
         if not locations:
             msg = f"grid {grid} does not reasemble locations"
@@ -288,30 +344,45 @@ class Utils:  # pylint: disable=too-few-public-methods
         return BasePartObject(part.part, rotation, align, mode)
 
     @staticmethod
-    def create_upper_bin_block(
+    def create_bin_platform(
         grid: list[list[bool]],
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
-    ):
+    ) -> BasePartObject:
+        """Create the platform for the bin.
+
+        This function considers that the bins have a different dimension than the base elements
+        (41.5mm instead of 42mm). This is to allow for certain tolerance for the bins. Therefore the
+        size of the grid is set to the gridfinity standard grid size instead of the size of the
+        sketch.
+
+        Args:
+            grid (list[list[bool]]): grid
+            rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
+            align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
+                object. Defaults to Align.CENTER.
+            mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
+
+        Returns:
+            BasePartObject: the upper part of the bin.
+
+        """
         width = gridfinity_standard.grid.size
         length = gridfinity_standard.grid.size
 
-        locations: list[Location] = []
-        for row_nr, row_value in enumerate(grid):
-            for column_nr, column_value in enumerate(row_value):
-                if column_value:
-                    locations.append(
-                        Location((width * (column_nr + 1), length * -(row_nr + 1))),
-                    )
+        tol = gridfinity_standard.grid.tollerance
+
+        with BuildSketch() as base:
+            Rectangle(length, width)
+
+        base_grid = Utils.place_sketch_by_grid(base.sketch, grid, width=width, length=length)
 
         with BuildPart() as part:
             with BuildSketch() as base:
-                with Locations(locations):
-                    Rectangle(length, width)
-                offset(amount=-gridfinity_standard.grid.tollerance / 2)
-                tol = gridfinity_standard.grid.tollerance
-                fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol * 0.5)
+                add(base_grid)
+                offset(amount=-tol / 2)
+                fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol / 2)
 
             extrude(amount=gridfinity_standard.bottom.platform_height)
 

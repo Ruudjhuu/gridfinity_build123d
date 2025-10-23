@@ -68,7 +68,7 @@ class Base(BasePartObject):
             z_top = top_face_1.bounding_box().min.Z
 
             with Locations((0, 0, z_top)):
-                Utils.create_upper_bin_block(
+                Utils.create_bin_platform(
                     grid,
                     align=(
                         Align.CENTER,
