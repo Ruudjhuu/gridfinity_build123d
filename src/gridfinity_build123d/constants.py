@@ -52,7 +52,7 @@ class gridfinity_standard:
 class gf_bin:
     """Bin constants."""
 
-    inner_wall = 1.2
+    inner_wall = 0.95
     inner_radius = (
         gridfinity_standard.grid.radius - inner_wall - gridfinity_standard.grid.tollerance / 2
     )
