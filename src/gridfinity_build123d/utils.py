@@ -319,6 +319,8 @@ class Utils:  # pylint: disable=too-few-public-methods
         Args:
             obj (BasePartObject): object to be copied
             grid (list[list[bool]]): grid
+            width (float | None): spacing of the grid in the x-direction. Defaults to None.
+            length (float | None): spacing of the grid in the y-direction. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): Align min center of max of
                 object. Defaults to Align.CENTER.
