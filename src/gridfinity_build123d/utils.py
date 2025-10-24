@@ -308,6 +308,8 @@ class Utils:  # pylint: disable=too-few-public-methods
     def place_by_grid(
         obj: BasePartObject,
         grid: list[list[bool]],
+        width: float | None = None,
+        length: float | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] = Align.CENTER,
         mode: Mode = Mode.ADD,
@@ -329,8 +331,10 @@ class Utils:  # pylint: disable=too-few-public-methods
             BasePartObject: gridlike object
         """
         bbox = obj.bounding_box()
-        width = bbox.size.X
-        length = bbox.size.Y
+        if width is None:
+            width = bbox.size.X
+        if length is None:
+            length = bbox.size.Y
 
         locations = Utils.locate_grid(grid, width, length)
 

@@ -62,7 +62,12 @@ class Base(BasePartObject):
 
         with BuildPart() as base:
             base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
-            Utils.place_by_grid(base_block, grid)
+            Utils.place_by_grid(
+                base_block,
+                grid,
+                width=gridfinity_standard.grid.size,
+                length=gridfinity_standard.grid.size,
+            )
 
             top_face_1 = base.faces().sort_by(Axis.Z)[-1]
             z_top = top_face_1.bounding_box().min.Z
