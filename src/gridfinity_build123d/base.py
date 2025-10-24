@@ -118,9 +118,7 @@ class BaseEqual(Base):
 class BaseBlock(BasePartObject):
     """BaseBlock.
 
-    Create a single baseblock with rectangular platform. The rectangular platform makes it
-    posible to stack the blocks in x and y direction. After creating an array it is meant to
-    cut the platform to size.
+    Create a single baseblock.
     """
 
     def __init__(
@@ -160,9 +158,9 @@ class BaseBlock(BasePartObject):
 class BaseBlockPlatform(BasePartObject):
     """BaseBlockPlatform.
 
-    Create a single baseblock with rectangular platform. The rectangular platform makes it
-    posible to stack the blocks in x and y direction. After creating an array it is meant to
-    cut the platform to size.
+    Create a single baseblock with a rectangular platform on top. The rectangular platform makes it
+    posible to stack the blocks in x and y direction. After creating an array it is meant to cut or
+    offset the platform to size.
     """
 
     def __init__(
