@@ -387,7 +387,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         with BuildPart() as part:
             with BuildSketch() as base:
                 add(base_grid)
-                offset(amount=-tol / 2)
+                offset(amount=-tol / 2, kind=Kind.INTERSECTION)
                 fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol / 2)
 
             extrude(amount=gridfinity_standard.bottom.platform_height)
