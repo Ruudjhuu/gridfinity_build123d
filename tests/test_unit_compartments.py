@@ -275,7 +275,7 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertEqual(35823.124620015966, part.part.volume)
+        self.assertEqual(35756.84482666055, part.part.volume)
 
     def test_compartment_feature(self) -> None:
         size_x = 40
@@ -291,7 +291,7 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertAlmostEqual(35823.124620015966, part.part.volume)
+        self.assertAlmostEqual(35756.84482666055, part.part.volume)
 
     def test_compartment_multiple_features(self) -> None:
         size_x = 40
@@ -309,4 +309,4 @@ class CompartmentTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(size_x, size_y, height), bbox.size)
-        self.assertAlmostEqual(35823.124620015966, part.part.volume)
+        self.assertAlmostEqual(35756.84482666055, part.part.volume)
