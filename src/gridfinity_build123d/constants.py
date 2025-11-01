@@ -53,9 +53,12 @@ class gf_bin:
     """Bin constants."""
 
     inner_wall = 0.95
-    inner_radius = (
+    # Radius used for vertical inner fillets
+    inner_radius_v = (
         gridfinity_standard.grid.radius - inner_wall - gridfinity_standard.grid.tollerance / 2
     )
+    # Radius used for the rest of the inner fillets
+    inner_radius = 1.2
 
     @dataclass
     class label:
