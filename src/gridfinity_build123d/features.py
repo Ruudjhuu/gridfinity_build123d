@@ -488,8 +488,8 @@ class GridfinityRefinedMagnetHoleSide(ObjectFeature):
                 Polyline(
                     ln3 @ 1,
                     ((ln3 @ 1).X, -3.5),
-                    ((ln3 @ 1).X + 1.47, -5.6),
-                    ((ln1 @ 0).X, -5.6),
+                    ((ln3 @ 1).X + 1.47, -5.9),
+                    ((ln1 @ 0).X, -5.9),
                     ln1 @ 0,
                 )
             make_face()
