@@ -183,6 +183,8 @@ class BaseBlockPlatform(BasePartObject):
         if not features:
             features = []
 
+        features = features if isinstance(features, Iterable) else [features]
+
         base_block = BaseBlock(features=[], rotation=rotation, mode=Mode.ADD)
 
         with BuildPart() as baseblock_platform:

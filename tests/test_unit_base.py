@@ -129,3 +129,39 @@ class BaseBlockTest(testutils.UtilTestCase):
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(41.5, 41.5, 5.0035533905933), bbox.size)
         self.assertAlmostEqual(7296.618846481421, part.part.volume)
+
+
+class BaseBlockPlatformTest(testutils.UtilTestCase):
+    def test_baseblockplatform(self) -> None:
+        with BuildPart() as part:
+            BaseBlockPlatform()
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42, 42, 7.8035533905933), bbox.size)
+        self.assertAlmostEqual(12235.818846481427, part.part.volume)
+
+    def test_baseblockplatform_one_feature(self) -> None:
+        feature = MagicMock(spec=ObjectFeature)
+
+        with BuildPart() as part:
+            BaseBlockPlatform(features=feature)
+
+        feature.apply.assert_called_once()
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42, 42, 7.8035533905933), bbox.size)
+        self.assertAlmostEqual(12235.818846481427, part.part.volume)
+
+    def test_baseblockplatform_multiple_features(self) -> None:
+        feature_1 = MagicMock(spec=ObjectFeature)
+        feature_2 = MagicMock(spec=ObjectFeature)
+
+        with BuildPart() as part:
+            BaseBlockPlatform(features=[feature_1, feature_2])
+
+        feature_1.apply.assert_called_once()
+        feature_2.apply.assert_called_once()
+
+        bbox = part.part.bounding_box()
+        self.assertEqual(Vector(42, 42, 7.8035533905933), bbox.size)
+        self.assertAlmostEqual(12235.818846481427, part.part.volume)
