@@ -230,3 +230,27 @@ class UtilsPlaceByGridTest(TestCase):
         box = Box(10, 15, 20)
         grid = [[False]]
         self.assertRaises(ValueError, Utils.place_by_grid, box, grid)
+
+    def test_place_by_grid_width_length(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, width=12, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 32, 20), bbox.size)
+
+    def test_place_by_grid_width(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, width=12)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 30, 20), bbox.size)
+
+    def test_place_by_grid_length(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 32, 20), bbox.size)
