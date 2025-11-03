@@ -5,7 +5,7 @@ import mocks
 import testutils
 from build123d import BuildPart, Vector
 
-from gridfinity_build123d.base import Base, BaseBlock, BaseEqual
+from gridfinity_build123d.base import Base, BaseBlock, BaseBlockPlatform, BaseEqual
 from gridfinity_build123d.features import ObjectFeature
 
 
