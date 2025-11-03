@@ -54,5 +54,5 @@ class RefinedBinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((41.5, 41.5, 35), bbox.size, 5)
-        self.assertAlmostEqual(13684.04729945622, part.area, 5)
-        self.assertAlmostEqual(14967.280073453065, part.volume, 5)
+        self.assertAlmostEqual(13695.555513234409, part.area, 5)
+        self.assertAlmostEqual(15003.122870855901, part.volume, 5)

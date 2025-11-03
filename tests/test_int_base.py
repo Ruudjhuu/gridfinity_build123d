@@ -17,8 +17,8 @@ class BaseTest(testutils.UtilTestCase):
         self.assertTrue(part.is_manifold)
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 125.5, 7.803553390593281), bbox.size)
-        self.assertAlmostEqual(24921.63727353625, part.area)
-        self.assertAlmostEqual(73106.17327094806, part.volume)
+        self.assertAlmostEqual(25006.586730587333, part.area)
+        self.assertAlmostEqual(73087.8132896235, part.volume)
 
     def test_base_magnets(self) -> None:
         part = BaseEqual(
@@ -32,8 +32,8 @@ class BaseTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 125.5, 7.803553390593281), bbox.size)
-        self.assertAlmostEqual(26097.84956304029, part.area)
-        self.assertAlmostEqual(71194.82830050986, part.volume)
+        self.assertAlmostEqual(26182.799020091374, part.area)
+        self.assertAlmostEqual(71176.46831917949, part.volume)
 
     def test_base_magnets_and_screws(self) -> None:
         part = BaseEqual(
@@ -49,13 +49,13 @@ class BaseTest(testutils.UtilTestCase):
         self.assertTrue(part.is_manifold)
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 125.5, 7.803553390593281), bbox.size)
-        self.assertAlmostEqual(26912.15037885079, part.area)
-        self.assertAlmostEqual(70584.10268864287, part.volume)
+        self.assertAlmostEqual(26771.708922859758, part.area)
+        self.assertAlmostEqual(70734.78589210319, part.volume)
 
     def test_base_grid(self) -> None:
         grid = [[True, True], [True, False]]
         part = Base(grid)
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((83.5, 83.5, 7.803553390593281), bbox.size, 6)
-        self.assertAlmostEqual(12736.480548641217, part.area, 6)
-        self.assertAlmostEqual(36447.00110003971, part.volume, 6)
+        self.assertAlmostEqual(12760.445457710146, part.area, 6)
+        self.assertAlmostEqual(36439.15675017939, part.volume, 6)

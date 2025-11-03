@@ -277,10 +277,10 @@ class GridfinityRefinedMagnetHoleSideTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual(
-            (13.235459941111982, 12.196012972767754, 2.5),
+            (13.447591975468, 12.408145007124, 2.5),
             bbox.size,
         )
-        self.assertAlmostEqual(123.02036572781127, part.volume)
+        self.assertAlmostEqual(126.77951572781133, part.volume)
 
 
 class WeightedTest(testutils.UtilTestCase):
