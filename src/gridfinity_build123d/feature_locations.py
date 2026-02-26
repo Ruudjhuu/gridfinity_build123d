@@ -221,9 +221,6 @@ class BottomSides(FeatureLocation):
         for edge in face.edges().filter_by(edge_filter):
             pp_edge = edge.perpendicular_line(0.1, 0.5, Plane(face))
 
-            if not face.is_inside(pp_edge.start_point()):
-                pp_edge = Edge.make_line(pp_edge.end_point(), pp_edge.start_point())
-
             to_front = Edge.make_line(
                 pp_edge.start_point(),
                 pp_edge.start_point() + Vector(0, -1, 0),
