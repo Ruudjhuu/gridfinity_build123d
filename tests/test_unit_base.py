@@ -9,11 +9,14 @@ from gridfinity_build123d.base import Base, BaseBlock, BaseBlockPlatform, BaseEq
 from gridfinity_build123d.features import ObjectFeature
 
 
+@patch("gridfinity_build123d.base.Utils.create_bin_platform", autospec=True)
 @patch("gridfinity_build123d.base.BaseBlock", autospec=True)
 class BaseTest(unittest.TestCase):
-    def test_base(self, base_mock: MagicMock) -> None:
-        mock_box = mocks.BoxAsMock(20, 20, 5)
-        base_mock.side_effect = mock_box.create
+    def test_base(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
+        base_mock_box = mocks.BoxAsMock(20, 20, 5)
+        base_mock.side_effect = base_mock_box.create
+        platform_mock_box = mocks.BoxAsMock(10, 10, 5)
+        platform_mock.side_effect = platform_mock_box.create
 
         with BuildPart() as part:
             Base()
@@ -21,12 +24,14 @@ class BaseTest(unittest.TestCase):
         base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
-        self.assertAlmostEqual(1840.8932334555323, part.part.volume)
+        self.assertEqual(Vector(20, 20, 10), bbox.size)
+        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5, part.part.volume)
 
-    def test_base_1_2(self, base_mock: MagicMock) -> None:
+    def test_base_1_2(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
         base_mock.side_effect = mock_box.create
+        platform_mock_box = mocks.BoxAsMock(10, 10, 5)
+        platform_mock.side_effect = platform_mock_box.create
 
         with BuildPart() as part:
             Base([[True], [True]])
@@ -34,12 +39,14 @@ class BaseTest(unittest.TestCase):
         base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(19.5, 39.5, 5), bbox.size)
-        self.assertAlmostEqual(3790.893233455532, part.part.volume)
+        self.assertEqual(Vector(20, 62, 10), bbox.size)
+        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5, part.part.volume)
 
-    def test_base_2_1(self, base_mock: MagicMock) -> None:
+    def test_base_2_1(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
         base_mock.side_effect = mock_box.create
+        platform_mock_box = mocks.BoxAsMock(10, 10, 5)
+        platform_mock.side_effect = platform_mock_box.create
 
         with BuildPart() as part:
             Base([[True, True]])
@@ -47,12 +54,14 @@ class BaseTest(unittest.TestCase):
         base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(39.5, 19.5, 5), bbox.size)
-        self.assertAlmostEqual(3790.893233455532, part.part.volume)
+        self.assertEqual(Vector(62, 20, 10), bbox.size)
+        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5, part.part.volume)
 
-    def test_base_2_2(self, base_mock: MagicMock) -> None:
+    def test_base_2_2(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
         base_mock.side_effect = mock_box.create
+        platform_mock_box = mocks.BoxAsMock(10, 10, 5)
+        platform_mock.side_effect = platform_mock_box.create
 
         with BuildPart() as part:
             Base([[True, True], [True, True]])
@@ -60,12 +69,14 @@ class BaseTest(unittest.TestCase):
         base_mock.assert_called_once_with(features=[], mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(39.5, 39.5, 5), bbox.size)
-        self.assertAlmostEqual(7740.893233455531, part.part.volume)
+        self.assertEqual(Vector(62, 62, 10), bbox.size)
+        self.assertAlmostEqual(20 * 20 * 5 * 4 + 10 * 10 * 5, part.part.volume)
 
-    def test_base_magnet_screw(self, base_mock: MagicMock) -> None:
+    def test_base_magnet_screw(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
         base_mock.side_effect = mock_box.create
+        platform_mock_box = mocks.BoxAsMock(10, 10, 5)
+        platform_mock.side_effect = platform_mock_box.create
         feature_1 = MagicMock()
         feature_2 = MagicMock()
 
@@ -75,8 +86,8 @@ class BaseTest(unittest.TestCase):
         base_mock.assert_called_once_with(features=[feature_1, feature_2], mode=ANY)
 
         bbox = part.part.bounding_box()
-        self.assertEqual(Vector(19.5, 19.5, 5), bbox.size)
-        self.assertAlmostEqual(1840.8932334555323, part.part.volume)
+        self.assertEqual(Vector(20, 20, 10), bbox.size)
+        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5, part.part.volume)
 
 
 @patch("gridfinity_build123d.base.Base.__init__")

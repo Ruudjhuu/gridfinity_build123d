@@ -332,11 +332,12 @@ class Utils:  # pylint: disable=too-few-public-methods
         Returns:
             BasePartObject: gridlike object
         """
-        bbox = obj.bounding_box()
-        if width is None:
-            width = bbox.size.X
-        if length is None:
-            length = bbox.size.Y
+        if not width or not length:
+            bbox = obj.bounding_box()
+            if width is None:
+                width = bbox.size.X
+            if length is None:
+                length = bbox.size.Y
 
         locations = Utils.locate_grid(grid, width, length)
 
