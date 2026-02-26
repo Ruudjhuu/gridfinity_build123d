@@ -11,15 +11,12 @@ from build123d import (
     BasePartObject,
     BuildPart,
     BuildSketch,
-    Location,
     Locations,
     Mode,
     Rectangle,
     RotationLike,
     add,
     extrude,
-    fillet,
-    offset,
 )
 
 from .constants import gridfinity_standard

@@ -77,8 +77,14 @@ class Compartment:
             bbox = part.part.bounding_box()
 
             # Select only vertical edges
-            fillet_edges = part.edges().filter_by(Axis.Z).filter_by_position(
-                Axis.Z, minimum=bbox.min.Z, maximum=bbox.max.Z - 1.1
+            fillet_edges = (
+                part.edges()
+                .filter_by(Axis.Z)
+                .filter_by_position(
+                    Axis.Z,
+                    minimum=bbox.min.Z,
+                    maximum=bbox.max.Z - 1.1,
+                )
             )
 
             # Select the rest of the edges (excluding the top face and lower
@@ -86,7 +92,9 @@ class Compartment:
             fillet(fillet_edges, gf_bin.inner_radius_v)
 
             fillet_edges = part.edges().filter_by_position(
-                Axis.Z, minimum=bbox.min.Z, maximum=bbox.max.Z - 1.1
+                Axis.Z,
+                minimum=bbox.min.Z,
+                maximum=bbox.max.Z - 1.1,
             )
 
             fillet(fillet_edges, gf_bin.inner_radius)
