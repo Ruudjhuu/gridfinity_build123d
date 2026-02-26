@@ -17,6 +17,9 @@ dev = [
   "parameterized",
   "ruff",
   "pytest-markdown-docs",
+  "Sphinx",
+  "sphinx-rtd-theme",
+  "sphinx_design",
 ]
 
 [build-system]
