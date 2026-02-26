@@ -860,6 +860,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "coverage" },
+    { name = "debugpy" },
     { name = "mypy" },
     { name = "ocp-vscode" },
     { name = "parameterized" },
@@ -883,6 +884,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "coverage" },
+    { name = "debugpy", specifier = ">=1.8.20" },
     { name = "mypy" },
     { name = "ocp-vscode" },
     { name = "parameterized" },

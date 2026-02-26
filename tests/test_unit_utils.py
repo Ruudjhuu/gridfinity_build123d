@@ -2,7 +2,7 @@ from enum import Enum, auto
 from unittest import TestCase
 
 import testutils
-from build123d import Axis, Box, BuildPart, BuildSketch, Vector, add
+from build123d import Axis, Box, BuildPart, BuildSketch, Rectangle, Vector, add
 
 from gridfinity_build123d.utils import (
     Attach,
@@ -230,3 +230,98 @@ class UtilsPlaceByGridTest(TestCase):
         box = Box(10, 15, 20)
         grid = [[False]]
         self.assertRaises(ValueError, Utils.place_by_grid, box, grid)
+
+    def test_place_by_grid_width_length(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, width=12, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 32, 20), bbox.size)
+
+    def test_place_by_grid_width(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, width=12)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 30, 20), bbox.size)
+
+    def test_place_by_grid_length(self) -> None:
+        box = Box(10, 15, 20)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_by_grid(box, grid, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 32, 20), bbox.size)
+
+
+class UtilsPlaceSketchByGridTest(TestCase):
+    def test_place_sketch_by_grid_one(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True]]
+        part = Utils.place_sketch_by_grid(rect, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(10, 15, 0), bbox.size)
+
+    def test_place_sketch_by_grid_one_row(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, True, True]]
+        part = Utils.place_sketch_by_grid(rect, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 15, 0), bbox.size)
+
+    def test_place_sketch_by_grid_one_column(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True], [True], [True]]
+        part = Utils.place_sketch_by_grid(rect, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(10, 45, 0), bbox.size)
+
+    def test_place_sketch_by_grid_rows_and_columns(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, True, True], [True, True, True], [True, True, True]]
+        part = Utils.place_sketch_by_grid(rect, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 45, 0), bbox.size)
+
+    def test_place_sketch_by_grid_rows_and_columns_with_holes(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, False, True], [True, True, True], [True, True, False]]
+        part = Utils.place_sketch_by_grid(rect, grid)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 45, 0), bbox.size)
+
+    def test_place_sketch_by_grid_nothing(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[False]]
+        self.assertRaises(ValueError, Utils.place_sketch_by_grid, rect, grid)
+
+    def test_place_sketch_by_grid_width_length(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_sketch_by_grid(rect, grid, width=12, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 32, 0), bbox.size)
+
+    def test_place_sketch_by_grid_width(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_sketch_by_grid(rect, grid, width=12)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(34, 30, 0), bbox.size)
+
+    def test_place_sketch_by_grid_length(self) -> None:
+        rect = Rectangle(10, 15)
+        grid = [[True, True], [True, True, True]]
+        part = Utils.place_sketch_by_grid(rect, grid, length=17)
+
+        bbox = part.bounding_box()
+        self.assertEqual(Vector(30, 32, 0), bbox.size)

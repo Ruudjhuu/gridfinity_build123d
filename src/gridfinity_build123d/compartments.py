@@ -74,9 +74,28 @@ class Compartment:
             for feature in self.features:
                 feature.apply(part)
 
-            fillet_edges = [
-                i for i in part.edges() if i not in part.faces().sort_by(Axis.Z)[-1].edges()
-            ]
+            bbox = part.part.bounding_box()
+
+            # Select only vertical edges
+            fillet_edges = (
+                part.edges()
+                .filter_by(Axis.Z)
+                .filter_by_position(
+                    Axis.Z,
+                    minimum=bbox.min.Z,
+                    maximum=bbox.max.Z - 1.1,
+                )
+            )
+
+            # Select the rest of the edges (excluding the top face and lower
+            # edge of the label)
+            fillet(fillet_edges, gf_bin.inner_radius_v)
+
+            fillet_edges = part.edges().filter_by_position(
+                Axis.Z,
+                minimum=bbox.min.Z,
+                maximum=bbox.max.Z - 1.1,
+            )
 
             fillet(fillet_edges, gf_bin.inner_radius)
 
