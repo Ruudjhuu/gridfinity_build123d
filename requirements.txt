@@ -1,7 +1,7 @@
 mypy==1.18.2
 coverage==7.10.7
 vulture==2.14
-ocp_vscode>=2.9.0
+ocp_vscode==3.0.1
 parameterized==0.9.0
 ruff==0.14.3
 pytest-markdown-docs==0.9.0
