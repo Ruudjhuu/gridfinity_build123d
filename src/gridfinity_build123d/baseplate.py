@@ -5,8 +5,9 @@ Module containg classes to create baseplates.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from math import isclose
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 from build123d import (
     Align,

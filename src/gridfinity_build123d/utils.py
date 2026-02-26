@@ -416,10 +416,13 @@ class Utils:  # pylint: disable=too-few-public-methods
             BasePartObject: _description_
         """
         with BuildPart() as part:
-            with BuildSketch(Plane.XZ) as profile, Locations(
-                (
-                    gridfinity_standard.grid.size / 2 - offset_value,
-                    0,
+            with (
+                BuildSketch(Plane.XZ) as profile,
+                Locations(
+                    (
+                        gridfinity_standard.grid.size / 2 - offset_value,
+                        0,
+                    ),
                 ),
             ):
                 StackProfile(profile_type, align=(Align.MAX, Align.MIN))

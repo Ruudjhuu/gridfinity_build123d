@@ -147,8 +147,11 @@ class StackingLip:
                 )
                 point = edge.find_intersection_points(Axis.X)[0]
 
-                with Locations((point.X, point.Z)), Locations(
-                    (-profile.sketch.bounding_box().max.X, 0),
+                with (
+                    Locations((point.X, point.Z)),
+                    Locations(
+                        (-profile.sketch.bounding_box().max.X, 0),
+                    ),
                 ):
                     add(profile)
             sweep(sections=sweep_sketch.sketch, path=path)
