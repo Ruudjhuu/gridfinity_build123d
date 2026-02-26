@@ -11,9 +11,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/check
+      - uses: actions/checkout@v3
       - name: Install uv
         uses: astral-sh/setup-uv@v7
+      - name: Set up Python
+        run: uv python install
       - name: Run Integration Tests
         id: int_test
         if: success() || failure()
