@@ -575,7 +575,7 @@ class Label(CompartmentFeature):
             msg = "Label angle needs to be between 0 and 90"
             raise ValueError(msg)
 
-        self.angle = angle if angle else 0.0000001
+        self.angle = angle or 0.0000001
 
     def apply(self, context: BuildPart) -> None:  # noqa: D102
         face_top = context.faces().sort_by(Axis.Z)[-1]

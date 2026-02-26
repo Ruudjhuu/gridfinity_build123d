@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 from build123d import (
     Axis,
@@ -28,6 +28,9 @@ from build123d import (
 )
 
 from .constants import gridfinity_standard
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 
 class FeatureLocation(ABC):
@@ -105,11 +108,15 @@ class Corners(FeatureLocation):
         polar_dist = (bbox.size.X**2 + bbox.size.Y**2) ** 0.5
         polar_offset = (self._offset**2 + self._offset**2) ** 0.5
 
-        with Locations(center), PolarLocations(
-            polar_dist / 2 - polar_offset,
-            4,
-            -45,
-        ), Locations(Rotation(0, 0, -90)):
+        with (
+            Locations(center),
+            PolarLocations(
+                polar_dist / 2 - polar_offset,
+                4,
+                -45,
+            ),
+            Locations(Rotation(0, 0, -90)),
+        ):
             yield
 
 
