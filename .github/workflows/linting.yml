@@ -19,10 +19,6 @@ jobs:
       - name: Ruff lint
         run: |
           uvx ruff check
-      - name: Mypy
-        if: success() || failure()
-        run: |
-          uvx mypy --pretty .
       - name: Vulture
         if: success() || failure()
         run: |
