@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
-from bd_warehouse.thread import Thread  # type: ignore[import-untyped]
+from bd_warehouse.thread import Thread  # pyright: ignore[reportMissingTypeStubs]
 from build123d import (
     Align,
     Axis,
@@ -32,7 +32,7 @@ from build123d import (
     RotationLike,
     SagittaArc,
     Transition,
-    add,
+    add,  # pyright: ignore[reportUnknownVariableType]
     chamfer,
     extrude,
     fillet,
@@ -61,7 +61,7 @@ class Feature(ABC):
         raise NotImplementedError  # pragma: no cover
 
 
-class ObjectFeature(Feature, ObjectCreate):
+class ObjectFeature(Feature, ObjectCreate, ABC):
     """Feature created by standalone object.
 
     Feature which creates standalone object and is dependend on a Feature Location for
@@ -74,9 +74,10 @@ class ObjectFeature(Feature, ObjectCreate):
         Args:
             feature_location (FeatureLocation): Location of the feature when applied.
         """
-        self._feature_location = feature_location
+        self._feature_location: FeatureLocation | None = feature_location
 
-    def apply(self, context: BuildPart) -> None:  # noqa: D102
+    @override
+    def apply(self, context: BuildPart) -> None:
         if self._feature_location:
             context_part = context.part
             if not isinstance(context_part, Part):  # pragma: no cover
@@ -84,12 +85,12 @@ class ObjectFeature(Feature, ObjectCreate):
                 raise ValueError(msg)
 
             with self._feature_location.apply_to(context_part):
-                self.create_obj()
+                _ = self.create_obj()
         else:
-            self.create_obj()
+            _ = self.create_obj()
 
 
-class ContextFeature(Feature):
+class ContextFeature(Feature, ABC):
     """Feature created by context builder.
 
     This feature is created by depending on the active context builder.
@@ -113,17 +114,23 @@ class HoleFeature(ObjectFeature):
             feature_location (FeatureLocation): Location of feature.
         """
         super().__init__(feature_location)
-        self.radius = radius
-        self.depth = depth
+        self.radius: float = radius
+        self.depth: float = depth
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
-            Hole(radius=self.radius, depth=self.depth, mode=Mode.ADD)
+            _ = Hole(radius=self.radius, depth=self.depth, mode=Mode.ADD)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -146,11 +153,12 @@ class PolygonHoleFeature(ObjectFeature):
             feature_location (FeatureLocation): Location of feature.
         """
         super().__init__(feature_location)
-        self.radius = radius
-        self.sides = sides
-        self.depth = depth
+        self.radius: float = radius
+        self.sides: int = sides
+        self.depth: float = depth
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -158,13 +166,17 @@ class PolygonHoleFeature(ObjectFeature):
     ) -> BasePartObject:
         with BuildPart() as part:
             with BuildSketch():
-                RegularPolygon(
+                _ = RegularPolygon(
                     radius=self.radius,
                     side_count=self.sides,
                     major_radius=False,
                     mode=Mode.ADD,
                 )
-            extrude(amount=self.depth, both=True)
+            _ = extrude(amount=self.depth, both=True)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -229,23 +241,29 @@ class ScrewHoleCountersink(ScrewHole):
             counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
         """
         super().__init__(feature_location, radius, depth)
-        self.counter_sink_radius = counter_sink_radius
-        self.counter_sink_angle = counter_sink_angle
+        self.counter_sink_radius: float = counter_sink_radius
+        self.counter_sink_angle: float = counter_sink_angle
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
-            CounterSinkHole(
+            _ = CounterSinkHole(
                 radius=self.radius,
                 counter_sink_radius=self.counter_sink_radius,
                 depth=self.depth,
                 counter_sink_angle=self.counter_sink_angle,
                 mode=Mode.ADD,
             )
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -271,23 +289,29 @@ class ScrewHoleCounterbore(ScrewHole):
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
         """
         super().__init__(feature_location, radius, depth)
-        self.counter_bore_radius = counter_bore_radius
-        self.counter_bore_depth = counter_bore_depth
+        self.counter_bore_radius: float = counter_bore_radius
+        self.counter_bore_depth: float = counter_bore_depth
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.SUBTRACT,
     ) -> BasePartObject:
         with BuildPart() as part:
-            CounterBoreHole(
+            _ = CounterBoreHole(
                 radius=self.radius,
                 counter_bore_radius=self.counter_bore_radius,
                 counter_bore_depth=self.counter_bore_depth,
                 depth=self.depth,
                 mode=Mode.ADD,
             )
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -297,7 +321,8 @@ class GridfinityRefinedConnectionCutout(ObjectFeature):
     Cutout shape used to connect two objects with a GridfinityRefinedConnector.
     """
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -314,11 +339,16 @@ class GridfinityRefinedConnectionCutout(ObjectFeature):
                     l1 = Line(l0 @ 1, (middle_width, middle_height))
                     l2 = Line(l1 @ 1, ((l1 @ 1).X + 4, (l1 @ 1).Y + 3))
                     l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 3))
-                    Line(l3 @ 1, (0, (l3 @ 1).Y))
+                    _ = Line(l3 @ 1, (0, (l3 @ 1).Y))
 
-                    mirror(about=Plane.YZ)
-                make_face()
-            extrude(sketch.sketch, -thickness)
+                    _ = mirror(about=Plane.YZ)
+                _ = make_face()
+            _ = extrude(sketch.sketch, -thickness)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -357,7 +387,8 @@ class GridfinityRefinedScrewHole(ScrewHoleCountersink):
 class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
     """Gridfinity refined threaded screwhole for bins."""
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -371,12 +402,12 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
         length = 4
 
         with BuildPart() as part:
-            Cylinder(
+            _ = Cylinder(
                 root_radius,
                 length,
                 align=(Align.CENTER, Align.CENTER, Align.MAX),
             )
-            Thread(
+            _ = Thread(
                 apex_radius,
                 apex_width,
                 root_radius,
@@ -384,9 +415,13 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
                 pitch,
                 length,
                 apex_offset=0,
-                end_finishes=["chamfer", "chamfer"],
+                end_finishes=("chamfer", "chamfer"),
                 align=(Align.CENTER, Align.CENTER, Align.MAX),
             )
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -419,14 +454,15 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
             chamfer (float, optional): Chamfer. Defaults to 0.6.
         """
         super().__init__(feature_location)
-        self._radius = radius
-        self._depth = depth
-        self._slit_length = slit_length
-        self._slit_width = slit_width
-        self._slit_depth = slit_depth
-        self._chamfer = chamfer
+        self._radius: float = radius
+        self._depth: float = depth
+        self._slit_length: float = slit_length
+        self._slit_width: float = slit_width
+        self._slit_depth: float = slit_depth
+        self._chamfer: float = chamfer
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -434,21 +470,21 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
     ) -> BasePartObject:
         with BuildSketch() as profile:
             with BuildLine():
-                Polyline((0, 0), (0, -self._chamfer), (self._chamfer, 0), close=True)
-            make_face()
+                _ = Polyline((0, 0), (0, -self._chamfer), (self._chamfer, 0), close=True)
+            _ = make_face()
 
         with BuildPart() as part:
             with BuildSketch():
                 with BuildLine():
                     ln1 = CenterArc((0, 0), self._radius, 135, 180 + 90)
                     ln2 = Line(ln1 @ 1, (0, self._radius + self._radius / 2))
-                    Line(ln2 @ 1, ln1 @ 0)
-                make_face()
-            extrude(amount=-self._depth)
+                    _ = Line(ln2 @ 1, ln1 @ 0)
+                _ = make_face()
+            _ = extrude(amount=-self._depth)
 
             with BuildSketch(Plane.XZ) as sweep_sketch, Locations((self._radius, 0)):
-                add(profile)
-            sweep(
+                _ = add(profile)
+            _ = sweep(
                 sweep_sketch.sketch,
                 part.faces().sort_by(Axis.Z)[-1].outer_wire(),
                 # Should be Transition.RIGHT, but that fails. Round is the next best thing.
@@ -456,12 +492,16 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
             )
 
             with Locations(Plane(part.faces().sort_by(Axis.Z)[0])):
-                Box(
+                _ = Box(
                     self._slit_width,
                     self._slit_length,
                     self._slit_depth,
                     align=(Align.CENTER, Align.CENTER, Align.MAX),
                 )
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -469,7 +509,8 @@ class GridfinityRefinedMagnetHolePressfit(ObjectFeature):
 class GridfinityRefinedMagnetHoleSide(ObjectFeature):
     """Gridfinity refined magnet hole pushed in from the side for bins."""
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -485,29 +526,33 @@ class GridfinityRefinedMagnetHoleSide(ObjectFeature):
                 ln1 = RadiusArc((-radius, 0), (-width_small, 2.65), radius)
                 ln2 = Line(ln1 @ 1, ((ln1 @ 1).X * -1, (ln1 @ 1).Y))
                 ln3 = RadiusArc(ln2 @ 1, (radius, 0), radius)
-                Polyline(
+                _ = Polyline(
                     ln3 @ 1,
                     ((ln3 @ 1).X, -3.5),
                     ((ln3 @ 1).X + 1.47, -5.9),
                     ((ln1 @ 0).X, -5.9),
                     ln1 @ 0,
                 )
-            make_face()
+            _ = make_face()
 
         with BuildSketch() as sketch2:
             with BuildLine():
-                add(ln2)
+                _ = add(ln2)
                 lnn1 = Line(ln2 @ 0, ((ln2 @ 0).X, (ln2 @ 0).Y + 4.3))
                 lnn2 = SagittaArc(lnn1 @ 1, ((ln2 @ 1).X, (lnn1 @ 1).Y), 1.25)
-                Line(lnn2 @ 1, ln2 @ 1)
-            make_face()
+                _ = Line(lnn2 @ 1, ln2 @ 1)
+            _ = make_face()
 
         with BuildPart() as part, Locations(Rotation(0, 0, -135)):
             with Locations((0, 0, -bottom_thickness)):
-                add(sketch)
-            extrude(amount=-thickness)
-            add(sketch2)
-            extrude(amount=-thickness - bottom_thickness)
+                _ = add(sketch)
+            _ = extrude(amount=-thickness)
+            _ = add(sketch2)
+            _ = extrude(amount=-thickness - bottom_thickness)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -526,7 +571,8 @@ class Weighted(ObjectFeature):
         """
         super().__init__(feature_location)
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -545,25 +591,30 @@ class Weighted(ObjectFeature):
                     (0, -appendix_width / 2),
                     (appendix_length, -appendix_width / 2),
                 )
-                SagittaArc(ln1 @ 0, ln1 @ 1, appendix_width / 2)
-            make_face()
+                _ = SagittaArc(ln1 @ 0, ln1 @ 1, appendix_width / 2)
+            _ = make_face()
 
         with BuildPart() as part:
-            Box(size, size, height, align=(Align.CENTER, Align.CENTER, Align.MAX))
+            _ = Box(size, size, height, align=(Align.CENTER, Align.CENTER, Align.MAX))
             with PolarLocations(size / 2, 4):
-                add(sketch)
-            extrude(amount=appendix_height, dir=(0, 0, -1))
+                _ = add(sketch)
+            _ = extrude(amount=appendix_height, dir=(0, 0, -1))
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
-class CompartmentFeature(ContextFeature):
+class CompartmentFeature(ContextFeature, ABC):
     """Context feature for a Compartment."""
 
 
 class Label(CompartmentFeature):
     """Label feature for compartments."""
 
-    _max_angle = 90
+    _max_angle: int = 90
 
     def __init__(self, angle: float = gf_bin.label.angle) -> None:
         """Construct label feature.
@@ -575,20 +626,21 @@ class Label(CompartmentFeature):
             msg = "Label angle needs to be between 0 and 90"
             raise ValueError(msg)
 
-        self.angle = angle or 0.0000001
+        self.angle: float = angle or 0.0000001
 
-    def apply(self, context: BuildPart) -> None:  # noqa: D102
+    @override
+    def apply(self, context: BuildPart) -> None:
         face_top = context.faces().sort_by(Axis.Z)[-1]
         edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
         try:
-            chamfer(
+            _ = chamfer(
                 edge_top_back,
                 length=gf_bin.label.width,
                 angle=self.angle,
                 reference=face_top,
             )
             chamfer_face = context.faces().sort_by(Axis.Z)[-2]
-            extrude(
+            _ = extrude(
                 to_extrude=chamfer_face,
                 amount=1,
                 dir=(0, 0, -1),
@@ -615,19 +667,20 @@ class Scoop(CompartmentFeature):
                 compesate for the stacking lid so one smooth ramp is created to make it easier to
                     pick items out of a bin.
         """
-        self.radius = radius
-        self.wall_correction = wall_correction
+        self.radius: float = radius
+        self.wall_correction: float = wall_correction
 
-    def apply(self, context: BuildPart) -> None:  # noqa: D102
+    @override
+    def apply(self, context: BuildPart) -> None:
         if self.wall_correction:
             face_front = context.faces().sort_by(Axis.Y)[0]
-            extrude(face_front, amount=-self.wall_correction, mode=Mode.SUBTRACT)
+            _ = extrude(face_front, amount=-self.wall_correction, mode=Mode.SUBTRACT)
 
         face_bottom = context.faces().sort_by(Axis.Z)[0]
         edge_bottom_front = face_bottom.edges().sort_by(Axis.Y)[0]
 
         try:
-            fillet(edge_bottom_front, radius=self.radius)
+            _ = fillet(edge_bottom_front, radius=self.radius)
         except ValueError as exp:
             msg = "Scoop could not be created, Parent object too small"
             raise ValueError(msg) from exp

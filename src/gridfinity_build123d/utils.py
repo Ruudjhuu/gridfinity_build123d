@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import Any
 
 from build123d import (
     Align,
@@ -25,7 +24,8 @@ from build123d import (
     Rectangle,
     RectangleRounded,
     RotationLike,
-    add,
+    Sketch,
+    add,  # pyright: ignore[reportUnknownVariableType]
     extrude,
     fillet,
     make_face,
@@ -101,25 +101,19 @@ class Direction(Enum):
         Returns:
             Tuple[int, int, int]: Output tupple.
         """
-        if direction == Direction.TOP:
-            return (0, 0, 1)
-
-        if direction == Direction.BOT:
-            return (0, 0, -1)
-
-        if direction == Direction.RIGHT:
-            return (1, 0, 0)
-
-        if direction == Direction.LEFT:
-            return (-1, 0, 0)
-
-        if direction == Direction.BACK:
-            return (0, 1, 0)
-
-        if direction == Direction.FRONT:
-            return (0, -1, 0)
-
-        raise UnsuportedEnumValueError(direction)  # pragma: no cover
+        match direction:
+            case Direction.TOP:
+                return (0, 0, 1)
+            case Direction.BOT:
+                return (0, 0, -1)
+            case Direction.RIGHT:
+                return (1, 0, 0)
+            case Direction.LEFT:
+                return (-1, 0, 0)
+            case Direction.BACK:
+                return (0, 1, 0)
+            case Direction.FRONT:
+                return (0, -1, 0)
 
 
 class Attach(Enum):
@@ -169,47 +163,58 @@ class Utils:  # pylint: disable=too-few-public-methods
 
         location: tuple[float, float, float] = (0, 0, 0)
 
-        if attach == Attach.TOP:
-            location = (
-                0,
-                0,
-                context_part.bounding_box().max.Z + -1 * part.bounding_box().min.Z + offset_value,
-            )
-        elif attach == Attach.BOTTOM:
-            location = (
-                0,
-                0,
-                context_part.bounding_box().min.Z + -1 * part.bounding_box().max.Z - offset_value,
-            )
-        elif attach == Attach.LEFT:
-            location = (
-                context_part.bounding_box().min.X + -1 * part.bounding_box().max.X - offset_value,
-                0,
-                0,
-            )
-        elif attach == Attach.RIGHT:
-            location = (
-                context_part.bounding_box().max.X + -1 * part.bounding_box().min.X + offset_value,
-                0,
-                0,
-            )
-        elif attach == Attach.FRONT:
-            location = (
-                0,
-                context_part.bounding_box().min.Y + -1 * part.bounding_box().max.Y - offset_value,
-                0,
-            )
-        elif attach == Attach.BACK:
-            location = (
-                0,
-                context_part.bounding_box().max.Y + -1 * part.bounding_box().min.Y + offset_value,
-                0,
-            )
-        else:  # pragma: no cover
-            raise UnsuportedEnumValueError(attach)
+        match attach:
+            case Attach.TOP:
+                location = (
+                    0,
+                    0,
+                    context_part.bounding_box().max.Z
+                    + -1 * part.bounding_box().min.Z
+                    + offset_value,
+                )
+            case Attach.BOTTOM:
+                location = (
+                    0,
+                    0,
+                    context_part.bounding_box().min.Z
+                    + -1 * part.bounding_box().max.Z
+                    - offset_value,
+                )
+            case Attach.LEFT:
+                location = (
+                    context_part.bounding_box().min.X
+                    + -1 * part.bounding_box().max.X
+                    - offset_value,
+                    0,
+                    0,
+                )
+            case Attach.RIGHT:
+                location = (
+                    context_part.bounding_box().max.X
+                    + -1 * part.bounding_box().min.X
+                    + offset_value,
+                    0,
+                    0,
+                )
+            case Attach.FRONT:
+                location = (
+                    0,
+                    context_part.bounding_box().min.Y
+                    + -1 * part.bounding_box().max.Y
+                    - offset_value,
+                    0,
+                )
+            case Attach.BACK:
+                location = (
+                    0,
+                    context_part.bounding_box().max.Y
+                    + -1 * part.bounding_box().min.Y
+                    + offset_value,
+                    0,
+                )
 
         with Locations(location):
-            add(part)
+            _ = add(part)
 
     @staticmethod
     def get_face_by_direction(context: BuildPart, direction: Direction) -> Face:
@@ -225,7 +230,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         return context.faces().sort_by(Axis((0, 0, 0), Direction.to_tuple(direction)))[-1]
 
     @staticmethod
-    def get_subclasses(class_name: type) -> list[Any]:
+    def get_subclasses(class_name: type) -> list[type]:
         """Get subclasses of a base class recursively.
 
         Args:
@@ -234,7 +239,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         Returns:
             Any: list of child class types
         """
-        classes = []
+        classes: list[type] = []
 
         for subclass in class_name.__subclasses__():
             classes.append(subclass)
@@ -267,7 +272,7 @@ class Utils:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def place_sketch_by_grid(
-        obj: BaseSketchObject,
+        obj: Sketch,
         grid: list[list[bool]],
         width: float | None = None,
         length: float | None = None,
@@ -300,7 +305,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         locations = Utils.locate_grid(grid, width, length)
 
         with BuildSketch() as sketch, Locations(locations):
-            add(obj)
+            _ = add(obj)
 
         return BaseSketchObject(sketch.sketch, rotation, align, mode)
 
@@ -346,7 +351,11 @@ class Utils:  # pylint: disable=too-few-public-methods
             raise ValueError(msg)
 
         with BuildPart() as part, Locations(locations):
-            add(obj)
+            _ = add(obj)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -381,17 +390,21 @@ class Utils:  # pylint: disable=too-few-public-methods
         tol = gridfinity_standard.grid.tollerance
 
         with BuildSketch() as base:
-            Rectangle(length, width)
+            _ = Rectangle(length, width)
 
         base_grid = Utils.place_sketch_by_grid(base.sketch, grid, width=width, length=length)
 
         with BuildPart() as part:
             with BuildSketch() as base:
-                add(base_grid)
-                offset(amount=-tol / 2, kind=Kind.INTERSECTION)
-                fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol / 2)
+                _ = add(base_grid)
+                _ = offset(amount=-tol / 2, kind=Kind.INTERSECTION)
+                _ = fillet(base.vertices(), radius=gridfinity_standard.grid.radius - tol / 2)
 
-            extrude(amount=gridfinity_standard.bottom.platform_height)
+            _ = extrude(amount=gridfinity_standard.bottom.platform_height)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -426,9 +439,9 @@ class Utils:  # pylint: disable=too-few-public-methods
                     ),
                 ),
             ):
-                StackProfile(profile_type, align=(Align.MAX, Align.MIN))
+                _ = StackProfile(profile_type, align=(Align.MAX, Align.MIN))
                 if offset_value:
-                    offset(
+                    _ = offset(
                         amount=offset_value,
                         kind=Kind.INTERSECTION,
                     )
@@ -439,15 +452,20 @@ class Utils:  # pylint: disable=too-few-public-methods
                 else:
                     e = 0.0
 
-                RectangleRounded(
+                _ = RectangleRounded(
                     gridfinity_standard.grid.size - e,
                     gridfinity_standard.grid.size - e,
                     gridfinity_standard.grid.radius - e * 0.5,
                 )
-            extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
+            _ = extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 
             path = part.wires().sort_by(Axis.Z)[-1]
-            sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+            _ = sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -478,17 +496,15 @@ class StackProfile(BaseSketchObject):
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
         """
-        if stack_type == StackProfile.ProfileType.BIN:
-            height_3 = gridfinity_standard.stacking_lip.height_3_bin
-        elif stack_type == StackProfile.ProfileType.PLATE:
-            height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
-        else:  # pragma: no cover
-            msg = "Unkown stack_type"
-            raise ValueError(msg)
+        match stack_type:
+            case StackProfile.ProfileType.BIN:
+                height_3 = gridfinity_standard.stacking_lip.height_3_bin
+            case StackProfile.ProfileType.PLATE:
+                height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
 
         with BuildSketch() as profile:
             with BuildLine():
-                Polyline(
+                _ = Polyline(
                     (0, 0),
                     (
                         gridfinity_standard.stacking_lip.height_1,
@@ -511,5 +527,5 @@ class StackProfile(BaseSketchObject):
                     ),
                     close=True,
                 )
-            make_face()
+            _ = make_face()
         super().__init__(profile.face(), rotation, align, mode)
