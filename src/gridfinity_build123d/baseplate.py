@@ -5,9 +5,10 @@ Module containg classes to create baseplates.
 
 from __future__ import annotations
 
+from abc import ABC
 from collections.abc import Iterable
 from math import isclose
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 from build123d import (
     Align,
@@ -17,11 +18,13 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
+    Edge,
     Line,
     Mode,
     Plane,
     RotationLike,
-    add,
+    Shape,
+    add,  # pyright: ignore[reportUnknownVariableType]
     extrude,
     fillet,
     make_face,
@@ -34,7 +37,7 @@ if TYPE_CHECKING:
     from gridfinity_build123d.features import Feature
 
 
-class BasePlateBlock(ObjectCreate):
+class BasePlateBlock(ObjectCreate, ABC):
     """Single base plate block used to construct a bigger baseplate."""
 
     def __init__(
@@ -50,7 +53,7 @@ class BasePlateBlock(ObjectCreate):
         if not features:
             features = []
 
-        self.features = features if isinstance(features, Iterable) else [features]
+        self.features: list[Feature] = features if isinstance(features, Iterable) else [features]
 
 
 class BasePlateBlockFrame(BasePlateBlock):
@@ -61,6 +64,7 @@ class BasePlateBlockFrame(BasePlateBlock):
             features. Defaults to None.
     """
 
+    @override
     def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
@@ -69,19 +73,27 @@ class BasePlateBlockFrame(BasePlateBlock):
     ) -> BasePartObject:
         """Overwrites BasePlateBlock.create_obj."""
         with BuildPart() as block:
-            Utils.create_profile_block(StackProfile.ProfileType.PLATE)
+            _ = Utils.create_profile_block(StackProfile.ProfileType.PLATE)
+
+        if not block.part:  # pragma: no cover
+            msg = "block is empty"
+            raise RuntimeError(msg)
 
         with BuildPart() as part:
-            Box(
+            _ = Box(
                 42,
                 42,
                 block.part.bounding_box().size.Z,
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
-            add(block.part, mode=Mode.SUBTRACT)
+            _ = add(block.part, mode=Mode.SUBTRACT)
 
             for feature in self.features:
                 feature.apply(part)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -102,9 +114,10 @@ class BasePlateBlockFull(BasePlateBlock):
                 features. Defaults to None.
         """
         super().__init__(features)
-        self.bottom_height = bottom_height
+        self.bottom_height: float = bottom_height
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -114,13 +127,17 @@ class BasePlateBlockFull(BasePlateBlock):
             frame = BasePlateBlockFrame().create_obj(mode=Mode.PRIVATE)
             with BuildSketch():
                 bot_face = frame.faces().sort_by(Axis.Z)[0]
-                make_face(bot_face.outer_wire())
-            extrude(amount=self.bottom_height, dir=(0, 0, -1))
+                _ = make_face(bot_face.outer_wire().edges())
+            _ = extrude(amount=self.bottom_height, dir=(0, 0, -1))
 
             for feature in self.features:
                 feature.apply(part)
 
-            add(frame)
+            _ = add(frame)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -128,7 +145,8 @@ class BasePlateBlockFull(BasePlateBlock):
 class BasePlateBlockSkeleton(BasePlateBlockFull):
     """Placeholder for future skeletonized baseplate."""
 
-    def create_obj(  # noqa: D102
+    @override
+    def create_obj(
         self,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
@@ -141,20 +159,25 @@ class BasePlateBlockSkeleton(BasePlateBlockFull):
         length_l = length / 2
 
         with BuildPart() as part:
-            super().create_obj()
+            _ = super().create_obj()
             with BuildSketch():
                 with BuildLine() as line:
                     ln1 = Line((0, length_l), (length_s, length_l))
                     ln2 = Line(ln1 @ 1, (length_s, length_s))
                     ln3 = Line(ln2 @ 1, (length_l, length_s))
-                    Line(ln3 @ 1, (length_l, 0))
-                    vertex = line.vertices().sort_by_distance((length / 4, length / 4))[0]
-                    fillet(vertex, radius)
-                    mirror(about=Plane.XZ)
-                    mirror(about=Plane.YZ)
+                    _ = Line(ln3 @ 1, (length_l, 0))
+                    vertex = line.vertices().sort_by_distance((length / 4, length / 4))[0]  # pyright: ignore[reportUnknownMemberType]
+                    _ = fillet(vertex, radius)
+                    _ = mirror(about=Plane.XZ)
+                    _ = mirror(about=Plane.YZ)
 
-                make_face()
-            extrude(amount=-self.bottom_height, mode=Mode.SUBTRACT)
+                _ = make_face()
+            _ = extrude(amount=-self.bottom_height, mode=Mode.SUBTRACT)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -190,19 +213,27 @@ class BasePlate(BasePartObject):
         if not features:
             features = []
 
-        self.features = features if isinstance(features, Iterable) else [features]
+        self.features: list[Feature] = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as part:
-            Utils.place_by_grid(baseplate_block.create_obj(mode=Mode.PRIVATE), grid)
+            _ = Utils.place_by_grid(baseplate_block.create_obj(mode=Mode.PRIVATE), grid)
+
+            if not part.part:  # pragma: no cover
+                msg = "Part is empty"
+                raise RuntimeError(msg)
 
             z_height = part.part.bounding_box().size.Z
 
-            wires = (
-                part.edges()
-                .filter_by(Axis.Z)
-                .filter_by(lambda edge: isclose(edge.length, z_height))
-            )
-            fillet(wires, 4)
+            def edge_filter(shape: Shape[Edge]) -> bool:
+                inner_edge = shape.edge()
+                if not inner_edge:  # pragma: no cover
+                    msg = "Edge is empty"
+                    raise RuntimeError(msg)
+
+                return isclose(inner_edge.length, z_height)
+
+            wires = part.edges().filter_by(Axis.Z).filter_by(edge_filter)
+            _ = fillet(wires, 4)
 
             for feature in self.features:
                 feature.apply(part)

@@ -12,10 +12,12 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
+    Edge,
     Line,
     Mode,
     Plane,
     RotationLike,
+    ShapeList,
     chamfer,
     extrude,
     make_face,
@@ -54,13 +56,22 @@ class GridfinityRefinedConnector(BasePartObject):
                     l1 = Line((middle_width, 0), (middle_width, middle_height))
                     l2 = Line(l1 @ 1, ((l1 @ 1).X + 3.9, (l1 @ 1).Y + 2.92))
                     l3 = Line(l2 @ 1, ((l2 @ 1).X, (l2 @ 1).Y + 2.53))
-                    Line(l3 @ 1, (0, (l3 @ 1).Y))
+                    _ = Line(l3 @ 1, (0, (l3 @ 1).Y))
 
-                    mirror(about=Plane.XZ)
-                    mirror(about=Plane.YZ)
+                    _ = mirror(about=Plane.XZ)
+                    _ = mirror(about=Plane.YZ)
 
-                make_face()
-            extrude(sketch.sketch, thickness)
-            faces = [face.edges() for face in part.faces().filter_by(Axis.Z)]
-            chamfer(faces, chamfer_value)
+                _ = make_face()
+            _ = extrude(sketch.sketch, thickness)
+
+            edges: ShapeList[Edge] = ShapeList()
+            for face in part.faces().filter_by(Axis.Z):
+                edges.extend(face.edges())
+
+            _ = chamfer(edges, chamfer_value)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+
         super().__init__(part.part, rotation, align, mode)

@@ -11,6 +11,7 @@ from build123d import (
     BuildLine,
     BuildPart,
     BuildSketch,
+    Edge,
     Location,
     Locations,
     Mode,
@@ -18,8 +19,9 @@ from build123d import (
     Plane,
     Polyline,
     RotationLike,
+    Shape,
     Wire,
-    add,
+    add,  # pyright: ignore[reportUnknownVariableType]
     extrude,
     fillet,
     make_face,
@@ -40,8 +42,8 @@ class Bin(BasePartObject):
         base: Part,
         height: float = 0,
         height_in_units: int = 0,
-        compartments: Compartments = None,
-        lip: StackingLip = None,
+        compartments: Compartments | None = None,
+        lip: StackingLip | None = None,
         rotation: RotationLike = (0, 0, 0),
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
@@ -67,18 +69,29 @@ class Bin(BasePartObject):
             raise ValueError(msg)
 
         with BuildPart() as part:
-            add(base)
+            _ = add(base)
+            if not part.part:  # pragma: no cover
+                msg = "Part is empty"
+                raise RuntimeError(msg)
             if height_in_units:
-                bin_height = height_in_units * 7 - part.part.bounding_box().size.Z
+                bin_height = height_in_units * 7 - base.bounding_box().size.Z
             else:
                 bin_height = height
 
             face = part.faces().sort_by(Axis.Z)[-1]
-            extrude(to_extrude=face, amount=bin_height)
+
+            if not face.length:  # pragma: no cover
+                msg = "Face has no length"
+                raise RuntimeError(msg)
+            if not face.width:  # pragma: no cover
+                msg = "face has no width"
+                raise RuntimeError(msg)
+
+            _ = extrude(to_extrude=face, amount=bin_height)
             if compartments:
                 part_bbox = part.part.bounding_box()
                 with Locations((0, 0, part_bbox.max.Z)):
-                    compartments.create(
+                    _ = compartments.create(
                         size_x=face.length,
                         size_y=face.width,
                         height=bin_height,
@@ -88,7 +101,7 @@ class Bin(BasePartObject):
 
             if lip:
                 with Locations((0, 0, part.part.bounding_box().max.Z)):
-                    lip.create(
+                    _ = lip.create(
                         Utils.get_face_by_direction(part, Direction.TOP).outer_wire(),
                     )
 
@@ -117,18 +130,18 @@ class StackingLip:
         Returns:
             BasePartObject: 3d object
         """
-        path.move(Location((0, 0, -path.center().Z)))
+        _ = path.move(Location((0, 0, -path.center().Z)))
         with BuildSketch() as profile:
-            StackProfile(StackProfile.ProfileType.BIN)
+            _ = StackProfile(StackProfile.ProfileType.BIN)
             vertex = profile.vertices().sort_by(Axis.Y)[-1]
-            fillet(vertex, 0.2)
+            _ = fillet(vertex, 0.2)
             with BuildLine():
                 pt1_height = 1.2
                 that_one_point_x = 1.65
                 that_one_point_y = 1.65
                 width = profile.sketch.bounding_box().max.X
 
-                Polyline(
+                _ = Polyline(
                     (0, 0),
                     (0, -pt1_height),
                     (that_one_point_x, -pt1_height - that_one_point_y),
@@ -136,15 +149,18 @@ class StackingLip:
                     (width, 0),
                     close=True,
                 )
-            make_face()
+            _ = make_face()
         with BuildPart() as part:
             with BuildSketch(Plane.XZ) as sweep_sketch:
-                edge = (
-                    path.edges()
-                    .sort_by(Axis.X)
-                    .filter_by(lambda edge: edge.find_intersection_points(Axis.X))
-                    .sort_by(Axis.X)[-1]
-                )
+
+                def edge_filter(shape: Shape[Edge]) -> bool:
+                    inner_edge = shape.edge()
+                    if not inner_edge:  # pragma: no cover
+                        raise TypeError
+
+                    return bool(inner_edge.find_intersection_points(Axis.X))
+
+                edge = path.edges().sort_by(Axis.X).filter_by(edge_filter).sort_by(Axis.X)[-1]
                 point = edge.find_intersection_points(Axis.X)[0]
 
                 with (
@@ -153,7 +169,11 @@ class StackingLip:
                         (-profile.sketch.bounding_box().max.X, 0),
                     ),
                 ):
-                    add(profile)
-            sweep(sections=sweep_sketch.sketch, path=path)
+                    _ = add(profile)
+            _ = sweep(sections=sweep_sketch.sketch, path=path)
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)

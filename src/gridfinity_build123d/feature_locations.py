@@ -85,7 +85,7 @@ class BottomMiddle(FeatureLocation):
             yield
 
 
-class Corners(FeatureLocation):
+class Corners(FeatureLocation, ABC):
     """Abstract corners class.
 
     Contains helper function to locate objects in the corners of a face from a boundingbox.
@@ -97,7 +97,7 @@ class Corners(FeatureLocation):
         Args:
             offset (float, optional): The ofset from corner to final location. Defaults to 0.
         """
-        self._offset = offset
+        self._offset: float = offset
 
     @contextmanager
     def _apply_on_corners(
@@ -105,8 +105,9 @@ class Corners(FeatureLocation):
         center: Location,
         bbox: BoundBox,
     ) -> Iterator[None]:
-        polar_dist = (bbox.size.X**2 + bbox.size.Y**2) ** 0.5
-        polar_offset = (self._offset**2 + self._offset**2) ** 0.5
+        # ignored report any due to brackets always returning any.
+        polar_dist: float = (bbox.size.X**2 + bbox.size.Y**2) ** 0.5  # pyright: ignore[reportAny]
+        polar_offset: float = pow(self._offset**2 + self._offset**2, 0.5)  # pyright: ignore[reportAny]
 
         with (
             Locations(center),
@@ -190,16 +191,16 @@ class BottomSides(FeatureLocation):
                 with the y axis. Defaults to 1.
             offset (float, optional): Distance from the side to the located objects. Defaults to 0.
         """
-        self._nr_x = nr_x
-        self._nr_y = nr_y
-        self._offset = offset
+        self._nr_x: int = nr_x
+        self._nr_y: int = nr_y
+        self._offset: float = offset
 
     @contextmanager
     def apply_to(self, part: Part) -> Iterator[None]:  # noqa: D102
         bbox = part.bounding_box()
 
         box = Box(bbox.size.X, bbox.size.Y, bbox.size.Z, mode=Mode.PRIVATE)
-        box.locate(Location(bbox.center()))
+        _ = box.locate(Location(bbox.center()))
 
         face = box.faces().sort_by(Axis.Z)[0]
 

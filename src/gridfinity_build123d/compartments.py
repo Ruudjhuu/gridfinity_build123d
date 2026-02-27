@@ -39,7 +39,9 @@ class Compartment:
         if not features:
             features = []
 
-        self.features = features if isinstance(features, Iterable) else [features]
+        self.features: list[CompartmentFeature] = (
+            features if isinstance(features, Iterable) else [features]
+        )
 
     def create(
         self,
@@ -65,7 +67,7 @@ class Compartment:
             BasePartObject: 3d object.
         """
         with BuildPart() as part:
-            Box(
+            _ = Box(
                 size_x,
                 size_y,
                 height,
@@ -73,6 +75,10 @@ class Compartment:
 
             for feature in self.features:
                 feature.apply(part)
+
+            if not part.part:  # pragma: no cover
+                msg = "Part is empty"
+                raise RuntimeError(msg)
 
             bbox = part.part.bounding_box()
 
@@ -89,7 +95,7 @@ class Compartment:
 
             # Select the rest of the edges (excluding the top face and lower
             # edge of the label)
-            fillet(fillet_edges, gf_bin.inner_radius_v)
+            _ = fillet(fillet_edges, gf_bin.inner_radius_v)
 
             fillet_edges = part.edges().filter_by_position(
                 Axis.Z,
@@ -97,7 +103,7 @@ class Compartment:
                 maximum=bbox.max.Z - 1.1,
             )
 
-            fillet(fillet_edges, gf_bin.inner_radius)
+            _ = fillet(fillet_edges, gf_bin.inner_radius)
 
         return BasePartObject(part.part, rotation, align, mode)
 
@@ -149,10 +155,10 @@ class Compartments:
         if compartment_list is None:
             compartment_list = Compartment()
 
-        self.inner_wall = inner_wall
-        self.outer_wall = outer_wall
-        self.grid = grid
-        self.compartment_list = compartment_list
+        self.inner_wall: float = inner_wall
+        self.outer_wall: float = outer_wall
+        self.grid: list[list[int]] = grid
+        self.compartment_list: Compartment | list[Compartment] = compartment_list
 
     def create(
         self,
@@ -184,7 +190,7 @@ class Compartments:
         size_unit_y = distribute_area_y / len(self.grid)
 
         with BuildPart() as part:
-            numbers_proccesed = []
+            numbers_proccesed: list[int] = []
             for r_index, row in enumerate(self.grid):
                 for c_index, item in enumerate(row):
                     if item != 0 and item not in numbers_proccesed:
@@ -220,11 +226,15 @@ class Compartments:
                             else:
                                 create_call = self.compartment_list.create
 
-                            create_call(
+                            _ = create_call(
                                 size_x=size_unit_x * units_x - self.inner_wall,
                                 size_y=size_unit_y * units_y - self.inner_wall,
                                 height=height,
                             )
+
+        if not part.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         return BasePartObject(part=part.part, rotation=rotation, align=align, mode=mode)
 
@@ -285,10 +295,10 @@ class CompartmentsEqual(Compartments):
         """
         if compartment_list is None:
             compartment_list = Compartment()
-        grid = []
+        grid: list[list[int]] = []
         bin_nr = 1
         for _ in range(div_y):
-            row = []
+            row: list[int] = []
             for _ in range(div_x):
                 row.append(bin_nr)
                 bin_nr += 1

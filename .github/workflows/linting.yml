@@ -15,7 +15,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
       - name: Set up Python
-        run: uv python install
+        run: uv python install && uv sync
       - name: Ruff lint
         run: |
           uvx ruff check
@@ -23,6 +23,9 @@ jobs:
         if: success() || failure()
         run: |
           uvx vulture ./src --min-confidence 61
+      - name: basedpyright
+        if: success() || failure()
+        run: uvx basedpyright --warnings
       - name: Ruff format
         if: success() || failure()
         run: |

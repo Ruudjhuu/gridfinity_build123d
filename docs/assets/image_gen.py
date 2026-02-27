@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock
 
 import build123d
-from build123d import Box, Part
+from build123d import Box, Compound, Part
 
 from gridfinity_build123d import (
     Base,
@@ -50,17 +50,16 @@ class CameraPosition(Enum):
 
     @staticmethod
     def pos_to_str(pos: CameraPosition) -> str:
-        if pos == CameraPosition.CAMERA_TOP:
-            return "0,0,0,55,0,25,0"
-        if pos == CameraPosition.CAMERA_BOT:
-            return "0,0,0,125,0,25,0"
-        msg = "Unknown camera position"
-        raise ValueError(msg)
+        match pos:
+            case CameraPosition.CAMERA_TOP:
+                return "0,0,0,55,0,25,0"
+            case CameraPosition.CAMERA_BOT:
+                return "0,0,0,125,0,25,0"
 
 
 class Convert:
     @staticmethod
-    def part_to_png(part: Part, file_name: str, camera_pos: CameraPosition) -> None:
+    def part_to_png(part: Compound, file_name: str, camera_pos: CameraPosition) -> None:
         with TemporaryDirectory() as tmp_dir:
             Convert._part_to_png(part, Path(tmp_dir), file_name, camera_pos)
 
@@ -78,7 +77,7 @@ class Convert:
                     str(Path(tmp_dir).joinpath(f"{idx}".zfill(3))),
                     camera_pos,
                 )
-            check_call(
+            _ = check_call(
                 [
                     "/usr/bin/convert",
                     "-delay",
@@ -94,18 +93,18 @@ class Convert:
 
     @staticmethod
     def _part_to_png(
-        part: Part,
+        part: Compound,
         work_dir: Path,
         file_name: str,
         camera_pos: CameraPosition,
     ) -> None:
         tmp_stl = work_dir.joinpath("tmp.stl")
         tmp_scad = work_dir.joinpath("tmp.scad")
-        build123d.export_stl(part, str(tmp_stl))
+        _ = build123d.export_stl(part, str(tmp_stl))  # pyright: ignore[reportUnknownMemberType]
         with tmp_scad.open("w") as file:
-            file.write(f'import("{tmp_stl}");\n')
+            _ = file.write(f'import("{tmp_stl}");\n')
 
-        check_call(
+        _ = check_call(
             [
                 "/usr/bin/openscad",
                 "--autocenter",

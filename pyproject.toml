@@ -10,7 +10,6 @@ requires-python = ">=3.10"
 
 [dependency-groups]
 dev = [
-  "mypy",
   "coverage",
   "vulture",
   "ocp_vscode",
@@ -21,6 +20,7 @@ dev = [
   "sphinx-rtd-theme",
   "sphinx_design",
   "debugpy>=1.8.20",
+  "basedpyright>=1.38.2",
 ]
 
 [build-system]
@@ -63,3 +63,6 @@ ignore-decorators = ['inherit_docstring']
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 101
+
+[tool.basedpyright]
+ignore = ["tests"]

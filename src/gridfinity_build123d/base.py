@@ -15,7 +15,7 @@ from build123d import (
     Mode,
     Rectangle,
     RotationLike,
-    add,
+    add,  # pyright: ignore[reportUnknownVariableType]
     extrude,
 )
 
@@ -60,7 +60,7 @@ class Base(BasePartObject):
 
         with BuildPart() as base:
             base_block = BaseBlock(features=features, mode=Mode.PRIVATE)
-            Utils.place_by_grid(
+            _ = Utils.place_by_grid(
                 base_block,
                 grid,
                 width=gridfinity_standard.grid.size,
@@ -71,7 +71,7 @@ class Base(BasePartObject):
             z_top = top_face_1.bounding_box().min.Z
 
             with Locations((0, 0, z_top)):
-                Utils.create_bin_platform(
+                _ = Utils.create_bin_platform(
                     grid,
                     align=(
                         Align.CENTER,
@@ -79,6 +79,10 @@ class Base(BasePartObject):
                         Align.MIN,
                     ),
                 )
+
+        if not base.part:  # pragma: no cover
+            msg = "Base is empty"
+            raise RuntimeError(msg)
 
         super().__init__(base.part, rotation, align, mode)
 
@@ -107,7 +111,7 @@ class BaseEqual(Base):
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
         """
-        grid = []
+        grid: list[list[bool]] = []
         for _ in range(grid_y):
             grid += [[True] * grid_x]
         super().__init__(grid, features, rotation, align, mode)
@@ -142,13 +146,17 @@ class BaseBlock(BasePartObject):
         features = features if isinstance(features, Iterable) else [features]
 
         with BuildPart() as baseblock:
-            Utils.create_profile_block(
+            _ = Utils.create_profile_block(
                 StackProfile.ProfileType.BIN,
                 gridfinity_standard.stacking_lip.offset,
             )
 
             for feature in features:
                 feature.apply(baseblock)
+
+        if not baseblock.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         super().__init__(baseblock.part, rotation, align, mode)
 
@@ -186,16 +194,20 @@ class BaseBlockPlatform(BasePartObject):
         base_block = BaseBlock(features=[], rotation=rotation, mode=Mode.ADD)
 
         with BuildPart() as baseblock_platform:
-            add(base_block)
+            _ = add(base_block)
 
             with BuildSketch(baseblock_platform.faces().sort_by(Axis.Z)[-1]) as rect2:
-                Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
-            extrude(
+                _ = Rectangle(gridfinity_standard.grid.size, gridfinity_standard.grid.size)
+            _ = extrude(
                 to_extrude=rect2.sketch,
                 amount=gridfinity_standard.bottom.platform_height,
             )
 
             for feature in features:
                 feature.apply(baseblock_platform)
+
+        if not baseblock_platform.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
 
         super().__init__(baseblock_platform.part, rotation, align, mode)
