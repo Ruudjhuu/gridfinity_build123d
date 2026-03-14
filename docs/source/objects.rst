@@ -162,7 +162,12 @@ BasePlates
             BasePlateEqual(
                 size_x=2,
                 size_y=2,
-                baseplate_block=BasePlateBlockFull(),
+                baseplate_block=BasePlateBlockFull(
+                    features=[
+                        ScrewHoleCountersink(BottomCorners()),
+                        Weighted(BottomMiddle()),
+                    ],
+                ),
             )
 
         .. raw:: html
