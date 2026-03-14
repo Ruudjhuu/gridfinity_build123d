@@ -24,7 +24,8 @@ Bins
         .. testcode::
 
             Bin(
-                Base(), height_in_units=4,
+                Base(),
+                height_in_units=4,
             )
 
         .. raw:: html
@@ -74,7 +75,7 @@ Bins
                     compartment_list=Compartment(Label()),
                 ),
                 lip=StackingLip(),
-            ),
+            )
 
         .. raw:: html
 
@@ -121,7 +122,9 @@ BasePlates
 
         .. testcode::
 
-            BasePlate([[True,True],[True]])
+            BasePlate(
+                grid=[[True, True], [True]],
+            )
 
         .. raw:: html
 
@@ -212,7 +215,9 @@ Bases
 
         .. testcode::
 
-            Base([[True,True],[True]])
+            Base(
+                grid=[[True, True], [True]],
+            )
 
         .. raw:: html
 
@@ -230,10 +235,14 @@ Bases
 
         .. testcode::
 
-            BaseEqual(2, 2, [MagnetHole(
-                BottomCorners()),
-                ScrewHole(BottomCorners(),
-                )])
+            BaseEqual(
+                grid_x=2,
+                grid_y=2,
+                features=[
+                    MagnetHole(BottomCorners()),
+                    ScrewHole(BottomCorners()),
+                ],
+            )
 
         .. raw:: html
 

@@ -171,20 +171,43 @@ class Convert:
 
 # Bases
 
-Convert.part_to_png(Base([[True, True], [True]]), "base", CameraPosition.CAMERA_BOT)
-Convert.part_to_png(BaseEqual(2, 2), "base_equal", CameraPosition.CAMERA_BOT)
+Convert.part_to_png(
+    Base(
+        grid=[[True, True], [True]],
+    ),
+    "base",
+    CameraPosition.CAMERA_BOT,
+)
 Convert.part_to_png(
     BaseEqual(
-        2,
-        2,
-        [MagnetHole(BottomCorners()), ScrewHole(BottomCorners())],
+        grid_x=2,
+        grid_y=2,
+    ),
+    "base_equal",
+    CameraPosition.CAMERA_BOT,
+)
+Convert.part_to_png(
+    BaseEqual(
+        grid_x=2,
+        grid_y=2,
+        features=[
+            MagnetHole(BottomCorners()),
+            ScrewHole(BottomCorners()),
+        ],
     ),
     "base_holes",
     CameraPosition.CAMERA_BOT,
 )
 
 # Bins
-Convert.part_to_png(Bin(Base(), height_in_units=4), "bin", CameraPosition.CAMERA_TOP)
+Convert.part_to_png(
+    Bin(
+        Base(),
+        height_in_units=4,
+    ),
+    "bin",
+    CameraPosition.CAMERA_TOP,
+)
 
 Convert.part_to_png(
     Bin(
@@ -215,21 +238,34 @@ Convert.part_to_png(
 
 # Baseplates
 Convert.part_to_png(
-    BasePlate([[True, True], [True]]),
+    BasePlate(
+        grid=[[True, True], [True]],
+    ),
     "base_plate",
     CameraPosition.CAMERA_TOP,
 )
-Convert.part_to_png(BasePlateEqual(2, 2), "base_plate_equal", CameraPosition.CAMERA_TOP)
 Convert.part_to_png(
-    BasePlateEqual(2, 2, BasePlateBlockFull()),
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+    ),
+    "base_plate_equal",
+    CameraPosition.CAMERA_TOP,
+)
+Convert.part_to_png(
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+        baseplate_block=BasePlateBlockFull(),
+    ),
     "base_plate_full",
     CameraPosition.CAMERA_TOP,
 )
 Convert.part_to_png(
     BasePlateEqual(
-        2,
-        2,
-        BasePlateBlockFull(
+        size_x=2,
+        size_y=2,
+        baseplate_block=BasePlateBlockFull(
             features=[
                 ScrewHoleCountersink(BottomCorners()),
                 Weighted(BottomMiddle()),
