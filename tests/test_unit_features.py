@@ -284,7 +284,7 @@ class GridfinityRefinedMagnetHoleSideTest(testutils.UtilTestCase):
 
 
 class WeightedTest(testutils.UtilTestCase):
-    def test_weigthed(self) -> None:
+    def test_weighted(self) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
 
         part = Weighted(f_loc).create_obj()

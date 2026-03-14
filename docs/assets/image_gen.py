@@ -236,7 +236,7 @@ Convert.part_to_png(
             ],
         ),
     ),
-    "base_plate_weigthed",
+    "base_plate_weighted",
     CameraPosition.CAMERA_BOT,
 )
 
@@ -278,7 +278,7 @@ Convert.part_to_png(
 
 Convert.part_to_png(
     Weighted(f_loc_mock).create_obj(),
-    "weigthed",
+    "weighted",
     CameraPosition.CAMERA_TOP,
 )
 
