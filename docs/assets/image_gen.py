@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from enum import Enum, auto
 from pathlib import Path
 from subprocess import check_call
@@ -44,6 +45,41 @@ from gridfinity_build123d.feature_locations import FeatureLocation
 logger = logging.getLogger(__name__)
 
 
+OPENSCAD_DEFAULT_PATH = "/usr/bin/openscad"
+IMAGEMAGICK_DEFAULT_PATH = "/usr/bin/convert"
+
+
+def resolve_openscad_cmd() -> str:
+    """Resolve OpenSCAD executable path for the current developer environment."""
+    if Path(OPENSCAD_DEFAULT_PATH).exists():
+        return OPENSCAD_DEFAULT_PATH
+
+    # Check if "openscad" is in PATH
+    openscad_in_path = shutil.which("openscad")
+    if openscad_in_path:
+        return openscad_in_path
+
+    msg = "OpenSCAD executable not found. Install 'openscad' in PATH."
+    raise FileNotFoundError(msg)
+
+
+def resolve_imagemagick_cmd() -> str:
+    """Resolve ImageMagick executable for GIF generation."""
+    if Path(IMAGEMAGICK_DEFAULT_PATH).exists():
+        return IMAGEMAGICK_DEFAULT_PATH
+
+    convert_in_path = shutil.which("convert")
+    if convert_in_path:
+        return convert_in_path
+
+    magick_in_path = shutil.which("magick")
+    if magick_in_path:
+        return magick_in_path
+
+    msg = "ImageMagick executable not found. Install 'convert'/'magick' in PATH."
+    raise FileNotFoundError(msg)
+
+
 class CameraPosition(Enum):
     CAMERA_TOP = auto()
     CAMERA_BOT = auto()
@@ -69,6 +105,7 @@ class Convert:
         file_name: str,
         camera_pos: CameraPosition,
     ) -> None:
+        imagemagick_cmd = resolve_imagemagick_cmd()
         with TemporaryDirectory() as tmp_dir:
             for idx, part in enumerate(part_list):
                 Convert._part_to_png(
@@ -79,7 +116,7 @@ class Convert:
                 )
             _ = check_call(
                 [
-                    "/usr/bin/convert",
+                    imagemagick_cmd,
                     "-delay",
                     "75",
                     "-loop",
@@ -98,6 +135,7 @@ class Convert:
         file_name: str,
         camera_pos: CameraPosition,
     ) -> None:
+        openscad_cmd = resolve_openscad_cmd()
         tmp_stl = work_dir.joinpath("tmp.stl")
         tmp_scad = work_dir.joinpath("tmp.scad")
         _ = build123d.export_stl(part, str(tmp_stl))  # pyright: ignore[reportUnknownMemberType]
@@ -106,7 +144,7 @@ class Convert:
 
         _ = check_call(
             [
-                "/usr/bin/openscad",
+                openscad_cmd,
                 "--autocenter",
                 "--viewall",
                 "--camera",
