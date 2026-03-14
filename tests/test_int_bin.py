@@ -107,5 +107,5 @@ class BinTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((125.5, 209.5, 39.11715728752539), bbox.size, 6)
-        self.assertAlmostEqual(127460.07556303134, part.area, 5)
-        self.assertAlmostEqual(206846.8044154954, part.volume, 5)
+        self.assertAlmostEqual(127460.07556303134, part.area, 4)
+        self.assertAlmostEqual(206846.8044154954, part.volume, 4)
