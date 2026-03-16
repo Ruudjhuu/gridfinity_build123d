@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, ClassVar, override
 
 from bd_warehouse.thread import Thread  # pyright: ignore[reportMissingTypeStubs]
 from build123d import (
     Align,
     Axis,
     BasePartObject,
+    BoundBox,
     Box,
     BuildLine,
     BuildPart,
     BuildSketch,
     CenterArc,
+    Circle,
     CounterBoreHole,
     CounterSinkHole,
     Cylinder,
@@ -42,7 +44,7 @@ from build123d import (
 )
 
 from .constants import gf_bin, gridfinity_standard
-from .utils import ObjectCreate
+from .utils import Direction, ObjectCreate
 
 if TYPE_CHECKING:
     from .feature_locations import FeatureLocation
@@ -605,6 +607,139 @@ class Weighted(ObjectFeature):
             raise RuntimeError(msg)
 
         return BasePartObject(part.part, rotation, align, mode)
+
+
+class BasePlateBottomSideRound(ContextFeature):
+    """Round the underside edge of a baseplate.
+
+    This is useful when the baseplate will be placed in a drawer that has inside rounding between the bottom and sides.
+    By rounding the bottom perimeter edges of the baseplate, it will fit better in such a drawer.
+    """
+
+    _RUNS_ALONG_X: ClassVar[tuple[Direction, ...]] = (Direction.FRONT, Direction.BACK)
+    _MIN_SIDE_DIRECTIONS: ClassVar[tuple[Direction, ...]] = (Direction.FRONT, Direction.LEFT)
+
+    def __init__(
+        self,
+        radius: float = 1.5,
+        direction: Direction | list[Direction] | None = None,
+    ) -> None:
+        """Construct baseplate bottom side round feature.
+
+        Args:
+            radius (float, optional): Fillet radius used on the bottom perimeter edges.
+            direction (Direction | list[Direction] | None, optional): Side(s) to round.
+                Defaults to all perimeter sides.
+        """
+        if radius <= 0:
+            msg = "Baseplate bottom side round radius needs to be larger than 0"
+            raise ValueError(msg)
+
+        self.radius: float = radius
+        self.directions: list[Direction] = self._normalize_directions(direction)
+
+    @staticmethod
+    def _normalize_directions(direction: Direction | list[Direction] | None) -> list[Direction]:
+        # Accept one side, many sides, or default to all perimeter sides.
+        allowed_directions = (
+            Direction.FRONT,
+            Direction.BACK,
+            Direction.LEFT,
+            Direction.RIGHT,
+        )
+
+        if direction is None:
+            raw_directions = allowed_directions
+        elif isinstance(direction, Direction):
+            raw_directions = [direction]
+        else:
+            raw_directions = direction
+
+        msg = "BasePlateBottomSideRound direction needs to be FRONT/BACK/LEFT/RIGHT"
+        if not raw_directions:
+            raise ValueError(msg)
+
+        normalized: list[Direction] = []
+        for side in raw_directions:
+            if side not in allowed_directions:
+                raise ValueError(msg)
+            if side not in normalized:
+                normalized.append(side)
+
+        return normalized
+
+    def _create_cylinder_tool(self, length: float) -> Part:
+        with BuildPart() as cyl_tool:
+            with BuildSketch(Plane.YZ.offset(-length / 2)):
+                _ = Circle(self.radius)
+            _ = extrude(amount=length)
+
+        if not cyl_tool.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+        return cyl_tool.part
+
+    def _create_cutter_tool(self, length: float) -> Part:
+        """Create a cutter by subtracting a cylinder from a box, creating a quarter-round shape."""
+        with BuildPart() as cutter:
+            _ = Box(length, self.radius, self.radius, align=(Align.CENTER, Align.MIN, Align.MIN))
+            with Locations((0, self.radius, self.radius)):
+                cylinder = self._create_cylinder_tool(length=length)
+                _ = add(cylinder, mode=Mode.SUBTRACT)
+
+        if not cutter.part:  # pragma: no cover
+            msg = "Part is empty"
+            raise RuntimeError(msg)
+        return cutter.part
+
+    def _get_cutter_tool_location(
+        self,
+        direction: Direction,
+        bbox: BoundBox,
+    ) -> tuple[float, float, float]:
+        """Calculate the location to place the cutter for the given side direction and bounding box."""
+        run_along_x = direction in self._RUNS_ALONG_X
+        is_min_side = direction in self._MIN_SIDE_DIRECTIONS
+
+        x_center = (bbox.min.X + bbox.max.X) / 2
+        y_center = (bbox.min.Y + bbox.max.Y) / 2
+
+        # Anchor on edge for cross-axis, center on run-axis
+        x_loc = x_center if run_along_x else (bbox.min.X if is_min_side else bbox.max.X)
+        y_loc = (bbox.min.Y if is_min_side else bbox.max.Y) if run_along_x else y_center
+
+        return x_loc, y_loc, bbox.min.Z
+
+    @staticmethod
+    def _get_cutter_tool_rotation(direction: Direction) -> Rotation:
+        rotation_by_direction = {
+            Direction.FRONT: Rotation(0, 0, 0),
+            Direction.BACK: Rotation(0, 0, 180),
+            Direction.LEFT: Rotation(0, 0, -90),
+            Direction.RIGHT: Rotation(0, 0, 90),
+        }
+
+        return rotation_by_direction[direction]
+
+    @override
+    def apply(self, context: BuildPart) -> None:
+        context_part = context.part
+        if not isinstance(context_part, Part):  # pragma: no cover
+            msg = "Context has no part"
+            raise ValueError(msg)  # noqa: TRY004
+
+        bbox = context_part.bounding_box()
+
+        try:
+            for direction in self.directions:
+                cutter = self._create_cutter_tool(length=max([bbox.size.X, bbox.size.Y]))
+                cutter_location = self._get_cutter_tool_location(direction, bbox)
+                cutter_rotation = self._get_cutter_tool_rotation(direction)
+                with Locations(cutter_location), Locations(cutter_rotation):
+                    _ = add(cutter, mode=Mode.SUBTRACT)
+        except ValueError as exp:
+            msg = "Baseplate bottom side round could not be created, Parent object too small"
+            raise ValueError(msg) from exp
 
 
 class CompartmentFeature(ContextFeature, ABC):

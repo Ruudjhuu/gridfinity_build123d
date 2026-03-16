@@ -7,6 +7,7 @@ __all__ = [
     "BasePlateBlockFrame",
     "BasePlateBlockFull",
     "BasePlateBlockSkeleton",
+    "BasePlateBottomSideRound",
     "BasePlateEqual",
     "Bin",
     "BottomCorners",
@@ -59,6 +60,7 @@ from .feature_locations import (
     TopMiddle,
 )
 from .features import (
+    BasePlateBottomSideRound,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
     GridfinityRefinedMagnetHoleSide,
