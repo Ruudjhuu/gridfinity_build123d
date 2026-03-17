@@ -336,6 +336,15 @@ class BasePlateBottomSideRoundTest(testutils.UtilTestCase):
         with self.assertRaisesRegex(ValueError, "Baseplate bottom side round radius"):
             _ = BasePlateBottomSideRound(radius=0)
 
+    def test_apply_radius_larger_than_part_thickness_raises(self) -> None:
+        with BuildPart() as part:
+            Box(30, 30, 2)
+            with self.assertRaisesRegex(
+                ValueError,
+                "can't be larger than the baseplate thickness",
+            ):
+                BasePlateBottomSideRound(radius=2.1).apply(part)
+
     def test_empty_direction_list_not_supported(self) -> None:
         with self.assertRaisesRegex(
             ValueError,

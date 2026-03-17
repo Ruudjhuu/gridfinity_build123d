@@ -740,6 +740,14 @@ class BasePlateBottomSideRound(ContextFeature):
 
         bbox = context_part.bounding_box()
 
+        if self.radius > bbox.size.Z:
+            msg = (
+                f"Baseplate bottom side round radius can't be larger than the baseplate thickness"
+                f" (bounding box Z size: {bbox.size.Z}). If you need"
+                f" a bigger radius, consider using BasePlateBlockFull with a thicker bottom."
+            )
+            raise ValueError(msg)
+
         try:
             for direction in self.directions:
                 cutter = self._create_cutter_tool(length=max([bbox.size.X, bbox.size.Y]))
