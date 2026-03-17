@@ -1,4 +1,4 @@
-"""Utiity module."""
+"""Utility module."""
 
 from __future__ import annotations
 
@@ -36,8 +36,8 @@ from build123d import (
 from .constants import gridfinity_standard
 
 
-class UnsuportedEnumValueError(Exception):
-    """Raised when a unsuported enum value is handled."""
+class UnsupportedEnumValueError(Exception):
+    """Raised when an unsupported enum value is handled."""
 
     def __init__(self, enum_var: Enum) -> None:
         """Construct Enum exception.
@@ -45,7 +45,7 @@ class UnsuportedEnumValueError(Exception):
         Args:
             enum_var (Enum): Enum value
         """
-        super().__init__(f"Unsuported enum value: {enum_var}")
+        super().__init__(f"Unsupported enum value: {enum_var}")
 
 
 class ObjectCreate(ABC):
@@ -96,10 +96,10 @@ class Direction(Enum):
             direction (Direction): Direction to convert.
 
         Raises:
-            ValueError: Unkonw Direction.
+            ValueError: Unknown Direction.
 
         Returns:
-            Tuple[int, int, int]: Output tupple.
+            Tuple[int, int, int]: Output tuple.
         """
         match direction:
             case Direction.TOP:
@@ -145,16 +145,16 @@ class Utils:  # pylint: disable=too-few-public-methods
     ) -> None:
         """Attach.
 
-        Attaches other object acording to "attach".
+        Attaches other object according to "attach".
 
         Args:
             context (BuildPart): context were attach should be executed.
-            part (Part): the part to be attached
+            part (Part): the part to be attached to the context.
             attach (Attach): Direction to attach
             offset_value (float, optional): offset. Defaults to 0.
 
         Raises:
-            UnsuportedEnumValueError: Unsuported Enum value
+            UnsupportedEnumValueError: Unsupported Enum value
         """
         context_part = context.part
         if not isinstance(context_part, Part):  # pragma: no cover
@@ -234,7 +234,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         """Get subclasses of a base class recursively.
 
         Args:
-            class_name (Any): class type to get subcalsses from
+            class_name (Any): class type to get subclasses from
 
         Returns:
             Any: list of child class types
@@ -332,7 +332,7 @@ class Utils:  # pylint: disable=too-few-public-methods
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
 
         Raises:
-            ValueError: grid does not reasemble locations
+            ValueError: grid does not produce any locations
 
         Returns:
             BasePartObject: gridlike object
@@ -347,7 +347,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         locations = Utils.locate_grid(grid, width, length)
 
         if not locations:
-            msg = f"grid {grid} does not reasemble locations"
+            msg = f"grid {grid} does not produce any locations"
             raise ValueError(msg)
 
         with BuildPart() as part, Locations(locations):
@@ -369,7 +369,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         """Create the platform for the bin.
 
         This function considers that the bins have a different dimension than the base elements
-        (41.5mm instead of 42mm). This is to allow for certain tolerance for the bins. Therefore the
+        (41.5mm instead of 42mm). This is to allow for certain tolerance for the bins. Therefore, the
         size of the grid is set to the gridfinity standard grid size instead of the size of the
         sketch.
 
@@ -387,7 +387,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         width = gridfinity_standard.grid.size
         length = gridfinity_standard.grid.size
 
-        tol = gridfinity_standard.grid.tollerance
+        tol = gridfinity_standard.grid.tolerance
 
         with BuildSketch() as base:
             _ = Rectangle(length, width)
@@ -416,7 +416,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
-        """Create block with stacing profile.
+        """Create block with stacking profile.
 
         Args:
             profile_type (StackProfile.ProfileType): Profile type
@@ -487,7 +487,7 @@ class StackProfile(BaseSketchObject):
     ):
         """StackProfile.
 
-        Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
+        Create a profile of the gridfinity stacking system. Usually used in the sweep function.
 
         Args:
             stack_type (ProfileType): Type of stacking lip (Bin vs Plate).

@@ -97,7 +97,7 @@ class BinTest(unittest.TestCase):
 
 
 class StackingLipTest(testutils.UtilTestCase):
-    def test_stackinglip(self) -> None:
+    def test_stacking_lip(self) -> None:
         with BuildSketch() as sketch:
             RectangleRounded(100, 100, 5)
 
@@ -110,7 +110,7 @@ class StackingLipTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((100, 100, 6.967157), bbox.size, 6)
         self.assertAlmostEqual(4928.067652835152, part.part.volume)
 
-    def test_stackinglip_shape_challenging_wire_filter(self) -> None:
+    def test_stacking_lip_shape_challenging_wire_filter(self) -> None:
         length = 20
         with BuildSketch() as sketch:
             with BuildLine() as line:

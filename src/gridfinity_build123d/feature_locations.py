@@ -48,7 +48,7 @@ class FeatureLocation(ABC):
             part (Part): part to add feature to
 
         Raises:
-            NotImplementedError: aplly_to not implemented.
+            NotImplementedError: apply_to not implemented.
 
         Yields:
             Iterator[None]: context manager return value.
@@ -58,7 +58,7 @@ class FeatureLocation(ABC):
 class TopMiddle(FeatureLocation):
     """Top Middle feature location.
 
-    Locate a feature top center of the boundingbox of an object
+    Locate a feature top center of the bounding box of an object
     """
 
     @contextmanager
@@ -73,7 +73,7 @@ class TopMiddle(FeatureLocation):
 class BottomMiddle(FeatureLocation):
     """Bottom Middle feature location.
 
-    Locate a feature bottom center of the boundingbox of an object
+    Locate a feature bottom center of the bounding box of an object
     """
 
     @contextmanager
@@ -88,14 +88,14 @@ class BottomMiddle(FeatureLocation):
 class Corners(FeatureLocation, ABC):
     """Abstract corners class.
 
-    Contains helper function to locate objects in the corners of a face from a boundingbox.
+    Contains helper function to locate objects in the corners of a face from a bounding box.
     """
 
     def __init__(self, offset: float = 0) -> None:
         """Only callable by a child object.
 
         Args:
-            offset (float, optional): The ofset from corner to final location. Defaults to 0.
+            offset (float, optional): The offset from corner to final location. Defaults to 0.
         """
         self._offset: float = offset
 
@@ -124,7 +124,7 @@ class Corners(FeatureLocation, ABC):
 class BottomCorners(Corners):
     """Bottom Corners.
 
-    Locate a feature at the corners of the bottom plane of a objects boundingbox.
+    Locate a feature at the corners of the bottom plane of an objects bounding box.
     """
 
     def __init__(
@@ -134,7 +134,7 @@ class BottomCorners(Corners):
         """Create Bottom corners object.
 
         Args:
-            offset (float, optional): The ofset from corner to final location. Defaults to
+            offset (float, optional): The offset from corner to final location. Defaults to
                 gridfinity_standard.bottom.hole_from_side.
         """
         super().__init__(offset)
@@ -151,7 +151,7 @@ class BottomCorners(Corners):
 class TopCorners(Corners):
     """Top Corners.
 
-    Locate a feature at the conrers of the top plane of a boundingbox.
+    Locate a feature at the corners of the top plane of a bounding box.
     """
 
     def __init__(
@@ -161,7 +161,7 @@ class TopCorners(Corners):
         """Create Top corners object.
 
         Args:
-            offset (float, optional): The ofset from corner to final location. Defaults to
+            offset (float, optional): The offset from corner to final location. Defaults to
                 gridfinity_standard.bottom.hole_from_side.
         """
         super().__init__(offset)
@@ -182,13 +182,13 @@ class BottomSides(FeatureLocation):
     """
 
     def __init__(self, nr_x: int = 1, nr_y: int = 1, offset: float = 0) -> None:
-        """Creste BottomSides object.
+        """Create BottomSides object.
 
         Args:
             nr_x (int, optional): Number of objects which should be located on edges parallel
-                to the x axis. Defaults to 1.
+                to the x-axis. Defaults to 1.
             nr_y (int, optional): Number of objects which should be located on edges parallel
-                with the y axis. Defaults to 1.
+                with the y-axis. Defaults to 1.
             offset (float, optional): Distance from the side to the located objects. Defaults to 0.
         """
         self._nr_x: int = nr_x

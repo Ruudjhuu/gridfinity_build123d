@@ -66,8 +66,7 @@ class Feature(ABC):
 class ObjectFeature(Feature, ObjectCreate, ABC):
     """Feature created by standalone object.
 
-    Feature which creates standalone object and is dependend on a Feature Location for
-    placement.
+    Feature which creates standalone object and is dependent on a Feature Location for placement.
     """
 
     def __init__(self, feature_location: FeatureLocation | None) -> None:
@@ -240,7 +239,7 @@ class ScrewHoleCountersink(ScrewHole):
             radius (float, optional): radius. Defaults to 1.75.
             counter_sink_radius (float, optional): radius of countersink. Default to 4.25.
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
-            counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
+            counter_sink_angle(float, optional): angle of countersink in degrees. Defaults to 82.
         """
         super().__init__(feature_location, radius, depth)
         self.counter_sink_radius: float = counter_sink_radius
@@ -318,7 +317,7 @@ class ScrewHoleCounterbore(ScrewHole):
 
 
 class GridfinityRefinedConnectionCutout(ObjectFeature):
-    """Gridfinity refined conecction cutout.
+    """Gridfinity refined connection cutout.
 
     Cutout shape used to connect two objects with a GridfinityRefinedConnector.
     """
@@ -387,7 +386,7 @@ class GridfinityRefinedScrewHole(ScrewHoleCountersink):
 
 
 class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
-    """Gridfinity refined threaded screwhole for bins."""
+    """Gridfinity refined threaded screw hole for bins."""
 
     @override
     def create_obj(
@@ -612,7 +611,8 @@ class Weighted(ObjectFeature):
 class BasePlateBottomSideRound(ContextFeature):
     """Round the underside edge of a baseplate.
 
-    This is useful when the baseplate will be placed in a drawer that has inside rounding between the bottom and sides.
+    This is useful when the baseplate will be placed in a drawer that has inside rounding
+    between the bottom and sides.
     By rounding the bottom perimeter edges of the baseplate, it will fit better in such a drawer.
     """
 
@@ -697,7 +697,7 @@ class BasePlateBottomSideRound(ContextFeature):
         direction: Direction,
         bbox: BoundBox,
     ) -> tuple[float, float, float]:
-        """Calculate the location to place the cutter for the given side direction and bounding box."""
+        """Calculate the location to place the cutter for the given direction and bounding box."""
         run_along_x = direction in self._RUNS_ALONG_X
         is_min_side = direction in self._MIN_SIDE_DIRECTIONS
 

@@ -1,4 +1,4 @@
-"""Module containg comparment cutters and placement classes."""
+"""Module containing compartment cutters and placement classes."""
 
 from __future__ import annotations
 
@@ -111,7 +111,7 @@ class Compartment:
 class Compartments:
     """Compartments collection.
 
-    Creates compartments according to type_list and aranges them according to the grid.
+    Creates compartments according to type_list and arranges them according to the grid.
 
     Example:
         grid = [
@@ -126,11 +126,11 @@ class Compartments:
         ]
         Will generate 4 compartments.
         One compartment is a square and takes 4 slots. The second
-        compartment is a rectangle with a Scoop using two slots in the y axis direction.The third
-        compartment is a rectangle with a Label using 2 slots in the x axis direction. The fourth
-        compartment is a rectangle in the x axis direction.
+        compartment is a rectangle with a Scoop using two slots in the y-axis direction.The third
+        compartment is a rectangle with a Label using 2 slots in the x-axis direction. The fourth
+        compartment is a rectangle in the x-axis direction.
         The size of the compartments and exact location is calculated on basis of the total size
-        of the grid arangement
+        of the grid arrangement
     """
 
     def __init__(
@@ -143,12 +143,12 @@ class Compartments:
         """Construct grid collection.
 
         Args:
-            grid ( list[list[int]] | None, optional): Configuration for arangement of compartments.
+            grid ( list[list[int]] | None, optional): Configuration for arrangement of compartments.
                 Defaults to [[1]].
             compartment_list (Compartment | list[Compartment] | None): Compartment or list of
                 compartments. Defaults to None.
-            inner_wall (float): Space between aranged compartments. Defaults to 1.2.
-            outer_wall (float): Offset outside generrated arangement. Defaults to 0.95.
+            inner_wall (float): Space between arranged compartments. Defaults to 1.2.
+            outer_wall (float): Offset outside generated arrangement. Defaults to 0.95.
         """
         if grid is None:
             grid = [[1]]
@@ -172,8 +172,8 @@ class Compartments:
         """Create compartments object.
 
         Args:
-            size_x (float): size on the x axis
-            size_y (float): size on the y axis
+            size_x (float): size on the x-axis
+            size_y (float): size on the y-axis
             height (float): Height of compartments
             rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
@@ -190,11 +190,11 @@ class Compartments:
         size_unit_y = distribute_area_y / len(self.grid)
 
         with BuildPart() as part:
-            numbers_proccesed: list[int] = []
+            numbers_processed: list[int] = []
             for r_index, row in enumerate(self.grid):
                 for c_index, item in enumerate(row):
-                    if item != 0 and item not in numbers_proccesed:
-                        numbers_proccesed.append(item)
+                    if item != 0 and item not in numbers_processed:
+                        numbers_processed.append(item)
 
                         units_x = self._count_same_row(c_index, row)
                         units_y = self._count_same_column((r_index, c_index), self.grid)
@@ -287,7 +287,7 @@ class CompartmentsEqual(Compartments):
 
         Args:
             div_x (int): number of compartments in x direction. Defaults to 1.
-            div_y (int): number of compartments in y dirction. Deafults to 1.
+            div_y (int): number of compartments in y direction. Defaults to 1.
             compartment_list (Compartment | list[Compartment] | None, optional): Compartment or list
                 of compartments. Defaults to Compartment().
             inner_wall (float, optional): wall thickness between compartments. Defaults to 1.2.

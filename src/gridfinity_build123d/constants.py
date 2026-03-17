@@ -24,7 +24,7 @@ class gridfinity_standard:
 
         size: float = 42
         radius: float = 4
-        tollerance: float = 0.5
+        tolerance: float = 0.5
 
     @dataclass
     class bottom:
@@ -55,7 +55,7 @@ class gf_bin:
     inner_wall: float = 0.95
     # Radius used for vertical inner fillets
     inner_radius_v: float = (
-        gridfinity_standard.grid.radius - inner_wall - gridfinity_standard.grid.tollerance / 2
+        gridfinity_standard.grid.radius - inner_wall - gridfinity_standard.grid.tolerance / 2
     )
     # Radius used for the rest of the inner fillets
     inner_radius: float = 1.2
@@ -69,6 +69,6 @@ class gf_bin:
 
     @dataclass
     class scoop:
-        """Scoop contants."""
+        """Scoop constants."""
 
         radius: float = 5

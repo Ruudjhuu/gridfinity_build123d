@@ -1,6 +1,6 @@
 """baseplate.
 
-Module containg classes to create baseplates.
+Module containing classes to create baseplates.
 """
 
 from __future__ import annotations
@@ -38,13 +38,13 @@ if TYPE_CHECKING:
 
 
 class BasePlateBlock(ObjectCreate, ABC):
-    """Single base plate block used to construct a bigger baseplate."""
+    """Single baseplate block used to construct a bigger baseplate."""
 
     def __init__(
         self,
         features: Feature | list[Feature] | None = None,
     ) -> None:
-        """Baseplateblock interface.
+        """BasePlateBlock interface.
 
         Args:
             features (Feature | list[Feature] | None, optional): Baseplate
@@ -57,12 +57,7 @@ class BasePlateBlock(ObjectCreate, ABC):
 
 
 class BasePlateBlockFrame(BasePlateBlock):
-    """Most simple kind of baseplate, only the bare minimum.
-
-    Args:
-        features (BasePlateFeature | list[BasePlateFeature] | None, optional): Baseplate
-            features. Defaults to None.
-    """
+    """Most simple kind of baseplate, only the bare minimum."""
 
     @override
     def create_obj(
@@ -109,7 +104,7 @@ class BasePlateBlockFull(BasePlateBlock):
         """Construct BaseplateBlock.
 
         Args:
-            bottom_height (float): The hieght of the bottom part. Defaults to 6.4.
+            bottom_height (float): The height of the bottom part. Defaults to 6.4.
             features (Feature | list[Feature] | None, optional): Baseplate
                 features. Defaults to None.
         """
@@ -182,7 +177,7 @@ class BasePlateBlockSkeleton(BasePlateBlockFull):
 
 
 class BasePlate(BasePartObject):
-    """Base plate object constructed from grid definition."""
+    """Baseplate object constructed from grid definition."""
 
     def __init__(
         self,
@@ -199,7 +194,7 @@ class BasePlate(BasePartObject):
 
         Args:
             grid (list[list[bool]]): Pattern for creating baseplate.
-            baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
+            baseplate_block (BasePlateBlock | None, optional): Type of BasePlateBlock to construct a
                 complete baseplate. Defaults to None.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).
             features (Feature | list[Feature]): Features applied to the basePlate. Defaults to None.
@@ -254,14 +249,14 @@ class BasePlateEqual(BasePlate):
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ):
-        """Construct recatngular BasePlate.
+        """Construct rectangular BasePlate.
 
         Create a baseplate according to grid pattern.
 
         Args:
             size_x (int, optional): x size of baseplate. Defaults to 1.
             size_y (int, optional): y size of baseplate. Defaults to 1.
-            baseplate_block (BasePlateBlock | None, optional): Type of baseplateblock to construct a
+            baseplate_block (BasePlateBlock | None, optional): Type of BasePlateBlock to construct a
                 complete baseplate.
             features (Feature | list[Feature]): Features applied to the basePlate. Defaults to None.
             rotation (RotationLike): angles to rotate about axes. Defaults to (0, 0, 0).

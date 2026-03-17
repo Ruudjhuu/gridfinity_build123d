@@ -21,16 +21,17 @@ class UtilTestCase(TestCase):
             msg = f"{Vector(compare)} != {vector}"
             raise AssertionError(msg) from e
 
-    def _isclose(self, a: float, b: float, places: int) -> bool:
+    @staticmethod
+    def _is_close(a: float, b: float, places: int) -> bool:
         diff = abs(a - b)
         return round(diff, places) == 0
 
     def _vec_almost_equal(self, vec_a: Vector, vec_b: Vector, places: int) -> bool:
         return all(
             [
-                self._isclose(vec_a.X, vec_b.X, places),
-                self._isclose(vec_a.Y, vec_b.Y, places),
-                self._isclose(vec_a.Z, vec_b.Z, places),
+                self._is_close(vec_a.X, vec_b.X, places),
+                self._is_close(vec_a.Y, vec_b.Y, places),
+                self._is_close(vec_a.Z, vec_b.Z, places),
             ],
         )
 
