@@ -448,7 +448,7 @@ class Utils:  # pylint: disable=too-few-public-methods
 
             with BuildSketch() as rect:
                 if profile_type == StackProfile.ProfileType.BIN:
-                    e = gridfinity_standard.grid.tollerance
+                    e = gridfinity_standard.grid.tolerance
                 else:
                     e = 0.0
 

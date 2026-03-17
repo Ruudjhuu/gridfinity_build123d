@@ -43,7 +43,7 @@ class BinTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 21), bbox.size)
-        self.assertAlmostEqual(2100, part.part.volume)
+        self.assertAlmostEqual(2100.0, part.part.volume)
 
     def test_bin_height_in_units(self) -> None:
         base = Box(10, 10, 1)
@@ -62,7 +62,7 @@ class BinTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 28), bbox.size)
-        self.assertAlmostEqual(2800, part.part.volume)
+        self.assertAlmostEqual(2800.0, part.part.volume)
 
     def test_bin_lip(self) -> None:
         base = Box(10, 10, 1)
@@ -84,7 +84,7 @@ class BinTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 21), bbox.size)
-        self.assertAlmostEqual(2100, part.part.volume)
+        self.assertAlmostEqual(2100.0, part.part.volume)
 
     def test_bin_height_and_height_in_units(self) -> None:
         self.assertRaises(

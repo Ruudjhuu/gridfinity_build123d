@@ -77,11 +77,11 @@ class FeatureTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((1, 1, 1), bbox.size)
-        self.assertAlmostEqual(1, part.part.volume)
+        self.assertAlmostEqual(1.0, part.part.volume)
 
 
 class HoleFeatureTest(testutils.UtilTestCase):
-    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[misc]
+    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[untyped-decorator]
     def test_hole_feature(self, radius: float, depth: float) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
         part = HoleFeature(f_loc, radius, depth).create_obj()
@@ -231,7 +231,7 @@ class GridfinityRefinedConnectionCutoutTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((14, 9, 3), bbox.size)
-        self.assertAlmostEqual(270, part.volume)
+        self.assertAlmostEqual(270.0, part.volume)
 
 
 class GridfinityRefinedScrewHoleTest(testutils.UtilTestCase):
@@ -364,7 +364,7 @@ class BasePlateBottomSideRoundTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((30, 30, 10), side_part.part.bounding_box().size)
         self.assertLess(full_part.part.volume, side_part.part.volume)
 
-    @parameterized.expand(  # type: ignore[misc]
+    @parameterized.expand(  # type: ignore[untyped-decorator]
         [
             (Direction.FRONT, Axis.Y, 0, -1),
             (Direction.BACK, Axis.Y, -1, 0),
@@ -468,10 +468,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop().apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 5, bot_face.width)
+        self.assertAlmostEqual(50 - 5.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 5, front_face.length)
+        self.assertAlmostEqual(50 - 5.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
@@ -483,10 +483,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop(20).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 20, bot_face.width)
+        self.assertAlmostEqual(50 - 20.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 20, front_face.length)
+        self.assertAlmostEqual(50 - 20.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
@@ -503,10 +503,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop(wall_correction=10).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 5 - 10, bot_face.width)
+        self.assertAlmostEqual(50 - 5 - 10.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 5, front_face.length)
+        self.assertAlmostEqual(50 - 5.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50 - 10, 50), bbox.size)

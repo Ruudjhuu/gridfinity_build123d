@@ -211,8 +211,8 @@ class BottomSides(FeatureLocation):
         with Locations(face), Locations(pts), Locations((0, self._offset, 0)):
             yield
 
+    @staticmethod
     def _get_locations_on_edges(
-        self,
         edge_filter: ShapePredicate | Axis | Plane | GeomType,
         face: Face,
         nr_of_points: int,

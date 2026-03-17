@@ -30,7 +30,7 @@ class TopMiddleTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 1, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 1.0, part.part.volume)
 
 
 class BottomMiddleTest(testutils.UtilTestCase):
@@ -52,7 +52,7 @@ class BottomMiddleTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 1, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 1.0, part.part.volume)
 
 
 class BottomCornersTest(testutils.UtilTestCase):
@@ -84,7 +84,7 @@ class BottomCornersTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 4, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 4.0, part.part.volume)
 
 
 class TopCornersTest(testutils.UtilTestCase):
@@ -116,7 +116,7 @@ class TopCornersTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 4, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 4.0, part.part.volume)
 
 
 class BottomSidesTest(testutils.UtilTestCase):
@@ -150,7 +150,7 @@ class BottomSidesTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 4 * 3 * 2, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 4 * 3 * 2.0, part.part.volume)
 
     def test_bottomsides_offset(self) -> None:
         with BuildPart() as part:
@@ -182,7 +182,7 @@ class BottomSidesTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 4 * 3 * 2, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 4 * 3 * 2.0, part.part.volume)
 
     def test_bottomsides_multi_side(self) -> None:
         with BuildPart() as part:
@@ -220,4 +220,4 @@ class BottomSidesTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 30), bbox.size)
-        self.assertAlmostEqual(50 * 50 * 30 - 10 * 3 * 2, part.part.volume)
+        self.assertAlmostEqual(50 * 50 * 30 - 10 * 3 * 2.0, part.part.volume)

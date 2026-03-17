@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, ClassVar, override
+from typing import TYPE_CHECKING, ClassVar, Literal, override
 
-from bd_warehouse.thread import Thread  # pyright: ignore[reportMissingTypeStubs]
+from bd_warehouse.thread import (  # type: ignore[import-untyped]
+    Thread,  # pyright: ignore[reportMissingTypeStubs]
+)
 from build123d import (
     Align,
     Axis,
@@ -35,18 +37,22 @@ from build123d import (
     SagittaArc,
     Transition,
     add,  # pyright: ignore[reportUnknownVariableType]
-    chamfer,
     extrude,
     fillet,
     make_face,
     mirror,
     sweep,
 )
+from build123d import (
+    chamfer as chamfer_op,
+)
 
 from .constants import gf_bin, gridfinity_standard
 from .utils import Direction, ObjectCreate
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from .feature_locations import FeatureLocation
 
 
@@ -401,6 +407,7 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
         root_width = 1.21
         pitch = root_width + 0.29
         length = 4
+        end_finishes: tuple[Literal["chamfer"], Literal["chamfer"]] = ("chamfer", "chamfer")
 
         with BuildPart() as part:
             _ = Cylinder(
@@ -416,7 +423,7 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
                 pitch,
                 length,
                 apex_offset=0,
-                end_finishes=("chamfer", "chamfer"),
+                end_finishes=end_finishes,
                 align=(Align.CENTER, Align.CENTER, Align.MAX),
             )
 
@@ -648,6 +655,7 @@ class BasePlateBottomSideRound(ContextFeature):
             Direction.RIGHT,
         )
 
+        raw_directions: Sequence[Direction]
         if direction is None:
             raw_directions = allowed_directions
         elif isinstance(direction, Direction):
@@ -674,10 +682,11 @@ class BasePlateBottomSideRound(ContextFeature):
                 _ = Circle(self.radius)
             _ = extrude(amount=length)
 
-        if not cyl_tool.part:  # pragma: no cover
+        part = cyl_tool.part
+        if not isinstance(part, Part):  # pragma: no cover
             msg = "Part is empty"
-            raise RuntimeError(msg)
-        return cyl_tool.part
+            raise TypeError(msg)
+        return part
 
     def _create_cutter_tool(self, length: float) -> Part:
         """Create a cutter by subtracting a cylinder from a box, creating a quarter-round shape."""
@@ -687,10 +696,11 @@ class BasePlateBottomSideRound(ContextFeature):
                 cylinder = self._create_cylinder_tool(length=length)
                 _ = add(cylinder, mode=Mode.SUBTRACT)
 
-        if not cutter.part:  # pragma: no cover
+        part = cutter.part
+        if not isinstance(part, Part):  # pragma: no cover
             msg = "Part is empty"
-            raise RuntimeError(msg)
-        return cutter.part
+            raise TypeError(msg)
+        return part
 
     def _get_cutter_tool_location(
         self,
@@ -737,7 +747,7 @@ class BasePlateBottomSideRound(ContextFeature):
                 cutter_rotation = self._get_cutter_tool_rotation(direction)
                 with Locations(cutter_location), Locations(cutter_rotation):
                     _ = add(cutter, mode=Mode.SUBTRACT)
-        except ValueError as exp:
+        except ValueError as exp:  # pragma: no cover
             msg = "Baseplate bottom side round could not be created, Parent object too small"
             raise ValueError(msg) from exp
 
@@ -768,7 +778,7 @@ class Label(CompartmentFeature):
         face_top = context.faces().sort_by(Axis.Z)[-1]
         edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
         try:
-            _ = chamfer(
+            _ = chamfer_op(
                 edge_top_back,
                 length=gf_bin.label.width,
                 angle=self.angle,

@@ -25,7 +25,7 @@ class BaseTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(20, 20, 10), bbox.size)
-        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5, part.part.volume)
+        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5.0, part.part.volume)
 
     def test_base_1_2(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
@@ -40,7 +40,7 @@ class BaseTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(20, 62, 10), bbox.size)
-        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5, part.part.volume)
+        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5.0, part.part.volume)
 
     def test_base_2_1(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
@@ -55,7 +55,7 @@ class BaseTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(62, 20, 10), bbox.size)
-        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5, part.part.volume)
+        self.assertAlmostEqual(20 * 20 * 5 * 2 + 10 * 10 * 5.0, part.part.volume)
 
     def test_base_2_2(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
@@ -70,7 +70,7 @@ class BaseTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(62, 62, 10), bbox.size)
-        self.assertAlmostEqual(20 * 20 * 5 * 4 + 10 * 10 * 5, part.part.volume)
+        self.assertAlmostEqual(20 * 20 * 5 * 4 + 10 * 10 * 5.0, part.part.volume)
 
     def test_base_magnet_screw(self, base_mock: MagicMock, platform_mock: MagicMock) -> None:
         mock_box = mocks.BoxAsMock(20, 20, 5)
@@ -87,7 +87,7 @@ class BaseTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(20, 20, 10), bbox.size)
-        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5, part.part.volume)
+        self.assertAlmostEqual(20 * 20 * 5 + 10 * 10 * 5.0, part.part.volume)
 
 
 @patch("gridfinity_build123d.base.Base.__init__")

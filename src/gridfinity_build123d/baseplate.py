@@ -222,8 +222,8 @@ class BasePlate(BasePartObject):
             def edge_filter(shape: Shape[Edge]) -> bool:
                 inner_edge = shape.edge()
                 if not inner_edge:  # pragma: no cover
-                    msg = "Edge is empty"
-                    raise RuntimeError(msg)
+                    m = "Edge is empty"
+                    raise RuntimeError(m)
 
                 return isclose(inner_edge.length, z_height)
 
