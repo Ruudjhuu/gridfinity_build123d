@@ -799,8 +799,8 @@ class Scoop(CompartmentFeature):
         Args:
             radius (float, optional): Radius of the scoop. Defaults to gf_bin.scoop.radius.
             wall_correction (float, optional): Makes wall of sweep side thicker. Can be used to
-                compesate for the stacking lid so one smooth ramp is created to make it easier to
-                    pick items out of a bin.
+                compensate for the stacking lid so one smooth ramp is created to make it easier to
+                pick items out of a bin.
         """
         self.radius: float = radius
         self.wall_correction: float = wall_correction

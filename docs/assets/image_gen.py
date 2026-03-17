@@ -17,6 +17,7 @@ from gridfinity_build123d import (
     BasePlate,
     BasePlateBlockFull,
     BasePlateBlockSkeleton,
+    BasePlateBottomSideRound,
     BasePlateEqual,
     Bin,
     BottomCorners,
@@ -24,6 +25,7 @@ from gridfinity_build123d import (
     BottomSides,
     Compartment,
     CompartmentsEqual,
+    Direction,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
     GridfinityRefinedMagnetHoleSide,
@@ -273,6 +275,15 @@ Convert.part_to_png(
         ),
     ),
     "base_plate_weighted",
+    CameraPosition.CAMERA_BOT,
+)
+Convert.part_to_png(
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+        features=BasePlateBottomSideRound(radius=1, direction=Direction.FRONT),
+    ),
+    "base_plate_bottom_side_round_single",
     CameraPosition.CAMERA_BOT,
 )
 

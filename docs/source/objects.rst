@@ -179,6 +179,30 @@ BasePlates
 
         .. image:: ../assets/base_plate_weighted.png
 
+    .. grid-item-card:: :class:`BasePlateBottomSideRound` — one side
+
+        .. raw:: html
+
+            <details>
+            <summary>source</summary>
+
+        .. testcode::
+
+            BasePlateEqual(
+                size_x=2,
+                size_y=2,
+                features=BasePlateBottomSideRound(
+                    radius=1,
+                    direction=Direction.FRONT,
+                ),
+            )
+
+        .. raw:: html
+
+            </details>
+
+        .. image:: ../assets/base_plate_bottom_side_round_single.png
+
 
 Bases
 -----

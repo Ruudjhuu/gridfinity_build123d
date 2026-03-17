@@ -83,3 +83,11 @@ Features List
 
         +++
         Label for bin compartments.
+
+    .. grid-item-card:: :class:`gridfinity_build123d.BasePlateBottomSideRound`
+
+        .. image:: ../assets/base_plate_bottom_side_round_single.png
+
+        +++
+        Round the underside perimeter edges of a baseplate so it fits in drawers
+        with internal rounding between the bottom and sides.
