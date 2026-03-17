@@ -35,6 +35,14 @@ class BasePlateBlockFrameTest(testutils.UtilTestCase):
         self.assertVectorAlmostEqual((42, 42, 4.649), bbox.size)
         self.assertAlmostEqual(1291.4544166737892, part.part.volume)
 
+    def test_base_plate_block_frame_height(self) -> None:
+        with BuildPart() as part:
+            BasePlateBlockFrame(bottom_height=10).create_obj()
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((42, 42, 14.649), bbox.size)
+        self.assertAlmostEqual(5765.90685383006, part.part.volume)
+
 
 class BasePlateBlockFullTest(testutils.UtilTestCase):
     def test_base_plate_block_frame(self) -> None:

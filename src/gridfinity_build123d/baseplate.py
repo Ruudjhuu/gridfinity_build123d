@@ -60,6 +60,21 @@ class BasePlateBlock(ObjectCreate, ABC):
 class BasePlateBlockFrame(BasePlateBlock):
     """Most simple kind of baseplate, only the bare minimum."""
 
+    def __init__(
+        self,
+        bottom_height: float = 0.0,
+        features: Feature | list[Feature] | None = None,
+    ) -> None:
+        """Construct BasePlateBlockFrame.
+
+        Args:
+            bottom_height (float): The height of the bottom part. Defaults to 0.0.
+            features (Feature | list[Feature] | None, optional): Baseplate
+                features. Defaults to None.
+        """
+        super().__init__(features)
+        self.bottom_height: float = bottom_height
+
     @override
     def create_obj(
         self,
@@ -84,6 +99,11 @@ class BasePlateBlockFrame(BasePlateBlock):
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
             _ = add(base_block.part, mode=Mode.SUBTRACT)
+
+            if self.bottom_height > 0:
+                bottom_face = part.faces().sort_by(Axis.Z)[0]
+                _ = extrude(to_extrude=bottom_face, amount=self.bottom_height, dir=(0, 0, -1))
+
             for feature in self.features:
                 feature.apply(part)
 
