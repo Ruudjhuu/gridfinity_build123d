@@ -31,6 +31,7 @@ from build123d import (
     mirror,
 )
 
+from gridfinity_build123d.constants import gridfinity_standard
 from gridfinity_build123d.utils import ObjectCreate, StackProfile, Utils
 
 if TYPE_CHECKING:
@@ -77,9 +78,9 @@ class BasePlateBlockFrame(BasePlateBlock):
         # Invert the base_block to create a baseplate frame
         with BuildPart() as part:
             _ = Box(
-                42,
-                42,
-                block.part.bounding_box().size.Z,
+                gridfinity_standard.grid.size,
+                gridfinity_standard.grid.size,
+                base_block.part.bounding_box().size.Z - 0.001,  # Fix for non-manifold edges
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
             _ = add(base_block.part, mode=Mode.SUBTRACT)

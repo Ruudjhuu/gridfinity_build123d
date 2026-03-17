@@ -21,9 +21,9 @@ class BasePlateTest(testutils.UtilTestCase):
         with BuildPart() as part:
             BasePlateEqual(size_x=2, size_y=3, baseplate_block=BasePlateBlockFrame())
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((84, 126, 4.65), bbox.size)
-        self.assertAlmostEqual(9935.172368218784, part.part.area)
-        self.assertAlmostEqual(7684.943883967003, part.part.volume)
+        self.assertVectorAlmostEqual((84, 126, 4.649), bbox.size)
+        self.assertAlmostEqual(9934.358783084768, part.part.area)
+        self.assertAlmostEqual(7684.874727987361, part.part.volume)
 
     def test_base_plate_weighted(self) -> None:
         with BuildPart() as part:
@@ -39,9 +39,9 @@ class BasePlateTest(testutils.UtilTestCase):
                 ),
             )
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((126.0, 84.0, 11.05), bbox.size)
-        self.assertAlmostEqual(32629.38237429975, part.part.area)
-        self.assertAlmostEqual(57020.96113525161, part.part.volume)
+        self.assertVectorAlmostEqual((126.0, 84.0, 11.049), bbox.size)
+        self.assertAlmostEqual(32628.56878916578, part.part.area)
+        self.assertAlmostEqual(57020.89197927, part.part.volume)
 
     def test_base_plate_bottom_side_round_direction(self) -> None:
         base_plate = BasePlateEqual(size_x=2, size_y=2)
