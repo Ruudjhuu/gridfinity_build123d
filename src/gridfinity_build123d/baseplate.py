@@ -67,13 +67,14 @@ class BasePlateBlockFrame(BasePlateBlock):
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
         """Overwrites BasePlateBlock.create_obj."""
-        with BuildPart() as block:
+        with BuildPart() as base_block:
             _ = Utils.create_profile_block(StackProfile.ProfileType.PLATE)
 
-        if not block.part:  # pragma: no cover
+        if not base_block.part:  # pragma: no cover
             msg = "block is empty"
             raise RuntimeError(msg)
 
+        # Invert the base_block to create a baseplate frame
         with BuildPart() as part:
             _ = Box(
                 42,
@@ -81,8 +82,7 @@ class BasePlateBlockFrame(BasePlateBlock):
                 block.part.bounding_box().size.Z,
                 align=(Align.CENTER, Align.CENTER, Align.MIN),
             )
-            _ = add(block.part, mode=Mode.SUBTRACT)
-
+            _ = add(base_block.part, mode=Mode.SUBTRACT)
             for feature in self.features:
                 feature.apply(part)
 

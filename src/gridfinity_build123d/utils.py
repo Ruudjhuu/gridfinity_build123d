@@ -432,20 +432,13 @@ class Utils:  # pylint: disable=too-few-public-methods
         with BuildPart() as part:
             with (
                 BuildSketch(Plane.XZ) as profile,
-                Locations(
-                    (
-                        gridfinity_standard.grid.size / 2 - offset_value,
-                        0,
-                    ),
-                ),
+                Locations((gridfinity_standard.grid.size / 2 - offset_value, 0)),
             ):
                 _ = StackProfile(profile_type, align=(Align.MAX, Align.MIN))
                 if offset_value:
-                    _ = offset(
-                        amount=offset_value,
-                        kind=Kind.INTERSECTION,
-                    )
+                    _ = offset(amount=offset_value, kind=Kind.INTERSECTION)
 
+            # 2D Rectangle
             with BuildSketch() as rect:
                 if profile_type == StackProfile.ProfileType.BIN:
                     e = gridfinity_standard.grid.tolerance
@@ -457,15 +450,23 @@ class Utils:  # pylint: disable=too-few-public-methods
                     gridfinity_standard.grid.size - e,
                     gridfinity_standard.grid.radius - e * 0.5,
                 )
+
+            # Create a 3d Rectangle from the 2D Rectangle sketch
             _ = extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 
-            path = part.wires().sort_by(Axis.Z)[-1]
-            _ = sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+            top_outer_edge_path = part.wires().sort_by(Axis.Z)[-1]
+
+            # Subtract the profile from the 3D rectangle to create the stacking lip
+            _ = sweep(sections=profile.sketch, path=top_outer_edge_path, mode=Mode.SUBTRACT)
 
         if not part.part:  # pragma: no cover
             msg = "Part is empty"
             raise RuntimeError(msg)
 
+        # Resulting part is a profile base block (male)
+        # │ ________________
+        # │ \              /
+        # │  |____________|
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -496,35 +497,34 @@ class StackProfile(BaseSketchObject):
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
         """
-        match stack_type:
-            case StackProfile.ProfileType.BIN:
-                height_3 = gridfinity_standard.stacking_lip.height_3_bin
-            case StackProfile.ProfileType.PLATE:
-                height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
+        h1 = gridfinity_standard.stacking_lip.height_1
+        h2 = gridfinity_standard.stacking_lip.height_2
+        if stack_type == StackProfile.ProfileType.BIN:
+            h3 = gridfinity_standard.stacking_lip.height_3_bin
+        else:
+            h3 = gridfinity_standard.stacking_lip.height_3_base_plate
 
         with BuildSketch() as profile:
             with BuildLine():
+                # | Drawn Profile shape
+                # |
+                # |         •D h1+h2+h3
+                # |        / |
+                # |       /  |
+                # |      /   |
+                # |    C•    | h1+h2
+                # |     |    |
+                # |     |    |
+                # |    B•    | h1
+                # |   /      |
+                # | A•-------•E
+                # |  0  h1   h1+h3
                 _ = Polyline(
-                    (0, 0),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1 + height_3,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2
-                        + height_3,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1 + height_3,
-                        0,
-                    ),
+                    (0, 0),  # A
+                    (h1, h1),  # B
+                    (h1, h1 + h2),  # C
+                    (h1 + h3, h1 + h2 + h3),  # D
+                    (h1 + h3, 0),  # E
                     close=True,
                 )
             _ = make_face()

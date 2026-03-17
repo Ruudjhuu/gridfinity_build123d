@@ -145,20 +145,20 @@ class BaseBlock(BasePartObject):
 
         features = features if isinstance(features, Iterable) else [features]
 
-        with BuildPart() as baseblock:
+        with BuildPart() as base_block:
             _ = Utils.create_profile_block(
                 StackProfile.ProfileType.BIN,
                 gridfinity_standard.stacking_lip.offset,
             )
 
             for feature in features:
-                feature.apply(baseblock)
+                feature.apply(base_block)
 
-        if not baseblock.part:  # pragma: no cover
+        if not base_block.part:  # pragma: no cover
             msg = "Part is empty"
             raise RuntimeError(msg)
 
-        super().__init__(baseblock.part, rotation, align, mode)
+        super().__init__(base_block.part, rotation, align, mode)
 
 
 class BaseBlockPlatform(BasePartObject):
