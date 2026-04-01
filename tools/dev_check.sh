@@ -13,3 +13,5 @@ python -m unittest discover ./tests -v -p "test_int*"
 python -m coverage run -m unittest discover ./tests/ -v -p "test_unit*"
 
 python -m coverage report -m --fail-under=100
+
+python -m basedpyright --warnings

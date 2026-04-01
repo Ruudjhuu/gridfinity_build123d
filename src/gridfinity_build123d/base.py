@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 class Base(BasePartObject):
-    """Gridfinity Base objec.
+    """Gridfinity Base object.
 
     Basis for bins and other gridfinity modules. This is the part that fits in the Baseplates.
     """
@@ -102,8 +102,8 @@ class BaseEqual(Base):
         """Construct a rectangular Base object.
 
         Args:
-            grid_x (int, optional): Number of grid units on x axis. Defaults to 1.
-            grid_y (int, optional): Number of grid units on y axis. Defaults to 1.
+            grid_x (int, optional): Number of grid units on x-axis. Defaults to 1.
+            grid_y (int, optional): Number of grid units on y-axis. Defaults to 1.
             features (ObjectFeature | list[ObjectFeature] | None, optional): ObjectFeature
                 or list of ObjectFeatures. Defaults to None.
             rotation (RotationLike, optional): Angels to rotate around axes. Defaults to (0, 0, 0).
@@ -145,27 +145,27 @@ class BaseBlock(BasePartObject):
 
         features = features if isinstance(features, Iterable) else [features]
 
-        with BuildPart() as baseblock:
+        with BuildPart() as base_block:
             _ = Utils.create_profile_block(
                 StackProfile.ProfileType.BIN,
                 gridfinity_standard.stacking_lip.offset,
             )
 
             for feature in features:
-                feature.apply(baseblock)
+                feature.apply(base_block)
 
-        if not baseblock.part:  # pragma: no cover
+        if not base_block.part:  # pragma: no cover
             msg = "Part is empty"
             raise RuntimeError(msg)
 
-        super().__init__(baseblock.part, rotation, align, mode)
+        super().__init__(base_block.part, rotation, align, mode)
 
 
 class BaseBlockPlatform(BasePartObject):
     """BaseBlockPlatform.
 
     Create a single baseblock with a rectangular platform on top. The rectangular platform makes it
-    posible to stack the blocks in x and y direction. After creating an array it is meant to cut or
+    possible to stack the blocks in x and y direction. After creating an array it is meant to cut or
     offset the platform to size.
     """
 

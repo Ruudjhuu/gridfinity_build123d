@@ -8,18 +8,18 @@ from gridfinity_build123d.utils import (
     Attach,
     Direction,
     StackProfile,
-    UnsuportedEnumValueError,
+    UnsupportedEnumValueError,
     Utils,
 )
 
 
-class UnsuportedEnumValueErrorTest(testutils.UtilTestCase):
+class UnsupportedEnumValueErrorTest(testutils.UtilTestCase):
     def test_enum_value_error(self) -> None:
         class TestEnum(Enum):
             TEST_A = auto()
 
         # Check if no exceptions are raised
-        UnsuportedEnumValueError(TestEnum.TEST_A)
+        UnsupportedEnumValueError(TestEnum.TEST_A)
 
 
 class StackProfileTest(testutils.UtilTestCase):
@@ -229,7 +229,8 @@ class UtilsPlaceByGridTest(TestCase):
     def test_place_by_grid_nothing(self) -> None:
         box = Box(10, 15, 20)
         grid = [[False]]
-        self.assertRaises(ValueError, Utils.place_by_grid, box, grid)
+        with self.assertRaisesRegex(ValueError, "does not produce any locations"):
+            Utils.place_by_grid(box, grid)
 
     def test_place_by_grid_width_length(self) -> None:
         box = Box(10, 15, 20)

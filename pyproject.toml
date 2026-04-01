@@ -15,6 +15,7 @@ dev = [
   "ocp_vscode",
   "parameterized",
   "ruff",
+  "mypy",
   "pytest-markdown-docs",
   "Sphinx",
   "sphinx-rtd-theme",

@@ -20,6 +20,7 @@ from parameterized import parameterized  # type: ignore[import-untyped]
 from gridfinity_build123d.base import Base
 from gridfinity_build123d.feature_locations import BottomCorners, FeatureLocation
 from gridfinity_build123d.features import (
+    BasePlateBottomSideRound,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
     GridfinityRefinedMagnetHoleSide,
@@ -36,6 +37,7 @@ from gridfinity_build123d.features import (
     ScrewHoleCountersink,
     Weighted,
 )
+from gridfinity_build123d.utils import Direction
 
 
 class FeatureTest(testutils.UtilTestCase):
@@ -75,11 +77,11 @@ class FeatureTest(testutils.UtilTestCase):
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((1, 1, 1), bbox.size)
-        self.assertAlmostEqual(1, part.part.volume)
+        self.assertAlmostEqual(1.0, part.part.volume)
 
 
 class HoleFeatureTest(testutils.UtilTestCase):
-    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[misc]
+    @parameterized.expand([[1, 2], [3, 4], [10, 2]])  # type: ignore[untyped-decorator]
     def test_hole_feature(self, radius: float, depth: float) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
         part = HoleFeature(f_loc, radius, depth).create_obj()
@@ -229,7 +231,7 @@ class GridfinityRefinedConnectionCutoutTest(testutils.UtilTestCase):
 
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((14, 9, 3), bbox.size)
-        self.assertAlmostEqual(270, part.volume)
+        self.assertAlmostEqual(270.0, part.volume)
 
 
 class GridfinityRefinedScrewHoleTest(testutils.UtilTestCase):
@@ -284,7 +286,7 @@ class GridfinityRefinedMagnetHoleSideTest(testutils.UtilTestCase):
 
 
 class WeightedTest(testutils.UtilTestCase):
-    def test_weigthed(self) -> None:
+    def test_weighted(self) -> None:
         f_loc = MagicMock(spec=FeatureLocation)
 
         part = Weighted(f_loc).create_obj()
@@ -292,6 +294,133 @@ class WeightedTest(testutils.UtilTestCase):
         bbox = part.bounding_box()
         self.assertVectorAlmostEqual((38.4, 38.4, 4.0), bbox.size)
         self.assertAlmostEqual(2347.820069221863, part.volume)
+
+
+class BasePlateBottomSideRoundTest(testutils.UtilTestCase):
+    def test_default_direction_uses_all_perimeter_sides(self) -> None:
+        feature = BasePlateBottomSideRound(radius=1)
+
+        self.assertEqual(
+            feature.directions,
+            [Direction.FRONT, Direction.BACK, Direction.LEFT, Direction.RIGHT],
+        )
+
+    def test_duplicate_directions_are_removed(self) -> None:
+        feature = BasePlateBottomSideRound(
+            radius=1,
+            direction=[
+                Direction.RIGHT,
+                Direction.FRONT,
+                Direction.RIGHT,
+                Direction.LEFT,
+                Direction.FRONT,
+            ],
+        )
+
+        self.assertEqual(
+            [Direction.RIGHT, Direction.FRONT, Direction.LEFT],
+            feature.directions,
+        )
+
+    def test_apply(self) -> None:
+        with BuildPart() as part:
+            Box(30, 30, 10)
+            BasePlateBottomSideRound(radius=1).apply(part)
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((30, 30, 10), bbox.size)
+        self.assertLess(part.part.volume, 30 * 30 * 10)
+        self.assertGreater(part.part.volume, 0)
+
+    def test_invalid_radius(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Baseplate bottom side round radius"):
+            _ = BasePlateBottomSideRound(radius=0)
+
+    def test_apply_radius_larger_than_part_thickness_raises(self) -> None:
+        with BuildPart() as part:
+            Box(30, 30, 2)
+            with self.assertRaisesRegex(
+                ValueError,
+                "can't be larger than the baseplate thickness",
+            ):
+                BasePlateBottomSideRound(radius=2.1).apply(part)
+
+    def test_empty_direction_list_not_supported(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "BasePlateBottomSideRound direction needs to be FRONT/BACK/LEFT/RIGHT",
+        ):
+            _ = BasePlateBottomSideRound(radius=1, direction=[])
+
+    def test_apply_direction(self) -> None:
+        with BuildPart() as full_part:
+            Box(30, 30, 10)
+            BasePlateBottomSideRound(
+                radius=1,
+                direction=[
+                    Direction.FRONT,
+                    Direction.BACK,
+                    Direction.LEFT,
+                    Direction.RIGHT,
+                ],
+            ).apply(full_part)
+
+        with BuildPart() as side_part:
+            Box(30, 30, 10)
+            BasePlateBottomSideRound(radius=1, direction=Direction.FRONT).apply(side_part)
+
+        self.assertVectorAlmostEqual((30, 30, 10), full_part.part.bounding_box().size)
+        self.assertVectorAlmostEqual((30, 30, 10), side_part.part.bounding_box().size)
+        self.assertLess(full_part.part.volume, side_part.part.volume)
+
+    @parameterized.expand(  # type: ignore[untyped-decorator]
+        [
+            (Direction.FRONT, Axis.Y, 0, -1),
+            (Direction.BACK, Axis.Y, -1, 0),
+            (Direction.LEFT, Axis.X, 0, -1),
+            (Direction.RIGHT, Axis.X, -1, 0),
+        ],
+    )
+    def test_apply_single_direction_only_affects_requested_side(
+        self,
+        direction: Direction,
+        axis: Axis,
+        target_index: int,
+        opposite_index: int,
+    ) -> None:
+        with BuildPart() as plain_part:
+            Box(30, 30, 10)
+
+        with BuildPart() as rounded_part:
+            Box(30, 30, 10)
+            BasePlateBottomSideRound(radius=1, direction=direction).apply(rounded_part)
+
+        plain_faces = plain_part.faces().filter_by(axis).sort_by(axis)
+        rounded_faces = rounded_part.faces().filter_by(axis).sort_by(axis)
+
+        self.assertLess(
+            rounded_faces[target_index].area,
+            plain_faces[target_index].area,
+        )
+        self.assertAlmostEqual(
+            plain_faces[opposite_index].area,
+            rounded_faces[opposite_index].area,
+            places=6,
+        )
+
+    def test_invalid_direction(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "BasePlateBottomSideRound direction needs to be FRONT/BACK/LEFT/RIGHT",
+        ):
+            _ = BasePlateBottomSideRound(radius=1, direction=Direction.TOP)
+
+    def test_bot_direction_not_supported(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "BasePlateBottomSideRound direction needs to be FRONT/BACK/LEFT/RIGHT",
+        ):
+            _ = BasePlateBottomSideRound(radius=1, direction=Direction.BOT)
 
 
 class LabelTest(testutils.UtilTestCase):
@@ -348,10 +477,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop().apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 5, bot_face.width)
+        self.assertAlmostEqual(50 - 5.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 5, front_face.length)
+        self.assertAlmostEqual(50 - 5.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
@@ -363,10 +492,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop(20).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 20, bot_face.width)
+        self.assertAlmostEqual(50 - 20.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 20, front_face.length)
+        self.assertAlmostEqual(50 - 20.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50, 50), bbox.size)
@@ -383,10 +512,10 @@ class ScoopTest(testutils.UtilTestCase):
             Scoop(wall_correction=10).apply(part)
 
         bot_face = part.faces().filter_by(Axis.Z).sort_by(Axis.Z)[0]
-        self.assertAlmostEqual(50 - 5 - 10, bot_face.width)
+        self.assertAlmostEqual(50 - 5 - 10.0, bot_face.width)
 
         front_face = part.faces().filter_by(Axis.Y).sort_by(Axis.Y)[0]
-        self.assertAlmostEqual(50 - 5, front_face.length)
+        self.assertAlmostEqual(50 - 5.0, front_face.length)
 
         bbox = part.part.bounding_box()
         self.assertVectorAlmostEqual((50, 50 - 10, 50), bbox.size)

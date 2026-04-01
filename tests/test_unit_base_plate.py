@@ -20,8 +20,8 @@ class BasePlateBlockFrameTest(testutils.UtilTestCase):
         with BuildPart() as part:
             BasePlateBlockFrame().create_obj()
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 4.65), bbox.size)
-        self.assertAlmostEqual(1291.4682317566535, part.part.volume)
+        self.assertVectorAlmostEqual((42, 42, 4.649), bbox.size)
+        self.assertAlmostEqual(1291.4544166737892, part.part.volume)
 
     def test_base_plate_block_frame_feature(self) -> None:
         feature = MagicMock(spec=Feature)
@@ -32,8 +32,16 @@ class BasePlateBlockFrameTest(testutils.UtilTestCase):
         feature.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 4.65), bbox.size)
-        self.assertAlmostEqual(1291.4682317566535, part.part.volume)
+        self.assertVectorAlmostEqual((42, 42, 4.649), bbox.size)
+        self.assertAlmostEqual(1291.4544166737892, part.part.volume)
+
+    def test_base_plate_block_frame_height(self) -> None:
+        with BuildPart() as part:
+            BasePlateBlockFrame(bottom_height=10).create_obj()
+
+        bbox = part.part.bounding_box()
+        self.assertVectorAlmostEqual((42, 42, 14.649), bbox.size)
+        self.assertAlmostEqual(5765.90685383006, part.part.volume)
 
 
 class BasePlateBlockFullTest(testutils.UtilTestCase):
@@ -41,15 +49,15 @@ class BasePlateBlockFullTest(testutils.UtilTestCase):
         with BuildPart() as part:
             BasePlateBlockFull().create_obj()
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 11.05), bbox.size)
-        self.assertAlmostEqual(12581.068231756662, part.part.volume)
+        self.assertVectorAlmostEqual((42, 42, 11.049), bbox.size)
+        self.assertAlmostEqual(12581.054416673793, part.part.volume)
 
     def test_base_plate_block_frame_height(self) -> None:
         with BuildPart() as part:
             BasePlateBlockFull(bottom_height=10).create_obj()
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 14.65), bbox.size)
-        self.assertAlmostEqual(18931.46823175665, part.part.volume)
+        self.assertVectorAlmostEqual((42, 42, 14.649), bbox.size)
+        self.assertAlmostEqual(18931.45441667379, part.part.volume)
 
     def test_base_plate_block_frame_feature(self) -> None:
         feature = MagicMock(spec=Feature)
@@ -60,8 +68,8 @@ class BasePlateBlockFullTest(testutils.UtilTestCase):
         feature.apply.assert_called_once()
 
         bbox = part.part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 11.05), bbox.size)
-        self.assertAlmostEqual(12581.068231756662, part.part.volume)
+        self.assertVectorAlmostEqual((42, 42, 11.049), bbox.size)
+        self.assertAlmostEqual(12581.054416673793, part.part.volume)
 
 
 @patch("gridfinity_build123d.baseplate.Utils.place_by_grid", autospec=True)
@@ -165,5 +173,5 @@ class BasePlateBlockSkeletonTest(testutils.UtilTestCase):
         part = BasePlateBlockSkeleton().create_obj()
 
         bbox = part.bounding_box()
-        self.assertVectorAlmostEqual((42, 42, 11.05), bbox.size)
-        self.assertAlmostEqual(6310.636342511634, part.volume)
+        self.assertVectorAlmostEqual((42, 42, 11.049), bbox.size)
+        self.assertAlmostEqual(6310.622527428775, part.volume)

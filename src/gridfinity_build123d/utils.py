@@ -1,4 +1,4 @@
-"""Utiity module."""
+"""Utility module."""
 
 from __future__ import annotations
 
@@ -36,8 +36,8 @@ from build123d import (
 from .constants import gridfinity_standard
 
 
-class UnsuportedEnumValueError(Exception):
-    """Raised when a unsuported enum value is handled."""
+class UnsupportedEnumValueError(Exception):
+    """Raised when an unsupported enum value is handled."""
 
     def __init__(self, enum_var: Enum) -> None:
         """Construct Enum exception.
@@ -45,7 +45,7 @@ class UnsuportedEnumValueError(Exception):
         Args:
             enum_var (Enum): Enum value
         """
-        super().__init__(f"Unsuported enum value: {enum_var}")
+        super().__init__(f"Unsupported enum value: {enum_var}")
 
 
 class ObjectCreate(ABC):
@@ -96,10 +96,10 @@ class Direction(Enum):
             direction (Direction): Direction to convert.
 
         Raises:
-            ValueError: Unkonw Direction.
+            ValueError: Unknown Direction.
 
         Returns:
-            Tuple[int, int, int]: Output tupple.
+            Tuple[int, int, int]: Output tuple.
         """
         match direction:
             case Direction.TOP:
@@ -145,16 +145,16 @@ class Utils:  # pylint: disable=too-few-public-methods
     ) -> None:
         """Attach.
 
-        Attaches other object acording to "attach".
+        Attaches other object according to "attach".
 
         Args:
             context (BuildPart): context were attach should be executed.
-            part (Part): the part to be attached
+            part (Part): the part to be attached to the context.
             attach (Attach): Direction to attach
             offset_value (float, optional): offset. Defaults to 0.
 
         Raises:
-            UnsuportedEnumValueError: Unsuported Enum value
+            UnsupportedEnumValueError: Unsupported Enum value
         """
         context_part = context.part
         if not isinstance(context_part, Part):  # pragma: no cover
@@ -234,7 +234,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         """Get subclasses of a base class recursively.
 
         Args:
-            class_name (Any): class type to get subcalsses from
+            class_name (Any): class type to get subclasses from
 
         Returns:
             Any: list of child class types
@@ -332,7 +332,7 @@ class Utils:  # pylint: disable=too-few-public-methods
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
 
         Raises:
-            ValueError: grid does not reasemble locations
+            ValueError: grid does not produce any locations
 
         Returns:
             BasePartObject: gridlike object
@@ -347,7 +347,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         locations = Utils.locate_grid(grid, width, length)
 
         if not locations:
-            msg = f"grid {grid} does not reasemble locations"
+            msg = f"grid {grid} does not produce any locations"
             raise ValueError(msg)
 
         with BuildPart() as part, Locations(locations):
@@ -369,7 +369,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         """Create the platform for the bin.
 
         This function considers that the bins have a different dimension than the base elements
-        (41.5mm instead of 42mm). This is to allow for certain tolerance for the bins. Therefore the
+        (41.5mm instead of 42mm). This is to allow for certain tolerance for the bins. Therefore, the
         size of the grid is set to the gridfinity standard grid size instead of the size of the
         sketch.
 
@@ -387,7 +387,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         width = gridfinity_standard.grid.size
         length = gridfinity_standard.grid.size
 
-        tol = gridfinity_standard.grid.tollerance
+        tol = gridfinity_standard.grid.tolerance
 
         with BuildSketch() as base:
             _ = Rectangle(length, width)
@@ -416,7 +416,7 @@ class Utils:  # pylint: disable=too-few-public-methods
         align: Align | tuple[Align, Align, Align] | None = None,
         mode: Mode = Mode.ADD,
     ) -> BasePartObject:
-        """Create block with stacing profile.
+        """Create block with stacking profile.
 
         Args:
             profile_type (StackProfile.ProfileType): Profile type
@@ -432,23 +432,16 @@ class Utils:  # pylint: disable=too-few-public-methods
         with BuildPart() as part:
             with (
                 BuildSketch(Plane.XZ) as profile,
-                Locations(
-                    (
-                        gridfinity_standard.grid.size / 2 - offset_value,
-                        0,
-                    ),
-                ),
+                Locations((gridfinity_standard.grid.size / 2 - offset_value, 0)),
             ):
                 _ = StackProfile(profile_type, align=(Align.MAX, Align.MIN))
                 if offset_value:
-                    _ = offset(
-                        amount=offset_value,
-                        kind=Kind.INTERSECTION,
-                    )
+                    _ = offset(amount=offset_value, kind=Kind.INTERSECTION)
 
+            # 2D Rectangle
             with BuildSketch() as rect:
                 if profile_type == StackProfile.ProfileType.BIN:
-                    e = gridfinity_standard.grid.tollerance
+                    e = gridfinity_standard.grid.tolerance
                 else:
                     e = 0.0
 
@@ -457,15 +450,23 @@ class Utils:  # pylint: disable=too-few-public-methods
                     gridfinity_standard.grid.size - e,
                     gridfinity_standard.grid.radius - e * 0.5,
                 )
+
+            # Create a 3d Rectangle from the 2D Rectangle sketch
             _ = extrude(to_extrude=rect.face(), amount=profile.sketch.bounding_box().max.Z)
 
-            path = part.wires().sort_by(Axis.Z)[-1]
-            _ = sweep(sections=profile.sketch, path=path, mode=Mode.SUBTRACT)
+            top_outer_edge_path = part.wires().sort_by(Axis.Z)[-1]
+
+            # Subtract the profile from the 3D rectangle to create the stacking lip
+            _ = sweep(sections=profile.sketch, path=top_outer_edge_path, mode=Mode.SUBTRACT)
 
         if not part.part:  # pragma: no cover
             msg = "Part is empty"
             raise RuntimeError(msg)
 
+        # Resulting part is a profile base block (male)
+        # │ ________________
+        # │ \              /
+        # │  |____________|
         return BasePartObject(part.part, rotation, align, mode)
 
 
@@ -487,7 +488,7 @@ class StackProfile(BaseSketchObject):
     ):
         """StackProfile.
 
-        Create a profile of the gridfinity stacking system. Usualy used in the sweep function.
+        Create a profile of the gridfinity stacking system. Usually used in the sweep function.
 
         Args:
             stack_type (ProfileType): Type of stacking lip (Bin vs Plate).
@@ -496,35 +497,34 @@ class StackProfile(BaseSketchObject):
                 object. Defaults to None.
             mode (Mode, optional): Combination mode. Defaults to Mode.ADD.
         """
-        match stack_type:
-            case StackProfile.ProfileType.BIN:
-                height_3 = gridfinity_standard.stacking_lip.height_3_bin
-            case StackProfile.ProfileType.PLATE:
-                height_3 = gridfinity_standard.stacking_lip.height_3_base_plate
+        h1 = gridfinity_standard.stacking_lip.height_1
+        h2 = gridfinity_standard.stacking_lip.height_2
+        if stack_type == StackProfile.ProfileType.BIN:
+            h3 = gridfinity_standard.stacking_lip.height_3_bin
+        else:
+            h3 = gridfinity_standard.stacking_lip.height_3_base_plate
 
         with BuildSketch() as profile:
             with BuildLine():
+                # | Drawn Profile shape
+                # |
+                # |         •D h1+h2+h3
+                # |        / |
+                # |       /  |
+                # |      /   |
+                # |    C•    | h1+h2
+                # |     |    |
+                # |     |    |
+                # |    B•    | h1
+                # |   /      |
+                # | A•-------•E
+                # |  0  h1   h1+h3
                 _ = Polyline(
-                    (0, 0),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1 + height_3,
-                        gridfinity_standard.stacking_lip.height_1
-                        + gridfinity_standard.stacking_lip.height_2
-                        + height_3,
-                    ),
-                    (
-                        gridfinity_standard.stacking_lip.height_1 + height_3,
-                        0,
-                    ),
+                    (0, 0),  # A
+                    (h1, h1),  # B
+                    (h1, h1 + h2),  # C
+                    (h1 + h3, h1 + h2 + h3),  # D
+                    (h1 + h3, 0),  # E
                     close=True,
                 )
             _ = make_face()

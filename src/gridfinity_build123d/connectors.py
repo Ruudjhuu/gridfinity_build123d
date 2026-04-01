@@ -1,6 +1,6 @@
 """Connectors.
 
-This module contians standalone connector objects.
+This module contains standalone connector objects.
 """
 
 from __future__ import annotations
@@ -26,9 +26,9 @@ from build123d import (
 
 
 class GridfinityRefinedConnector(BasePartObject):
-    """Gridfiniity refined connector.
+    """Gridfinity refined connector.
 
-    A conector object used in the Gridfinity Refined project to connect baseplates together.
+    A connector object used in the Gridfinity Refined project to connect baseplates together.
     """
 
     def __init__(

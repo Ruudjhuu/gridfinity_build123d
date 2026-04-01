@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from enum import Enum, auto
 from pathlib import Path
 from subprocess import check_call
@@ -16,6 +17,7 @@ from gridfinity_build123d import (
     BasePlate,
     BasePlateBlockFull,
     BasePlateBlockSkeleton,
+    BasePlateBottomSideRound,
     BasePlateEqual,
     Bin,
     BottomCorners,
@@ -23,6 +25,7 @@ from gridfinity_build123d import (
     BottomSides,
     Compartment,
     CompartmentsEqual,
+    Direction,
     GridfinityRefinedConnectionCutout,
     GridfinityRefinedMagnetHolePressfit,
     GridfinityRefinedMagnetHoleSide,
@@ -42,6 +45,41 @@ from gridfinity_build123d import (
 from gridfinity_build123d.feature_locations import FeatureLocation
 
 logger = logging.getLogger(__name__)
+
+
+OPENSCAD_DEFAULT_PATH = "/usr/bin/openscad"
+IMAGEMAGICK_DEFAULT_PATH = "/usr/bin/convert"
+
+
+def resolve_openscad_cmd() -> str:
+    """Resolve OpenSCAD executable path for the current developer environment."""
+    if Path(OPENSCAD_DEFAULT_PATH).exists():
+        return OPENSCAD_DEFAULT_PATH
+
+    # Check if "openscad" is in PATH
+    openscad_in_path = shutil.which("openscad")
+    if openscad_in_path:
+        return openscad_in_path
+
+    msg = "OpenSCAD executable not found. Install 'openscad' in PATH."
+    raise FileNotFoundError(msg)
+
+
+def resolve_imagemagick_cmd() -> str:
+    """Resolve ImageMagick executable for GIF generation."""
+    if Path(IMAGEMAGICK_DEFAULT_PATH).exists():
+        return IMAGEMAGICK_DEFAULT_PATH
+
+    convert_in_path = shutil.which("convert")
+    if convert_in_path:
+        return convert_in_path
+
+    magick_in_path = shutil.which("magick")
+    if magick_in_path:
+        return magick_in_path
+
+    msg = "ImageMagick executable not found. Install 'convert'/'magick' in PATH."
+    raise FileNotFoundError(msg)
 
 
 class CameraPosition(Enum):
@@ -69,6 +107,7 @@ class Convert:
         file_name: str,
         camera_pos: CameraPosition,
     ) -> None:
+        imagemagick_cmd = resolve_imagemagick_cmd()
         with TemporaryDirectory() as tmp_dir:
             for idx, part in enumerate(part_list):
                 Convert._part_to_png(
@@ -79,7 +118,7 @@ class Convert:
                 )
             _ = check_call(
                 [
-                    "/usr/bin/convert",
+                    imagemagick_cmd,
                     "-delay",
                     "75",
                     "-loop",
@@ -98,6 +137,7 @@ class Convert:
         file_name: str,
         camera_pos: CameraPosition,
     ) -> None:
+        openscad_cmd = resolve_openscad_cmd()
         tmp_stl = work_dir.joinpath("tmp.stl")
         tmp_scad = work_dir.joinpath("tmp.scad")
         _ = build123d.export_stl(part, str(tmp_stl))  # pyright: ignore[reportUnknownMemberType]
@@ -106,7 +146,7 @@ class Convert:
 
         _ = check_call(
             [
-                "/usr/bin/openscad",
+                openscad_cmd,
                 "--autocenter",
                 "--viewall",
                 "--camera",
@@ -133,20 +173,43 @@ class Convert:
 
 # Bases
 
-Convert.part_to_png(Base([[True, True], [True]]), "base", CameraPosition.CAMERA_BOT)
-Convert.part_to_png(BaseEqual(2, 2), "base_equal", CameraPosition.CAMERA_BOT)
+Convert.part_to_png(
+    Base(
+        grid=[[True, True], [True]],
+    ),
+    "base",
+    CameraPosition.CAMERA_BOT,
+)
 Convert.part_to_png(
     BaseEqual(
-        2,
-        2,
-        [MagnetHole(BottomCorners()), ScrewHole(BottomCorners())],
+        grid_x=2,
+        grid_y=2,
+    ),
+    "base_equal",
+    CameraPosition.CAMERA_BOT,
+)
+Convert.part_to_png(
+    BaseEqual(
+        grid_x=2,
+        grid_y=2,
+        features=[
+            MagnetHole(BottomCorners()),
+            ScrewHole(BottomCorners()),
+        ],
     ),
     "base_holes",
     CameraPosition.CAMERA_BOT,
 )
 
 # Bins
-Convert.part_to_png(Bin(Base(), height_in_units=4), "bin", CameraPosition.CAMERA_TOP)
+Convert.part_to_png(
+    Bin(
+        Base(),
+        height_in_units=4,
+    ),
+    "bin",
+    CameraPosition.CAMERA_TOP,
+)
 
 Convert.part_to_png(
     Bin(
@@ -177,28 +240,50 @@ Convert.part_to_png(
 
 # Baseplates
 Convert.part_to_png(
-    BasePlate([[True, True], [True]]),
+    BasePlate(
+        grid=[[True, True], [True]],
+    ),
     "base_plate",
     CameraPosition.CAMERA_TOP,
 )
-Convert.part_to_png(BasePlateEqual(2, 2), "base_plate_equal", CameraPosition.CAMERA_TOP)
 Convert.part_to_png(
-    BasePlateEqual(2, 2, BasePlateBlockFull()),
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+    ),
+    "base_plate_equal",
+    CameraPosition.CAMERA_TOP,
+)
+Convert.part_to_png(
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+        baseplate_block=BasePlateBlockFull(),
+    ),
     "base_plate_full",
     CameraPosition.CAMERA_TOP,
 )
 Convert.part_to_png(
     BasePlateEqual(
-        2,
-        2,
-        BasePlateBlockFull(
+        size_x=2,
+        size_y=2,
+        baseplate_block=BasePlateBlockFull(
             features=[
                 ScrewHoleCountersink(BottomCorners()),
                 Weighted(BottomMiddle()),
             ],
         ),
     ),
-    "base_plate_weigthed",
+    "base_plate_weighted",
+    CameraPosition.CAMERA_BOT,
+)
+Convert.part_to_png(
+    BasePlateEqual(
+        size_x=2,
+        size_y=2,
+        features=BasePlateBottomSideRound(radius=1, direction=Direction.FRONT),
+    ),
+    "base_plate_bottom_side_round_single",
     CameraPosition.CAMERA_BOT,
 )
 
@@ -240,7 +325,7 @@ Convert.part_to_png(
 
 Convert.part_to_png(
     Weighted(f_loc_mock).create_obj(),
-    "weigthed",
+    "weighted",
     CameraPosition.CAMERA_TOP,
 )
 

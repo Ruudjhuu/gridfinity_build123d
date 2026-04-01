@@ -24,7 +24,8 @@ Bins
         .. testcode::
 
             Bin(
-                Base(), height_in_units=4,
+                Base(),
+                height_in_units=4,
             )
 
         .. raw:: html
@@ -74,7 +75,7 @@ Bins
                     compartment_list=Compartment(Label()),
                 ),
                 lip=StackingLip(),
-            ),
+            )
 
         .. raw:: html
 
@@ -121,7 +122,9 @@ BasePlates
 
         .. testcode::
 
-            BasePlate([[True,True],[True]])
+            BasePlate(
+                grid=[[True, True], [True]],
+            )
 
         .. raw:: html
 
@@ -162,14 +165,43 @@ BasePlates
             BasePlateEqual(
                 size_x=2,
                 size_y=2,
-                baseplate_block=BasePlateBlockFull(),
+                baseplate_block=BasePlateBlockFull(
+                    features=[
+                        ScrewHoleCountersink(BottomCorners()),
+                        Weighted(BottomMiddle()),
+                    ],
+                ),
             )
 
         .. raw:: html
 
             </details>
 
-        .. image:: ../assets/base_plate_weigthed.png
+        .. image:: ../assets/base_plate_weighted.png
+
+    .. grid-item-card:: :class:`BasePlateBottomSideRound` — one side
+
+        .. raw:: html
+
+            <details>
+            <summary>source</summary>
+
+        .. testcode::
+
+            BasePlateEqual(
+                size_x=2,
+                size_y=2,
+                features=BasePlateBottomSideRound(
+                    radius=1,
+                    direction=Direction.FRONT,
+                ),
+            )
+
+        .. raw:: html
+
+            </details>
+
+        .. image:: ../assets/base_plate_bottom_side_round_single.png
 
 
 Bases
@@ -207,7 +239,9 @@ Bases
 
         .. testcode::
 
-            Base([[True,True],[True]])
+            Base(
+                grid=[[True, True], [True]],
+            )
 
         .. raw:: html
 
@@ -225,10 +259,14 @@ Bases
 
         .. testcode::
 
-            BaseEqual(2, 2, [MagnetHole(
-                BottomCorners()),
-                ScrewHole(BottomCorners(),
-                )])
+            BaseEqual(
+                grid_x=2,
+                grid_y=2,
+                features=[
+                    MagnetHole(BottomCorners()),
+                    ScrewHole(BottomCorners()),
+                ],
+            )
 
         .. raw:: html
 

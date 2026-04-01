@@ -13,5 +13,5 @@
     },
     "editor.formatOnSave": true,
     "mypy.runUsingActiveInterpreter": true,
-    "restructuredtext.preview.name": "docutils",
+    "restructuredtext.preview.name": "docutils"
 }

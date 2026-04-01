@@ -1,4 +1,4 @@
-"""Module containg classes and cutters which can be used to create a bin."""
+"""Module containing classes and cutters which can be used to create a bin."""
 
 from __future__ import annotations
 
@@ -54,11 +54,11 @@ class Bin(BasePartObject):
             base (Part): Base object on which the bin is constructed.
             height (float, optional): Height of the bin in mm. Can't be used when height_in_units is
                 defined.Defaults to 0.
-            height_in_units (int, optional): Heigth defined by gridfinity units. Can't be used when
+            height_in_units (int, optional): Height defined by gridfinity units. Can't be used when
                 height is defined. Defaults to 0.
             compartments (Compartments | None, optional): Compartments of the bin, Defaults to None.
             lip (StackingLip, optional): A lip object which should be added. Size added due to the
-                lib is not included in "height. Defaults to None.
+                lip is not included in "height". Defaults to None.
             rotation (RotationLike, optional): angles to rotate about axes. Defaults to (0, 0, 0).
             align (Union[Align, tuple[Align, Align, Align]], optional): align min, center, or max
             of object. Defaults to None.

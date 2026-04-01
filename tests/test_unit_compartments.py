@@ -39,7 +39,7 @@ class CompartmentsTest(unittest.TestCase):
         comp_mock.create.assert_called_once_with(size_x=94.0, size_y=94.0, height=50)
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000, part.part.volume)
+        self.assertAlmostEqual(1000.0, part.part.volume)
 
     @patch("gridfinity_build123d.compartments.Compartment", autospec=True)
     def test_compartments_default_compartment(self, comp_mock: MagicMock) -> None:
@@ -64,7 +64,7 @@ class CompartmentsTest(unittest.TestCase):
         )
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000, part.part.volume)
+        self.assertAlmostEqual(1000.0, part.part.volume)
 
     def test_compartments_one_compartment(self) -> None:
         comp_mock = MagicMock(spec=Compartment)
@@ -89,7 +89,7 @@ class CompartmentsTest(unittest.TestCase):
         comp_mock.create.assert_called_once_with(size_x=94.0, size_y=94.0, height=50)
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(10, 10, 10), bbox.size)
-        self.assertAlmostEqual(1000, part.part.volume)
+        self.assertAlmostEqual(1000.0, part.part.volume)
 
     def test_compartments_one_row(self) -> None:
         comp_mock = MagicMock(spec=Compartment)
@@ -121,7 +121,7 @@ class CompartmentsTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(73.33333333333334, 10, 10), bbox.size)
-        self.assertAlmostEqual(3000, part.part.volume)
+        self.assertAlmostEqual(3000.0, part.part.volume)
 
     def test_compartments_multirow(self) -> None:
         comp_mock = MagicMock(spec=Compartment)
@@ -153,7 +153,7 @@ class CompartmentsTest(unittest.TestCase):
         )
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(69.375, 57.5, 10), bbox.size)
-        self.assertAlmostEqual(4000, part.part.volume)
+        self.assertAlmostEqual(4000.0, part.part.volume)
 
     def test_compartments_multiple_types(self) -> None:
         comp_mock_1 = MagicMock(spec=Compartment)
@@ -183,7 +183,7 @@ class CompartmentsTest(unittest.TestCase):
 
         bbox = part.part.bounding_box()
         self.assertEqual(Vector(57.5, 10.0, 10.0), bbox.size)
-        self.assertAlmostEqual(2000, part.part.volume)
+        self.assertAlmostEqual(2000.0, part.part.volume)
 
 
 @patch("gridfinity_build123d.compartments.Compartments.__init__", spec=Compartments)

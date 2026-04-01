@@ -3,18 +3,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, ClassVar, Literal, override
 
-from bd_warehouse.thread import Thread  # pyright: ignore[reportMissingTypeStubs]
+from bd_warehouse.thread import (  # type: ignore[import-untyped] # pyright: ignore[reportMissingTypeStubs]
+    Thread,
+)
 from build123d import (
     Align,
     Axis,
     BasePartObject,
+    BoundBox,
     Box,
     BuildLine,
     BuildPart,
     BuildSketch,
     CenterArc,
+    Circle,
     CounterBoreHole,
     CounterSinkHole,
     Cylinder,
@@ -33,18 +37,22 @@ from build123d import (
     SagittaArc,
     Transition,
     add,  # pyright: ignore[reportUnknownVariableType]
-    chamfer,
     extrude,
     fillet,
     make_face,
     mirror,
     sweep,
 )
+from build123d import (
+    chamfer as chamfer_op,
+)
 
 from .constants import gf_bin, gridfinity_standard
-from .utils import ObjectCreate
+from .utils import Direction, ObjectCreate
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from .feature_locations import FeatureLocation
 
 
@@ -64,8 +72,7 @@ class Feature(ABC):
 class ObjectFeature(Feature, ObjectCreate, ABC):
     """Feature created by standalone object.
 
-    Feature which creates standalone object and is dependend on a Feature Location for
-    placement.
+    Feature which creates standalone object and is dependent on a Feature Location for placement.
     """
 
     def __init__(self, feature_location: FeatureLocation | None) -> None:
@@ -238,7 +245,7 @@ class ScrewHoleCountersink(ScrewHole):
             radius (float, optional): radius. Defaults to 1.75.
             counter_sink_radius (float, optional): radius of countersink. Default to 4.25.
             depth (float, optional): depth. Defaults to gridfinity_standard.screw.depth.
-            counter_sink_angle(float, optional): angle of contoursink in degrees. Defaults to 82.
+            counter_sink_angle(float, optional): angle of countersink in degrees. Defaults to 82.
         """
         super().__init__(feature_location, radius, depth)
         self.counter_sink_radius: float = counter_sink_radius
@@ -316,7 +323,7 @@ class ScrewHoleCounterbore(ScrewHole):
 
 
 class GridfinityRefinedConnectionCutout(ObjectFeature):
-    """Gridfinity refined conecction cutout.
+    """Gridfinity refined connection cutout.
 
     Cutout shape used to connect two objects with a GridfinityRefinedConnector.
     """
@@ -385,7 +392,7 @@ class GridfinityRefinedScrewHole(ScrewHoleCountersink):
 
 
 class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
-    """Gridfinity refined threaded screwhole for bins."""
+    """Gridfinity refined threaded screw hole for bins."""
 
     @override
     def create_obj(
@@ -400,6 +407,7 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
         root_width = 1.21
         pitch = root_width + 0.29
         length = 4
+        end_finishes: tuple[Literal["chamfer"], Literal["chamfer"]] = ("chamfer", "chamfer")
 
         with BuildPart() as part:
             _ = Cylinder(
@@ -415,7 +423,7 @@ class GridfinityRefinedThreadedScrewHole(ScrewHoleCountersink):
                 pitch,
                 length,
                 apex_offset=0,
-                end_finishes=("chamfer", "chamfer"),
+                end_finishes=end_finishes,
                 align=(Align.CENTER, Align.CENTER, Align.MAX),
             )
 
@@ -558,7 +566,7 @@ class GridfinityRefinedMagnetHoleSide(ObjectFeature):
 
 
 class Weighted(ObjectFeature):
-    """Weigthed cutout feature for baseplates."""
+    """Weighted cutout feature for baseplates."""
 
     def __init__(
         self,
@@ -607,6 +615,151 @@ class Weighted(ObjectFeature):
         return BasePartObject(part.part, rotation, align, mode)
 
 
+class BasePlateBottomSideRound(ContextFeature):
+    """Round the underside edge of a baseplate.
+
+    This is useful when the baseplate will be placed in a drawer that has inside rounding
+    between the bottom and sides.
+    By rounding the bottom perimeter edges of the baseplate, it will fit better in such a drawer.
+    """
+
+    _RUNS_ALONG_X: ClassVar[tuple[Direction, ...]] = (Direction.FRONT, Direction.BACK)
+    _MIN_SIDE_DIRECTIONS: ClassVar[tuple[Direction, ...]] = (Direction.FRONT, Direction.LEFT)
+
+    def __init__(
+        self,
+        radius: float = 1.5,
+        direction: Direction | list[Direction] | None = None,
+    ) -> None:
+        """Construct baseplate bottom side round feature.
+
+        Args:
+            radius (float, optional): Fillet radius used on the bottom perimeter edges.
+            direction (Direction | list[Direction] | None, optional): Side(s) to round.
+                Defaults to all perimeter sides.
+        """
+        if radius <= 0:
+            msg = "Baseplate bottom side round radius needs to be larger than 0"
+            raise ValueError(msg)
+
+        self.radius: float = radius
+        self.directions: list[Direction] = self._normalize_directions(direction)
+
+    @staticmethod
+    def _normalize_directions(direction: Direction | list[Direction] | None) -> list[Direction]:
+        # Accept one side, many sides, or default to all perimeter sides.
+        allowed_directions = (
+            Direction.FRONT,
+            Direction.BACK,
+            Direction.LEFT,
+            Direction.RIGHT,
+        )
+
+        raw_directions: Sequence[Direction]
+        if direction is None:
+            raw_directions = allowed_directions
+        elif isinstance(direction, Direction):
+            raw_directions = [direction]
+        else:
+            raw_directions = direction
+
+        msg = "BasePlateBottomSideRound direction needs to be FRONT/BACK/LEFT/RIGHT"
+        if not raw_directions:
+            raise ValueError(msg)
+
+        normalized: list[Direction] = []
+        for side in raw_directions:
+            if side not in allowed_directions:
+                raise ValueError(msg)
+            if side not in normalized:
+                normalized.append(side)
+
+        return normalized
+
+    def _create_cylinder_tool(self, length: float) -> Part:
+        with BuildPart() as cyl_tool:
+            with BuildSketch(Plane.YZ.offset(-length / 2)):
+                _ = Circle(self.radius)
+            _ = extrude(amount=length)
+
+        part = cyl_tool.part
+        if not isinstance(part, Part):  # pragma: no cover
+            msg = "Part is empty"
+            raise TypeError(msg)
+        return part
+
+    def _create_cutter_tool(self, length: float) -> Part:
+        """Create a cutter by subtracting a cylinder from a box, creating a quarter-round shape."""
+        with BuildPart() as cutter:
+            _ = Box(length, self.radius, self.radius, align=(Align.CENTER, Align.MIN, Align.MIN))
+            with Locations((0, self.radius, self.radius)):
+                cylinder = self._create_cylinder_tool(length=length)
+                _ = add(cylinder, mode=Mode.SUBTRACT)
+
+        part = cutter.part
+        if not isinstance(part, Part):  # pragma: no cover
+            msg = "Part is empty"
+            raise TypeError(msg)
+        return part
+
+    def _get_cutter_tool_location(
+        self,
+        direction: Direction,
+        bbox: BoundBox,
+    ) -> tuple[float, float, float]:
+        """Calculate the location to place the cutter for the given direction and bounding box."""
+        run_along_x = direction in self._RUNS_ALONG_X
+        is_min_side = direction in self._MIN_SIDE_DIRECTIONS
+
+        x_center = (bbox.min.X + bbox.max.X) / 2
+        y_center = (bbox.min.Y + bbox.max.Y) / 2
+
+        # Anchor on edge for cross-axis, center on run-axis
+        x_loc = x_center if run_along_x else (bbox.min.X if is_min_side else bbox.max.X)
+        y_loc = (bbox.min.Y if is_min_side else bbox.max.Y) if run_along_x else y_center
+
+        return x_loc, y_loc, bbox.min.Z
+
+    @staticmethod
+    def _get_cutter_tool_rotation(direction: Direction) -> Rotation:
+        rotation_by_direction = {
+            Direction.FRONT: Rotation(0, 0, 0),
+            Direction.BACK: Rotation(0, 0, 180),
+            Direction.LEFT: Rotation(0, 0, -90),
+            Direction.RIGHT: Rotation(0, 0, 90),
+        }
+
+        return rotation_by_direction[direction]
+
+    @override
+    def apply(self, context: BuildPart) -> None:
+        context_part = context.part
+        if not isinstance(context_part, Part):  # pragma: no cover
+            msg = "Context has no part"
+            raise ValueError(msg)  # noqa: TRY004
+
+        bbox = context_part.bounding_box()
+
+        if self.radius > bbox.size.Z:
+            msg = (
+                f"Baseplate bottom side round radius can't be larger than the baseplate thickness"
+                f" (bounding box Z size: {bbox.size.Z}). If you need"
+                f" a bigger radius, consider using BasePlateBlockFull with a thicker bottom."
+            )
+            raise ValueError(msg)
+
+        try:
+            for direction in self.directions:
+                cutter = self._create_cutter_tool(length=max([bbox.size.X, bbox.size.Y]))
+                cutter_location = self._get_cutter_tool_location(direction, bbox)
+                cutter_rotation = self._get_cutter_tool_rotation(direction)
+                with Locations(cutter_location), Locations(cutter_rotation):
+                    _ = add(cutter, mode=Mode.SUBTRACT)
+        except ValueError as exp:  # pragma: no cover
+            msg = "Baseplate bottom side round could not be created, Parent object too small"
+            raise ValueError(msg) from exp
+
+
 class CompartmentFeature(ContextFeature, ABC):
     """Context feature for a Compartment."""
 
@@ -633,7 +786,7 @@ class Label(CompartmentFeature):
         face_top = context.faces().sort_by(Axis.Z)[-1]
         edge_top_back = face_top.edges().sort_by(Axis.Y)[-1]
         try:
-            _ = chamfer(
+            _ = chamfer_op(
                 edge_top_back,
                 length=gf_bin.label.width,
                 angle=self.angle,
@@ -664,8 +817,8 @@ class Scoop(CompartmentFeature):
         Args:
             radius (float, optional): Radius of the scoop. Defaults to gf_bin.scoop.radius.
             wall_correction (float, optional): Makes wall of sweep side thicker. Can be used to
-                compesate for the stacking lid so one smooth ramp is created to make it easier to
-                    pick items out of a bin.
+                compensate for the stacking lid so one smooth ramp is created to make it easier to
+                pick items out of a bin.
         """
         self.radius: float = radius
         self.wall_correction: float = wall_correction
