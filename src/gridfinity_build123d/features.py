@@ -5,8 +5,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar, Literal, override
 
-from bd_warehouse.thread import (  # type: ignore[import-untyped]
-    Thread,  # pyright: ignore[reportMissingTypeStubs]
+from bd_warehouse.thread import (  # type: ignore[import-untyped] # pyright: ignore[reportMissingTypeStubs]
+    Thread,
 )
 from build123d import (
     Align,
