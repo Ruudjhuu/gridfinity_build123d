@@ -70,9 +70,9 @@ Features List
         +++
         Counterbore hole.
 
-    .. grid-item-card:: :class:`gridfinity_build123d.Weigthed`
+    .. grid-item-card:: :class:`gridfinity_build123d.Weighted`
 
-        .. image:: ../assets/weigthed.png
+        .. image:: ../assets/weighted.png
 
         +++
         Cutout for weighted baseplates.
