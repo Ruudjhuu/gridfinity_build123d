@@ -169,7 +169,7 @@ BasePlates
 
             </details>
 
-        .. image:: ../assets/base_plate_weigthed.png
+        .. image:: ../assets/base_plate_weighted.png
 
 
 Bases

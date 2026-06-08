@@ -558,7 +558,7 @@ class GridfinityRefinedMagnetHoleSide(ObjectFeature):
 
 
 class Weighted(ObjectFeature):
-    """Weigthed cutout feature for baseplates."""
+    """Weighted cutout feature for baseplates."""
 
     def __init__(
         self,
