@@ -31,7 +31,13 @@ from build123d import (
     mirror,
 )
 
+from gridfinity_build123d.constants import gridfinity_standard
 from gridfinity_build123d.utils import ObjectCreate, StackProfile, Utils
+
+# OCCT 7.9, shipped with build123d >= 0.11, rejects a fillet whose radius exactly
+# matches the adjacent corner arc. Shaving off a tenth of a micron stays far below
+# any print tolerance while keeping the kernel inside its valid range.
+_CORNER_FILLET_EPS = 1e-4
 
 if TYPE_CHECKING:
     from gridfinity_build123d.features import Feature
@@ -233,7 +239,7 @@ class BasePlate(BasePartObject):
                 return isclose(inner_edge.length, z_height)
 
             wires = part.edges().filter_by(Axis.Z).filter_by(edge_filter)
-            _ = fillet(wires, 4)
+            _ = fillet(wires, gridfinity_standard.grid.radius - _CORNER_FILLET_EPS)
 
             for feature in self.features:
                 feature.apply(part)

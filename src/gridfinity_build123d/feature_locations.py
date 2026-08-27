@@ -23,14 +23,14 @@ from build123d import (
     Plane,
     PolarLocations,
     Rotation,
-    ShapePredicate,
+    Shape,
     Vector,
 )
 
 from .constants import gridfinity_standard
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
 
 class FeatureLocation(ABC):
@@ -213,7 +213,7 @@ class BottomSides(FeatureLocation):
 
     def _get_locations_on_edges(
         self,
-        edge_filter: ShapePredicate | Axis | Plane | GeomType,
+        edge_filter: Callable[[Shape], bool] | Axis | Plane | GeomType,
         face: Face,
         nr_of_points: int,
     ) -> list[Location]:
